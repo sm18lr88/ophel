@@ -20,9 +20,10 @@ import { usePromptsStore } from "~stores/prompts-store"
 import { useReadingHistoryStore } from "~stores/reading-history-store"
 import { useSettingsStore } from "~stores/settings-store"
 import { useTagsStore } from "~stores/tags-store"
+import { validateBackupData } from "~utils/backup-validator"
 import { t } from "~utils/i18n"
-import { MSG_CLEAR_ALL_DATA } from "~utils/messaging"
-import { CLEAR_ALL_FLAG_KEY, DEFAULT_SETTINGS } from "~utils/storage"
+import { MSG_CLEAR_ALL_DATA, MSG_RESTORE_DATA } from "~utils/messaging"
+import { CLEAR_ALL_FLAG_KEY, DEFAULT_SETTINGS, RESTORE_FLAG_KEY } from "~utils/storage"
 import { showToast as showDomToast } from "~utils/toast"
 
 import { PageTitle, SettingCard, SettingRow } from "../components"
@@ -39,6 +40,18 @@ const formatSize = (bytes: number) => {
   const sizes = ["B", "KB", "MB", "GB", "TB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+}
+
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message
+  return String(error)
+}
+
+const formatBackupTypeLabel = (type: unknown): string => {
+  if (type === "full") return t("fullBackup") || "完整备份"
+  if (type === "prompts") return t("promptsBackup") || "仅提示词"
+  if (type === "settings") return t("settingsBackup") || "仅设置"
+  return String(type || t("unknown") || "未知")
 }
 
 // ==================== 远程备份列表模态框 (保持原有逻辑) ====================
@@ -82,7 +95,7 @@ const RemoteBackupModal: React.FC<{
     setConfirmConfig({
       show: true,
       title: t("restore") || "恢复",
-      message: `确定要恢复备份 "${file.name}" 吗？当前数据将被覆盖。`,
+      message: `确定要恢复备份 "${file.name}" 吗？当前数据将被覆盖，${t("openAiPagesWillRefresh") || "已打开的 AI 页面将被刷新。"}`,
       danger: true,
       onConfirm: async () => {
         setConfirmConfig((prev) => ({ ...prev, show: false }))
@@ -91,6 +104,18 @@ const RemoteBackupModal: React.FC<{
           const manager = getWebDAVSyncManager()
           const result = await manager.download(file.name)
           if (result.success) {
+            try {
+              if (platform.type === "extension" && typeof chrome !== "undefined") {
+                await new Promise<void>((resolve, reject) =>
+                  chrome.storage.local.set({ [RESTORE_FLAG_KEY]: Date.now() }, () =>
+                    chrome.runtime.lastError ? reject(chrome.runtime.lastError) : resolve(),
+                  ),
+                )
+                await chrome.runtime.sendMessage({ type: MSG_RESTORE_DATA })
+              }
+            } catch {
+              // ignore
+            }
             showDomToast(t("restoreSuccess") || "恢复成功，即将刷新页面...")
             setTimeout(() => {
               onRestore()
@@ -284,7 +309,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
   const [confirmConfig, setConfirmConfig] = useState<{
     show: boolean
     title: string
-    message: string
+    message: React.ReactNode
     danger?: boolean
     onConfirm: () => void
   }>({
@@ -324,10 +349,11 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
             try {
               let parsed = typeof v === "string" ? JSON.parse(v) : v
               if (ZUSTAND_KEYS.includes(k) && parsed?.state) {
-                // 如果是 Zustand persist 数据，提取 state
-                // 但为了兼容导入，我们通常需要保持结构或在导入时处理。
-                // 这里保持原逻辑：导出 "hydrated" 的纯数据对象
-                if (parsed.state[k] !== undefined) {
+                if (MULTI_PROP_STORES.includes(k)) {
+                  // 多属性 store：保留整个 state（含 lastUsedFolderId 等辅助属性）
+                  parsed = parsed.state
+                } else if (parsed.state[k] !== undefined) {
+                  // 单属性 store：直接提取主数据
                   parsed = parsed.state[k]
                 } else {
                   parsed = parsed.state
@@ -417,8 +443,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     try {
       const data = JSON.parse(jsonString)
 
-      // 导入校验函数进行数据格式验证
-      const { validateBackupData } = await import("~utils/backup-validator")
+      // 数据格式验证
       const validation = validateBackupData(data)
       if (!validation.valid) {
         const errorMsgs = validation.errorKeys.map((key) => t(key) || key).join(", ")
@@ -430,7 +455,43 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
       setConfirmConfig({
         show: true,
         title: t("importData") || "导入数据",
-        message: `${t("importConfirm") || "确定导入？"}\n${t("backupTime") || "备份时间"}: ${data.timestamp}\n类型: ${data.type || "未知"}`,
+        message: (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div>{t("importConfirm") || "确定导入？"}</div>
+            <div
+              style={{
+                border: "1px solid var(--gh-border, #e5e7eb)",
+                background: "var(--gh-hover, #f8fafc)",
+                borderRadius: "8px",
+                padding: "10px 12px",
+              }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "72px 1fr",
+                  rowGap: "6px",
+                  columnGap: "10px",
+                  alignItems: "start",
+                }}>
+                <div style={{ color: "var(--gh-text-secondary, #6b7280)" }}>
+                  {t("backupTime") || "备份时间"}
+                </div>
+                <div style={{ color: "var(--gh-text, #111827)", fontWeight: 500 }}>
+                  {String(data.timestamp || "-")}
+                </div>
+                <div style={{ color: "var(--gh-text-secondary, #6b7280)" }}>
+                  {t("backupType") || "类型"}
+                </div>
+                <div style={{ color: "var(--gh-text, #111827)", fontWeight: 500 }}>
+                  {formatBackupTypeLabel(data.type)}
+                </div>
+              </div>
+            </div>
+            <div style={{ fontSize: "12px", color: "var(--gh-text-secondary, #6b7280)" }}>
+              {t("openAiPagesWillRefresh") || "已打开的 AI 页面将被刷新。"}
+            </div>
+          </div>
+        ),
         danger: true,
         onConfirm: async () => {
           setConfirmConfig((prev) => ({ ...prev, show: false }))
@@ -449,14 +510,25 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
                 let stateContent = v
                 // 针对 multi-prop stores 的特殊处理 (如 conversations)
                 if (MULTI_PROP_STORES.includes(k)) {
-                  if (
-                    typeof v === "object" &&
-                    !Array.isArray(v) &&
-                    Object.keys(v as object).length > 1
-                  ) {
-                    stateContent = v
+                  // 通过检查 v 中是否包含与 store 同名的属性来区分格式
+                  if (typeof v === "object" && !Array.isArray(v)) {
+                    const obj = v as Record<string, unknown>
+                    if (k === "conversations" && obj.conversations !== undefined) {
+                      // 已包装格式：{ conversations: {...}, lastUsedFolderId: "..." }
+                      stateContent = v
+                    } else if (
+                      k === "readingHistory" &&
+                      (obj.history !== undefined || obj.lastCleanupRun !== undefined)
+                    ) {
+                      // 已包装格式：{ history: {...}, lastCleanupRun: number }
+                      stateContent = v
+                    } else {
+                      // 扁平化格式（旧版本导出）
+                      stateContent = k === "readingHistory" ? { history: v } : { [k]: v }
+                    }
                   } else {
-                    stateContent = { [k]: v }
+                    // 扁平化格式（旧版本导出）：v 直接是主数据
+                    stateContent = k === "readingHistory" ? { history: v } : { [k]: v }
                   }
                 } else {
                   // prompts, settings 等通常 state key = store name
@@ -493,15 +565,30 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               ),
             )
 
+            try {
+              if (platform.type === "extension" && typeof chrome !== "undefined") {
+                await new Promise<void>((resolve, reject) =>
+                  chrome.storage.local.set({ [RESTORE_FLAG_KEY]: Date.now() }, () =>
+                    chrome.runtime.lastError ? reject(chrome.runtime.lastError) : resolve(),
+                  ),
+                )
+                await chrome.runtime.sendMessage({ type: MSG_RESTORE_DATA })
+              }
+            } catch {
+              // ignore
+            }
+
             showDomToast(t("importSuccess") || "导入成功")
             setTimeout(() => window.location.reload(), 1000)
           } catch (err) {
-            showDomToast(t("importError") || "导入失败：" + String(err))
+            console.error("[Backup] import storage write failed:", err)
+            showDomToast(`${t("importError") || "导入失败："}${getErrorMessage(err)}`)
           }
         },
       })
     } catch (e) {
-      showDomToast(t("importError") || "解析失败：" + String(e))
+      console.error("[Backup] import parse failed:", e)
+      showDomToast(`${t("importError") || "导入失败："}${getErrorMessage(e)}`)
     }
   }
 
