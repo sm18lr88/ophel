@@ -48,19 +48,30 @@ if (!(window as any).__ophelIframeScrollInitialized) {
     return null
   }
 
-  // 监听来自 Content Script 的滚动请求消息
+  const VALID_SCROLL_ACTIONS = new Set([
+    "scrollToTop",
+    "scrollToBottom",
+    "scrollTo",
+    "getScrollInfo",
+  ])
+
   window.addEventListener("message", (event) => {
     if (event.source !== window) return
-    if (event.data?.type !== "OPHEL_SCROLL_REQUEST") return
+    if (event.origin !== window.location.origin) return
 
-    const { action, position } = event.data
+    const data = event.data
+    if (!data || typeof data !== "object" || data.type !== "OPHEL_SCROLL_REQUEST") return
+
+    const { action, position } = data
+    if (typeof action !== "string" || !VALID_SCROLL_ACTIONS.has(action)) return
+
     const container = getFlutterScrollContainer()
+    const origin = window.location.origin
 
     if (!container) {
-      // 如果找不到 Flutter 容器，返回失败消息让 Content Script 使用普通滚动
       window.postMessage(
         { type: "OPHEL_SCROLL_RESPONSE", success: false, reason: "no_flutter_container" },
-        "*",
+        origin,
       )
       return
     }
@@ -92,6 +103,6 @@ if (!(window as any).__ophelIframeScrollInitialized) {
         result = { success: false }
     }
 
-    window.postMessage({ type: "OPHEL_SCROLL_RESPONSE", ...result }, "*")
+    window.postMessage({ type: "OPHEL_SCROLL_RESPONSE", ...result }, origin)
   })
 }

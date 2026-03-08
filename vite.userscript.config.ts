@@ -11,18 +11,8 @@ const author: string = pkg.author
 const version: string = pkg.version
 const license: string = pkg.license
 
-// Locale directory to userscript locale code mapping
 const localeMapping: Record<string, string> = {
-  zh_CN: "zh-CN",
-  zh_TW: "zh-TW",
   en: "en",
-  de: "de",
-  es: "es",
-  fr: "fr",
-  ja: "ja",
-  ko: "ko",
-  pt_BR: "pt-BR",
-  ru: "ru",
 }
 
 // Read name and description from locale files
@@ -30,16 +20,14 @@ function loadLocalizedMetadata(): {
   name: Record<string, string>
   description: Record<string, string>
 } {
-
-  const seoNameCN = ", 全能AI助手 (支持 Gemini, ChatGPT, Claude, Grok, AI Studio, 豆包)"
   const seoNameEN = " (Support Gemini, ChatGPT, Claude, Grok, AI Studio)"
+  const seoKeywordsEN =
+    " | Features: Real-time Outline, Conversation Manager (Folders/Pin/Export), Prompt Library, Immersion/Widescreen/Scroll Lock, Theme Switcher, Markdown Fix, LaTeX/Table Copy, WebDAV Sync, Privacy, Shortcuts, Tab Renamer, History Restore, Watermark Remover"
+  const defaultDescription =
+    "Turn AI chats into readable, navigable knowledge. Use outlines, folders, and prompts to organize your workflow and stop scrolling." +
+    seoKeywordsEN
 
-  const seoKeywordsCN = " | 功能: 实时大纲导航, 会话管理(文件夹/置顶/导出), 提示词库, 沉浸式宽屏/全屏/滚动锁定, 主题切换, Markdown渲染修复, LaTeX公式/表格复制, WebDAV同步, 隐私模式, 快捷键, 标签页重命名, 阅读历史恢复, Banana去水印"
-  const seoKeywordsEN = " | Features: Real-time Outline, Conversation Manager (Folders/Pin/Export), Prompt Library, Immersion/Widescreen/Scroll Lock, Theme Switcher, Markdown Fix, LaTeX/Table Copy, WebDAV Sync, Privacy, Shortcuts, Tab Renamer, History Restore, Watermark Remover"
-
-  let defaultDescription = "将 AI 对话转化为可阅读、可导航、可复用的知识内容。通过实时大纲、会话文件夹与 Prompt 词库，让对话告别无限滚动，成为可组织、可沉淀的工作流，适用于高频使用 AI 的学习与工作场景。" + seoKeywordsCN + " | Turn AI chats into readable, navigable knowledge. Use outlines, folders, and prompts to organize your workflow and stop scrolling." + seoKeywordsEN
-
-  const name: Record<string, string> = { "": "Ophel Atlas - AI 对话结构化与导航工具" + seoNameCN } // Default fallback
+  const name: Record<string, string> = { "": "Ophel Atlas - AI Chat Organizer & Navigator" + seoNameEN }
   const description: Record<string, string> = {
     "": defaultDescription.substring(0, 500),
   }
@@ -52,22 +40,12 @@ function loadLocalizedMetadata(): {
         const messages = JSON.parse(fs.readFileSync(messagesPath, "utf-8"))
         if (messages.extensionName?.message) {
           let extensionName = messages.extensionName.message
-          // Append Platform Support text to Name for SEO
-          if (dirName === "zh_CN" || dirName === "zh_TW") {
-            extensionName += seoNameCN
-          } else {
-            extensionName += seoNameEN
-          }
+          extensionName += seoNameEN
           name[localeCode] = extensionName
         }
         if (messages.extensionDescription?.message) {
           let desc = messages.extensionDescription.message
-          // Append SEO keywords: zh_CN gets CN version, everyone else gets EN version
-          if (dirName === "zh_CN") {
-            desc += seoKeywordsCN
-          } else {
-            desc += seoKeywordsEN
-          }
+          desc += seoKeywordsEN
           description[localeCode] = desc
         }
       } catch {
@@ -91,9 +69,8 @@ export default defineConfig({
         description: localizedDescription,
         version: version,
         author: author,
-        namespace: "https://github.com/urzeye/ophel",
+        namespace: "https://github.com/sm18lr88/ophel",
         license: license,
-        icon: "https://raw.githubusercontent.com/urzeye/ophel/main/assets/icon.png",
         match: [
           "https://gemini.google.com/*",
           "https://business.gemini.google/*",
@@ -102,7 +79,6 @@ export default defineConfig({
           "https://chat.openai.com/*",
           "https://chatgpt.com/*",
           "https://claude.ai/*",
-          "https://www.doubao.com/*",
         ],
         grant: [
           "GM_getValue",
@@ -116,12 +92,20 @@ export default defineConfig({
           "unsafeWindow",
           "window.focus",
         ],
-        connect: ["*"],
+        connect: [
+          "gemini.google.com",
+          "business.gemini.google",
+          "aistudio.google.com",
+          "lh3.googleusercontent.com",
+          "chatgpt.com",
+          "chat.openai.com",
+          "grok.com",
+          "claude.ai",
+        ],
         "run-at": "document-idle",
         noframes: true,
-        homepageURL: "https://github.com/urzeye/ophel",
-        supportURL: "https://github.com/urzeye/ophel/issues",
-        require: ["https://cdn.jsdelivr.net/npm/fuzzysort@3.1.0/fuzzysort.min.js"],
+        homepageURL: "https://github.com/sm18lr88/ophel",
+        supportURL: "https://github.com/sm18lr88/ophel/issues",
       },
       build: {
         // CSS 自动注入到 head
@@ -134,7 +118,6 @@ export default defineConfig({
       // ========== Userscript Polyfills ==========
       // 替换 @plasmohq/storage 为 GM_* 实现
       "@plasmohq/storage": path.resolve(__dirname, "src/platform/userscript/storage-polyfill.ts"),
-      fuzzysort: path.resolve(__dirname, "src/platform/userscript/fuzzysort-global.ts"),
       // 注意：chrome-adapter.ts 已内置跨平台支持（通过 __PLATFORM__ 判断），无需 alias 替换
 
       // ========== 路径别名（与 Plasmo 的 ~ 别名一致）==========

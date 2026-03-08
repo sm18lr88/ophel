@@ -2,7 +2,7 @@
  * 权限管理页面
  * 显示和管理扩展的权限
  */
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 
 import { PermissionsIcon } from "~components/icons"
 import { ConfirmDialog } from "~components/ui"
@@ -14,6 +14,7 @@ import {
   MSG_REVOKE_PERMISSIONS,
   sendToBackground,
 } from "~utils/messaging"
+import { getWebDavPermissionOrigin, sanitizeErrorMessage } from "~utils/network-security"
 import { showToast } from "~utils/toast"
 
 import { PageTitle, SettingCard, SettingRow } from "../components"
@@ -49,24 +50,12 @@ const OPTIONAL_PERMISSIONS = [
   },
 ]
 
-// 可选主机权限
-const OPTIONAL_HOST_PERMISSIONS = [
-  {
-    id: "webdav",
-    name: "WebDAV 访问权限",
-    nameKey: "permissionWebdavAccess",
-    description: "permissionWebdavAccessDesc",
-    icon: "☁️",
-    origins: ["<all_urls>"],
-  },
-]
-
 interface PermissionsPageProps {
   siteId: string
 }
 
 const PermissionsPage: React.FC<PermissionsPageProps> = () => {
-  const { updateNestedSetting } = useSettingsStore()
+  const { settings, updateNestedSetting, setSettings } = useSettingsStore()
   // 可选权限状态
   const [optionalPermissionStatus, setOptionalPermissionStatus] = useState<Record<string, boolean>>(
     {},
@@ -87,6 +76,32 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
   // 判断是否在扩展页面上下文（可以直接调用权限 API）
   // 注意：content script 中 chrome.permissions 为 undefined
   const isExtensionPage = typeof chrome.permissions !== "undefined"
+  const webdavOrigin =
+    settings?.webdav?.url && settings.webdav.url.trim()
+      ? (() => {
+          try {
+            return getWebDavPermissionOrigin(settings.webdav.url)
+          } catch {
+            return ""
+          }
+        })()
+      : ""
+
+  const optionalHostPermissions = useMemo(
+    () => [
+      {
+        id: "webdav",
+        name: "WebDAV Access",
+        nameKey: "permissionWebdavAccess",
+        description: webdavOrigin
+          ? "permissionWebdavAccessDesc"
+          : "Configure a valid HTTPS WebDAV URL before requesting access.",
+        icon: "☁️",
+        origins: webdavOrigin ? [webdavOrigin] : [],
+      },
+    ],
+    [webdavOrigin],
+  )
 
   // 检查可选权限状态
   const checkOptionalPermissions = useCallback(async () => {
@@ -118,8 +133,13 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
     }
 
     // 检查可选主机权限
-    for (const perm of OPTIONAL_HOST_PERMISSIONS) {
+    for (const perm of optionalHostPermissions) {
       try {
+        if (!perm.origins?.length) {
+          status[perm.id] = false
+          continue
+        }
+
         let result = false
         if (isExtensionPage) {
           result = await chrome.permissions.contains({
@@ -136,19 +156,24 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
         }
         status[perm.id] = result
       } catch (e) {
-        console.error(`检查权限 ${perm.id} 失败:`, e)
+        console.error(`检查权限 ${perm.id} 失败:`, sanitizeErrorMessage(e))
         status[perm.id] = false
       }
     }
 
     setOptionalPermissionStatus(status)
     setLoading(false)
-  }, [isExtensionPage])
+  }, [isExtensionPage, optionalHostPermissions])
 
   // 请求可选权限（通用函数）
   const requestPermission = useCallback(
     async (perm: { id: string; origins?: string[]; permissions?: string[] }) => {
       try {
+        if ((!perm.origins || perm.origins.length === 0) && (!perm.permissions || perm.permissions.length === 0)) {
+          showToast("Configure a valid HTTPS WebDAV URL first.", 2500)
+          return
+        }
+
         if (isExtensionPage) {
           const granted = await chrome.permissions.request({
             origins: perm.origins?.length ? perm.origins : undefined,
@@ -170,7 +195,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
           setTimeout(() => checkOptionalPermissions(), 2000)
         }
       } catch (e) {
-        console.error(`请求权限 ${perm.id} 失败:`, e)
+        console.error(`请求权限 ${perm.id} 失败:`, sanitizeErrorMessage(e))
       }
     },
     [isExtensionPage, checkOptionalPermissions],
@@ -189,14 +214,14 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
         setTimeout(() => {
           // 默认请求第一个可选权限（通常是 all_urls）
           // 以后如果有多权限，可能需要传递具体权限 ID
-          const perm = OPTIONAL_HOST_PERMISSIONS[0]
+          const perm = optionalHostPermissions[0]
           if (perm) {
             requestPermission(perm)
           }
         }, 500)
       }
     }
-  }, [checkOptionalPermissions, isExtensionPage, requestPermission])
+  }, [checkOptionalPermissions, isExtensionPage, optionalHostPermissions, requestPermission])
 
   // 执行撤销逻辑
   const executeRevoke = async (perm: {
@@ -229,11 +254,21 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
         if (perm.id === "notifications") {
           updateNestedSetting("tab", "showNotification", false)
         } else if (perm.id === "webdav") {
-          updateNestedSetting("content", "watermarkRemoval", false)
+          setSettings({
+            webdav: {
+              enabled: false,
+              url: settings?.webdav?.url || "",
+              username: settings?.webdav?.username || "",
+              password: settings?.webdav?.password || "",
+              syncMode: settings?.webdav?.syncMode || "manual",
+              syncInterval: settings?.webdav?.syncInterval || 30,
+              remoteDir: settings?.webdav?.remoteDir || "ophel",
+            },
+          })
         }
       }
     } catch (e) {
-      console.error(`撤销权限 ${perm.id} 失败:`, e)
+      console.error(`撤销权限 ${perm.id} 失败:`, sanitizeErrorMessage(e))
     } finally {
       setConfirmDialog((prev) => ({ ...prev, open: false }))
     }
@@ -251,7 +286,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
     } else if (perm.id === "webdav") {
       confirmMsg =
         t("revokeConfirmWebdav") ||
-        "确定要撤销高级访问权限吗？\n\n撤销后，【水印移除】和【WebDAV 同步】功能将自动关闭。如需再次使用，需重新授权。"
+        "Are you sure you want to revoke WebDAV access?\n\nWebDAV sync will be disabled until you grant the server origin again."
     }
 
     setConfirmDialog({
@@ -297,7 +332,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
           </button>
         </div>
 
-        {[...OPTIONAL_PERMISSIONS, ...OPTIONAL_HOST_PERMISSIONS].map((perm, index, arr) => (
+        {[...OPTIONAL_PERMISSIONS, ...optionalHostPermissions].map((perm, index, arr) => (
           <SettingRow
             key={perm.id}
             label={

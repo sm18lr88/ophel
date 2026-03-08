@@ -243,14 +243,14 @@ function IndexPopup() {
           <Tooltip content={t("giveStar") || "Star on GitHub"}>
             <button
               className="popup-action-pill star-btn"
-              onClick={() => openUrl("https://github.com/urzeye/ophel")}>
+              onClick={() => openUrl("https://github.com/sm18lr88/ophel")}>
               <StarIcon size={14} />
               <span>{t("starBtn") || "Star"}</span>
             </button>
           </Tooltip>
         </div>
         <a
-          href="https://github.com/urzeye/ophel/issues"
+          href="https://github.com/sm18lr88/ophel/issues"
           target="_blank"
           rel="noopener noreferrer"
           className="popup-feedback-link">

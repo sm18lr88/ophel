@@ -1,4 +1,5 @@
 import { MSG_PROXY_FETCH, sendToBackground } from "~utils/messaging"
+import { sanitizeErrorMessage, validateWatermarkFetchUrl } from "~utils/network-security"
 
 // 平台检测
 declare const __PLATFORM__: "extension" | "userscript" | undefined
@@ -28,10 +29,12 @@ declare function GM_xmlhttpRequest(details: {
 }): void
 
 async function fetchImageAsBlob(url: string): Promise<Blob> {
+  const safeUrl = validateWatermarkFetchUrl(url).toString()
+
   return new Promise((resolve, reject) => {
     GM_xmlhttpRequest({
       method: "GET",
-      url,
+      url: safeUrl,
       headers: {
         Referer: "https://gemini.google.com/",
         Origin: "https://gemini.google.com",
@@ -44,7 +47,8 @@ async function fetchImageAsBlob(url: string): Promise<Blob> {
           reject(new Error(`HTTP ${response.status}`))
         }
       },
-      onerror: (error) => reject(new Error(error?.message || "GM_xmlhttpRequest failed")),
+      onerror: (error) =>
+        reject(new Error(sanitizeErrorMessage(error, "GM_xmlhttpRequest failed"))),
     })
   })
 }
@@ -237,7 +241,7 @@ export class WatermarkRemover {
         type: OPHEL_WATERMARK_FETCH_TOGGLE,
         enabled,
       },
-      "*",
+      window.location.origin,
     )
   }
 
@@ -246,6 +250,7 @@ export class WatermarkRemover {
 
     this.mainWorldMessageListener = (event: MessageEvent) => {
       if (event.source !== window) return
+      if (event.origin !== window.location.origin) return
 
       const message = event.data as
         | {
@@ -288,7 +293,7 @@ export class WatermarkRemover {
         type: OPHEL_WATERMARK_PROCESS_RESPONSE,
         ...payload,
       },
-      "*",
+      window.location.origin,
     )
   }
 
@@ -925,6 +930,7 @@ export class WatermarkRemover {
     const response = await sendToBackground({
       type: MSG_PROXY_FETCH,
       url,
+      purpose: "gemini-watermark",
     })
 
     if (!response.success || !response.data) {

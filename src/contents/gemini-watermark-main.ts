@@ -106,7 +106,7 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
           arrayBuffer,
           mimeType,
         },
-        "*",
+        window.location.origin,
         arrayBuffer ? [arrayBuffer] : undefined,
       )
     })
@@ -173,9 +173,13 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
 
   window.addEventListener("message", (event) => {
     if (event.source !== window) return
+    if (event.origin !== window.location.origin) return
 
-    if (event.data?.type === OPHEL_WATERMARK_FETCH_TOGGLE) {
-      watermarkFetchEnabled = !!event.data.enabled
+    const data = event.data
+    if (!data || typeof data !== "object") return
+
+    if (data.type === OPHEL_WATERMARK_FETCH_TOGGLE) {
+      watermarkFetchEnabled = !!data.enabled
       document.documentElement.setAttribute(
         "data-ophel-wm-main-fetch-enabled",
         watermarkFetchEnabled ? "1" : "0",
@@ -186,9 +190,9 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
       return
     }
 
-    if (event.data?.type === OPHEL_WATERMARK_PROCESS_RESPONSE) {
-      const requestId = event.data.requestId
-      if (!requestId || !pendingWatermarkRequests.has(requestId)) return
+    if (data.type === OPHEL_WATERMARK_PROCESS_RESPONSE) {
+      const requestId = data.requestId
+      if (typeof requestId !== "string" || !pendingWatermarkRequests.has(requestId)) return
 
       const pending = pendingWatermarkRequests.get(requestId)
       if (!pending) return
@@ -196,10 +200,10 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
       pendingWatermarkRequests.delete(requestId)
       window.clearTimeout(pending.timeoutId)
 
-      if (event.data.success && typeof event.data.dataUrl === "string") {
-        pending.resolve(event.data.dataUrl)
+      if (data.success && typeof data.dataUrl === "string") {
+        pending.resolve(data.dataUrl)
       } else {
-        pending.reject(new Error(event.data.error || "Watermark process failed"))
+        pending.reject(new Error(data.error || "Watermark process failed"))
       }
     }
   })

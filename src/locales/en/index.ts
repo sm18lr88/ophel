@@ -62,9 +62,9 @@ export const en = {
   // Optional permissions
   // permissionAllUrls: "All Sites Access", // Deprecated
   // permissionAllUrlsDesc: "Allow the extension to run on all websites to support more AI platforms.", // Deprecated
-  permissionWebdavAccess: "Advanced Features Access",
+  permissionWebdavAccess: "WebDAV Server Access",
   permissionWebdavAccessDesc:
-    "Access to all websites. Required for WebDAV sync and AI image watermark removal.",
+    "Permission to access your configured HTTPS WebDAV server for backup and restore.",
 
   // Required permissions
   permissionStorage: "Storage",
@@ -105,7 +105,7 @@ export const en = {
   contentStyleTab: "Content Processing",
   claudeSettingsTab: "Claude Settings",
   pageWidthSettings: "Page Width",
-  moreLanguages: "More Languages",
+  moreLanguages: "Language",
 
   layoutSettingsTitle: "Page Width Control",
   tabLayout: "Page Layout",
@@ -231,7 +231,7 @@ export const en = {
   goToAnchor: "Return to Anchor",
   title: "Title",
   category: "Category",
-  categoryPlaceholder: "e.g., Coding, Translation",
+  categoryPlaceholder: "e.g., Coding, Writing",
   content: "Prompt Content",
   editPrompt: "Edit Prompt",
   addNewPrompt: "Add New Prompt",
@@ -315,10 +315,10 @@ export const en = {
   categoryDeletedMsg: "Category '{name}' deleted",
   // Language settings
   languageLabel: "Language",
-  languageDesc: "Set panel display language, takes effect immediately",
-  languageAuto: "Auto",
-  languageZhCN: "简体中文",
-  languageZhTW: "繁體中文",
+  languageDesc: "English-only interface",
+  languageAuto: "English",
+  languageZhCN: "Unavailable",
+  languageZhTW: "Unavailable",
   languageEn: "English",
   // Theme settings
   themeLabel: "Theme",
@@ -823,11 +823,11 @@ export const en = {
   importBackupFile: "Import Backup File",
 
   // ======== Permission Request Dialog ========
-  permAllUrlsTitle: "All Sites Access Required",
-  permAllUrlsDesc: "Required for WebDAV sync and removing AI image watermarks.",
+  permAllUrlsTitle: "HTTPS Host Access Required",
+  permAllUrlsDesc: "Required only for the specific HTTPS host you choose.",
   permWebdavTitle: "Network Access Required",
   permWebdavDesc:
-    "WebDAV sync needs access to your server. Backup and restore will be available after authorization.",
+    "WebDAV sync needs access to your configured HTTPS server. Backup and restore will be available after authorization.",
   permTabsTitle: "Tab Permission Required",
   permTabsDesc: "Required for tab rename and privacy mode features.",
   permNotifyTitle: "Notification Permission Required",
@@ -846,22 +846,22 @@ export const en = {
   revokeConfirmNotifications:
     "Revoke notification permission?\n\nThe [Desktop Notification] feature will be automatically disabled. You will need to re-authorize to use it again.",
   revokeConfirmWebdav:
-    "Revoke advanced access permission?\n\n[Watermark Removal] and [WebDAV Sync] features will be automatically disabled. You will need to re-authorize to use them again.",
+    "Revoke WebDAV server access?\n\nWebDAV sync will be disabled until you grant the server origin again.",
   warning: "Warning",
   windowClosing: "Window closing...",
   allow: "Allow",
 
   // ======== Default Prompts ========
-  defaultPromptTranslateTitle: "Translation Assistant",
-  defaultPromptTranslateCategory: "Translation",
-  defaultPromptTranslateContent: `You are a professional translator with 20 years of experience. Please translate the following text into {{target_language}} according to my requirements.
+  defaultPromptTranslateTitle: "Writing Assistant",
+  defaultPromptTranslateCategory: "Writing",
+  defaultPromptTranslateContent: `You are a professional editor. Please rewrite the following text into clear, concise professional English.
 
 Requirements:
-Accuracy: Be faithful to the original meaning without omitting any information.
-Fluency: The translation should conform to {{target_language}} expression habits, avoiding "translationese."
-Style Consistency: Maintain the original tone (e.g., professional, humorous, serious).
+Accuracy: Preserve the original meaning without omitting important information.
+Clarity: Improve readability and reduce ambiguity.
+Style Consistency: Keep the intended tone unless I ask for a different one.
 
-Text to translate: {{text}}`,
+Text to rewrite: {{text}}`,
 
   defaultPromptCodeOptTitle: "Code Optimization",
   defaultPromptCodeOptCategory: "Programming",

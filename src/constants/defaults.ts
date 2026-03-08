@@ -1,12 +1,11 @@
 /**
- * 默认值常量
+ * Default value constants.
  */
 
 import { t } from "~utils/i18n"
 import type { Prompt } from "~utils/storage"
 
-// ==================== Zustand Store Keys ====================
-// 用于备份导出/导入时识别 Zustand persist 格式的数据
+// Zustand store keys used when exporting or importing persisted state.
 export const ZUSTAND_KEYS: string[] = [
   "settings",
   "prompts",
@@ -16,29 +15,30 @@ export const ZUSTAND_KEYS: string[] = [
   "readingHistory",
 ]
 
-// 多属性 Store（导入时需要特殊处理）
-// 这些 store 的 state 中包含多个属性，不只是与 key 同名的主数据
+// Stores whose persisted state contains multiple top-level properties.
 export const MULTI_PROP_STORES: string[] = ["conversations", "readingHistory"]
 
-// ==================== 默认提示词 ====================
-// 返回国际化后的默认提示词
+// Default prompts.
 export const getDefaultPrompts = (): Prompt[] => [
   {
     id: "default_1",
-    title: t("defaultPromptCodeOptTitle") || "代码优化",
-    content: t("defaultPromptCodeOptContent") || "请帮我优化以下代码，提高性能和可读性：\n\n",
-    category: t("defaultPromptCodeOptCategory") || "编程",
+    title: t("defaultPromptCodeOptTitle") || "Code Optimization",
+    content:
+      t("defaultPromptCodeOptContent") ||
+      "Please help me improve the following code for performance and readability:\n\n",
+    category: t("defaultPromptCodeOptCategory") || "Coding",
   },
   {
     id: "default_2",
-    title: t("defaultPromptTranslateTitle") || "翻译助手",
+    title: t("defaultPromptTranslateTitle") || "Writing Assistant",
     content:
-      t("defaultPromptTranslateContent") || "请将以下内容翻译成中文，保持专业术语的准确性：\n\n",
-    category: t("defaultPromptTranslateCategory") || "翻译",
+      t("defaultPromptTranslateContent") ||
+      "Please rewrite the following content into clear, concise professional English while preserving meaning and technical accuracy:\n\n",
+    category: t("defaultPromptTranslateCategory") || "Writing",
   },
 ]
 
-// ==================== 默认文件夹 ====================
+// Default folders.
 export interface Folder {
   id: string
   name: string
@@ -48,7 +48,7 @@ export interface Folder {
 }
 
 export const DEFAULT_FOLDERS: Folder[] = [
-  { id: "inbox", name: "收件箱", icon: "📥", isDefault: true },
+  { id: "inbox", name: "Inbox", icon: "📥", isDefault: true },
 ]
 
 // ==================== 布局配置默认值 ====================
@@ -88,5 +88,4 @@ export const SITE_IDS = {
   GEMINI_ENTERPRISE: "gemini-enterprise",
   GROK: "grok",
   AISTUDIO: "aistudio",
-  DOUBAO: "doubao",
 } as const

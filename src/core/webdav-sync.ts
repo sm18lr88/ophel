@@ -7,6 +7,13 @@ import { MULTI_PROP_STORES, ZUSTAND_KEYS } from "~constants/defaults"
 import { validateBackupData } from "~utils/backup-validator"
 import { APP_NAME } from "~utils/config"
 import { MSG_WEBDAV_REQUEST } from "~utils/messaging"
+import {
+  buildWebDavUrl,
+  sanitizeErrorMessage,
+  sanitizeWebDavHeaders,
+  sanitizeWebDavPath,
+  validateWebDavMethod,
+} from "~utils/network-security"
 
 function safeDecodeURIComponent(str: string) {
   try {
@@ -161,7 +168,7 @@ export class WebDAVSyncManager {
       return {
         success: false,
         messageKey: "webdavConnectionFailed",
-        messageArgs: { error: String(err) },
+        messageArgs: { error: sanitizeErrorMessage(err) },
       }
     }
   }
@@ -257,7 +264,7 @@ export class WebDAVSyncManager {
       return {
         success: false,
         messageKey: "webdavUploadFailed",
-        messageArgs: { error: String(err) },
+        messageArgs: { error: sanitizeErrorMessage(err) },
       }
     }
   }
@@ -338,7 +345,7 @@ export class WebDAVSyncManager {
 
       return files.slice(0, limit)
     } catch (err) {
-      console.error("Failed to get backup list:", err)
+      console.error("Failed to get backup list:", sanitizeErrorMessage(err))
       return []
     }
   }
@@ -368,7 +375,7 @@ export class WebDAVSyncManager {
       return {
         success: false,
         messageKey: "webdavDeleteFailed",
-        messageArgs: { error: String(err) },
+        messageArgs: { error: sanitizeErrorMessage(err) },
       }
     }
   }
@@ -518,7 +525,7 @@ export class WebDAVSyncManager {
       return {
         success: false,
         messageKey: "webdavDownloadFailed",
-        messageArgs: { error: String(err) },
+        messageArgs: { error: sanitizeErrorMessage(err) },
       }
     }
   }
@@ -553,12 +560,10 @@ export class WebDAVSyncManager {
    * 结果格式: remoteDir/fileName (e.g., "ophel/filename.json")
    */
   private buildRemotePath(fileName: string): string {
-    let dir = this.config.remoteDir.trim()
-    // 去除开头和结尾的斜杠
-    dir = dir.replace(/^\/+|\/+$/g, "")
-    // 如果 dir 为空，直接返回文件名
-    if (!dir) return fileName
-    return `${dir}/${fileName}`
+    const dir = sanitizeWebDavPath(this.config.remoteDir)
+    const safeFileName = sanitizeWebDavPath(fileName)
+    if (!dir) return safeFileName
+    return `${dir}/${safeFileName}`
   }
 
   /**
@@ -572,7 +577,9 @@ export class WebDAVSyncManager {
     body?: string | null,
     headers?: Record<string, string>,
   ): Promise<Response> {
+    const validatedMethod = validateWebDavMethod(method)
     const url = this.buildUrl(path)
+    const requestHeaders = sanitizeWebDavHeaders(headers)
 
     // 检测是否为油猴脚本环境
     // @ts-ignore - __PLATFORM__ 是构建时注入的全局变量
@@ -580,10 +587,10 @@ export class WebDAVSyncManager {
 
     if (isUserscript) {
       // 油猴脚本：使用 GM_xmlhttpRequest
-      return this.requestViaGM(method, url, body, headers)
+      return this.requestViaGM(validatedMethod, url, body, requestHeaders)
     } else {
       // 浏览器扩展：通过 background 代理请求以绕过 CORS
-      return this.requestViaBackground(method, url, body, headers)
+      return this.requestViaBackground(validatedMethod, url, body, requestHeaders)
     }
   }
 
@@ -598,7 +605,7 @@ export class WebDAVSyncManager {
   ): Promise<Response> {
     return new Promise((resolve, reject) => {
       // 构建请求头，添加 Basic Auth
-      const requestHeaders: Record<string, string> = { ...headers }
+      const requestHeaders: Record<string, string> = { ...sanitizeWebDavHeaders(headers) }
       if (this.config.username && this.config.password) {
         const credentials = btoa(`${this.config.username}:${this.config.password}`)
         requestHeaders["Authorization"] = `Basic ${credentials}`
@@ -633,11 +640,12 @@ export class WebDAVSyncManager {
           } as unknown as Response)
         },
         onerror: (error: any) => {
-          reject(new Error(error.statusText || "GM_xmlhttpRequest failed"))
+          reject(new Error(sanitizeErrorMessage(error, "GM_xmlhttpRequest failed")))
         },
         ontimeout: () => {
           reject(new Error("Request timeout"))
         },
+        timeout: 15000 as any,
       })
     })
   }
@@ -656,7 +664,7 @@ export class WebDAVSyncManager {
       method,
       url,
       body,
-      headers,
+      headers: sanitizeWebDavHeaders(headers),
       auth: {
         username: this.config.username,
         password: this.config.password,
@@ -685,13 +693,7 @@ export class WebDAVSyncManager {
    * path 可能是 "ophel" (remoteDir) 或 "ophel/backup.json" (remoteDir + filename)
    */
   private buildUrl(path: string): string {
-    let baseUrl = this.config.url.trim()
-    if (!baseUrl.endsWith("/")) baseUrl += "/"
-
-    // 移除 path 开头的斜杠，防止双斜杠
-    const cleanPath = path.replace(/^\/+/, "")
-
-    return baseUrl + cleanPath
+    return buildWebDavUrl(this.config.url.trim(), path)
   }
 }
 

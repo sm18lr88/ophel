@@ -16,7 +16,7 @@ Welcome to **Ophel** - an AI conversation enhancement extension that provides un
 
 ### Chrome / Edge
 
-1. Download the latest `.zip` from [GitHub Releases](https://github.com/urzeye/ophel/releases)
+1. Download the latest `.zip` from [GitHub Releases](https://github.com/sm18lr88/ophel/releases)
 2. Unzip to a local folder
 3. Open browser extension management page
    - Chrome: `chrome://extensions`
@@ -26,7 +26,7 @@ Welcome to **Ophel** - an AI conversation enhancement extension that provides un
 
 ### Firefox
 
-1. Download the latest `.xpi` from [GitHub Releases](https://github.com/urzeye/ophel/releases)
+1. Download the latest `.xpi` from [GitHub Releases](https://github.com/sm18lr88/ophel/releases)
 2. Open `about:addons`
 3. Click the gear icon → "Install Add-on From File"
 4. Select the downloaded `.xpi` file

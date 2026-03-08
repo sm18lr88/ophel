@@ -23,6 +23,7 @@ import { useTagsStore } from "~stores/tags-store"
 import { validateBackupData } from "~utils/backup-validator"
 import { t } from "~utils/i18n"
 import { MSG_CLEAR_ALL_DATA, MSG_RESTORE_DATA } from "~utils/messaging"
+import { getWebDavPermissionOrigin, sanitizeErrorMessage } from "~utils/network-security"
 import { CLEAR_ALL_FLAG_KEY, DEFAULT_SETTINGS, RESTORE_FLAG_KEY } from "~utils/storage"
 import { showToast as showDomToast } from "~utils/toast"
 
@@ -681,8 +682,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     }
 
     try {
-      const urlObj = new URL(url)
-      const origin = urlObj.origin + "/*"
+      const origin = getWebDavPermissionOrigin(url)
       const checkResult: any = await chrome.runtime.sendMessage({
         type: "CHECK_PERMISSION",
         origin,
@@ -694,7 +694,8 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
             setPermissionConfirm((prev) => ({ ...prev, show: false }))
             await chrome.runtime.sendMessage({
               type: "REQUEST_PERMISSIONS",
-              permType: "allUrls",
+              permType: "webdav",
+              origins: [origin],
             })
           },
         })
@@ -703,9 +704,9 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
       await onGranted()
       return true
     } catch (e) {
-      console.warn("Perm check logic skipped:", e)
-      await onGranted()
-      return true
+      console.warn("Perm check failed:", sanitizeErrorMessage(e))
+      showDomToast(sanitizeErrorMessage(e, "Invalid WebDAV URL"))
+      return false
     }
   }
 

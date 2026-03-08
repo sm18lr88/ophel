@@ -1,6 +1,6 @@
 /**
- * 关于页面
- * 显示扩展信息、版本、链接等
+ * About page.
+ * Displays extension information, version details, and links.
  */
 import React from "react"
 
@@ -23,7 +23,7 @@ import { PageTitle } from "../components"
 const AboutPage: React.FC = () => {
   return (
     <div>
-      <PageTitle title={t("navAbout") || "关于"} Icon={AboutIcon} />
+      <PageTitle title={t("navAbout") || "About"} Icon={AboutIcon} />
       <div
         style={{
           display: "flex",
@@ -33,7 +33,9 @@ const AboutPage: React.FC = () => {
           marginBottom: 24,
         }}>
         <span style={{ fontSize: 18 }}>✨</span>
-        <div className="about-slogan">{t("aboutPageDesc") || "AI 之益，触手可及"}</div>
+        <div className="about-slogan">
+          {t("aboutPageDesc") || "Make AI workflows easier to use"}
+        </div>
         <span style={{ fontSize: 18 }}>✨</span>
       </div>
 
@@ -54,24 +56,24 @@ const AboutPage: React.FC = () => {
           </div>
           <div className="about-hero-desc">
             {t("aboutDescription", { appName: APP_DISPLAY_NAME }) ||
-              `${APP_DISPLAY_NAME} 是一款面向 Gemini、ChatGPT、Claude、AI Studio、Grok 等 AI 平台的浏览器增强扩展。它集中展示账号与余额、提供智能排序和当前站点识别，并提供自动刷新与临口防火墙绕过等自动化能力；支持数据导入导出工具。`}
+              `${APP_DISPLAY_NAME} is a browser enhancement for Gemini, ChatGPT, Claude, AI Studio, Grok, and other AI platforms. It adds structured navigation, organization tools, automation features, and import/export utilities.`}
           </div>
         </div>
       </div>
 
-      <div className="about-section-title">{t("rateAndReview") || "好评鼓励"}</div>
+      <div className="about-section-title">{t("rateAndReview") || "Rate and Review"}</div>
       <div
         className="about-links-grid"
         style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
         {/* Chrome Store */}
         <a
-          href="https://chromewebstore.google.com/detail/ophel-ai-%E5%AF%B9%E8%AF%9D%E5%A2%9E%E5%BC%BA%E5%B7%A5%E5%85%B7/lpcohdfbomkgepfladogodgeoppclakd"
+          href="https://chromewebstore.google.com/detail/ophel-ai-chat-enhancer/lpcohdfbomkgepfladogodgeoppclakd"
           target="_blank"
           rel="noopener noreferrer"
           className="about-link-card">
           <div className="about-link-header">
             <ChromeIcon size={24} color="#4285F4" />
-            {t("chromeStore") || "Chrome 商店"}
+            {t("chromeStore") || "Chrome Web Store"}
           </div>
           <button className="about-link-btn" style={{ marginTop: "auto" }}>
             Review
@@ -80,13 +82,13 @@ const AboutPage: React.FC = () => {
 
         {/* Firefox Add-on */}
         <a
-          href="https://addons.mozilla.org/zh-CN/firefox/addon/ophel-ai-chat-enhancer/"
+          href="https://addons.mozilla.org/firefox/addon/ophel-ai-chat-enhancer/"
           target="_blank"
           rel="noopener noreferrer"
           className="about-link-card">
           <div className="about-link-header">
             <FirefoxIcon size={24} color="#FF7139" />
-            {t("firefoxAddons") || "Firefox 扩展"}
+            {t("firefoxAddons") || "Firefox Add-ons"}
           </div>
           <button className="about-link-btn" style={{ marginTop: "auto", background: "#FF7139" }}>
             Review
@@ -95,7 +97,7 @@ const AboutPage: React.FC = () => {
 
         {/* GreasyFork */}
         <a
-          href="https://greasyfork.org/zh-CN/scripts/563646-ophel-ai-chat-page-enhancer"
+          href="https://greasyfork.org/scripts/563646-ophel-ai-chat-page-enhancer"
           target="_blank"
           rel="noopener noreferrer"
           className="about-link-card">
@@ -109,7 +111,9 @@ const AboutPage: React.FC = () => {
         </a>
       </div>
 
-      <div className="about-section-title">{t("communityAndSupport") || "社区与支持"}</div>
+      <div className="about-section-title">
+        {t("communityAndSupport") || "Community and Support"}
+      </div>
       <div
         style={{
           fontSize: "13px",
@@ -123,43 +127,42 @@ const AboutPage: React.FC = () => {
       <div className="about-links-grid">
         {/* GitHub Link */}
         <a
-          href="https://github.com/urzeye/ophel"
+          href="https://github.com/sm18lr88/ophel"
           target="_blank"
           rel="noopener noreferrer"
           className="about-link-card">
           <div className="about-link-header">
             <GithubIcon size={20} />
-            GitHub 仓库
+            GitHub Repository
           </div>
           <div className="about-link-desc">
-            {t("githubDesc") || "查看源代码、提交问题或参与项目开发"}
+            {t("githubDesc") || "Browse the source, report issues, or contribute to development"}
           </div>
           <button className="about-link-btn about-star-btn">
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <StarIcon size={14} />
-              {t("giveStar") || "点个 Star"}
+              {t("giveStar") || "Leave a Star"}
             </span>
           </button>
         </a>
 
-        {/* Website Link (Placeholder) */}
         <a
-          href="https://github.com/urzeye/ophel"
+          href="https://github.com/sm18lr88/ophel"
           target="_blank"
           rel="noopener noreferrer"
           className="about-link-card">
           <div className="about-link-header">
             <GlobeIcon size={20} />
-            {t("projectWebsite") || "项目官网"}
+            {t("projectWebsite") || "Project Website"}
           </div>
           <div className="about-link-desc">
-            {t("websiteDesc") || "查看详细文档、使用指南和更多信息"}
+            {t("websiteDesc") || "Read the docs, setup guides, and project details"}
           </div>
-          <button className="about-link-btn">{t("visitWebsite") || "访问官网"}</button>
+          <button className="about-link-btn">{t("visitWebsite") || "Visit Website"}</button>
         </a>
       </div>
 
-      <div className="about-section-title">{t("techStack") || "技术栈"}</div>
+      <div className="about-section-title">{t("techStack") || "Tech Stack"}</div>
 
       <div className="about-tech-grid">
         <TechCard
@@ -181,12 +184,12 @@ const AboutPage: React.FC = () => {
         <TechCard name="Vite" version="v5.0.0" desc={t("tsViteDesc") || "Frontend Tooling"} />
       </div>
 
-      <div className="about-section-title">{t("credits") || "版权与致谢"}</div>
+      <div className="about-section-title">{t("credits") || "Credits"}</div>
 
       <div className="about-simple-card">
         <div className="about-simple-header">
           <HeartIcon size={18} style={{ color: "#ef4444" }} />
-          {t("devAndMaintain") || "开发与维护"}
+          {t("devAndMaintain") || "Development and Maintenance"}
         </div>
         <p
           style={{
@@ -196,7 +199,7 @@ const AboutPage: React.FC = () => {
             marginBottom: 16,
           }}>
           {t("creditsDesc") ||
-            "感谢所有为开源社区做出贡献的开发者们，本插件的开发得益于这些优秀的开源项目和工具。"}
+            "Thanks to the open source projects and contributors that made this extension possible."}
         </p>
         <div style={{ display: "flex", gap: 8 }}>
           <Badge text={`Made with ❤️`} />
@@ -212,10 +215,10 @@ const AboutPage: React.FC = () => {
       <div className="about-privacy-banner">
         <ShieldCheckIcon size={24} className="about-privacy-icon" />
         <div>
-          <div className="about-privacy-title">{t("privacyTitle") || "隐私保护"}</div>
+          <div className="about-privacy-title">{t("privacyTitle") || "Privacy"}</div>
           <div className="about-privacy-desc">
             {t("privacyText") ||
-              "本插件所有数据均存储在本地浏览器中，不会主动上传到任何服务器。您的账号信息和使用数据完全由您自己掌控，确保隐私安全。"}
+              "All extension data is stored locally in your browser unless you explicitly configure your own sync target."}
           </div>
         </div>
       </div>

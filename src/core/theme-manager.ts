@@ -230,9 +230,6 @@ export class ThemeManager {
           }
           return false
         }
-        case SITE_IDS.DOUBAO:
-          // 豆包不支持深色模式
-          return false
         default:
           return false
       }
@@ -407,8 +404,6 @@ export class ThemeManager {
           if (selected.icon === "dark_mode") return "dark"
           return "light"
         }
-        case SITE_IDS.DOUBAO:
-          return "light"
         default:
           return null
       }

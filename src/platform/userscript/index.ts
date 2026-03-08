@@ -5,6 +5,7 @@
  */
 
 import { t } from "~utils/i18n"
+import { sanitizeErrorMessage, validateLlmProviderUrl } from "~utils/network-security"
 
 import type {
   FetchOptions,
@@ -87,9 +88,10 @@ export const platform: Platform = {
   storage: userscriptStorage,
 
   async fetch(url: string, options?: FetchOptions): Promise<FetchResponse> {
+    const targetUrl = validateLlmProviderUrl(url, window.location.href).toString()
     return new Promise((resolve, reject) => {
       GM_xmlhttpRequest({
-        url,
+        url: targetUrl,
         method: options?.method || "GET",
         headers: options?.headers,
         data: options?.body,
@@ -110,7 +112,7 @@ export const platform: Platform = {
               // 对于二进制数据，需要重新请求
               return new Promise((res, rej) => {
                 GM_xmlhttpRequest({
-                  url,
+                  url: targetUrl,
                   method: options?.method || "GET",
                   headers: options?.headers,
                   responseType: "blob" as any,
@@ -124,7 +126,7 @@ export const platform: Platform = {
           })
         },
         onerror(error) {
-          reject(error)
+          reject(new Error(sanitizeErrorMessage(error, "Request failed")))
         },
       })
     })
@@ -147,7 +149,12 @@ export const platform: Platform = {
   },
 
   openTab(url: string): void {
-    window.open(url, "_blank")
+    try {
+      const safeUrl = validateLlmProviderUrl(url).toString()
+      window.open(safeUrl, "_blank")
+    } catch {
+      // Block non-LLM-provider URLs
+    }
   },
 
   hasCapability(cap: PlatformCapability): boolean {

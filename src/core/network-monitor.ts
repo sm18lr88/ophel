@@ -3,6 +3,9 @@ import { EVENT_MONITOR_COMPLETE, EVENT_MONITOR_INIT, EVENT_MONITOR_START } from 
 // 油猴脚本环境需要使用 unsafeWindow 才能访问页面的原生 fetch/XMLHttpRequest
 declare const unsafeWindow: Window | undefined
 
+/** Allowlisted inbound message types for this module. */
+const ACCEPTED_TYPES = new Set([EVENT_MONITOR_INIT, EVENT_MONITOR_START, EVENT_MONITOR_COMPLETE])
+
 /**
  * 获取页面 window 对象
  * - 油猴脚本环境：使用 unsafeWindow 访问页面上下文
@@ -254,30 +257,39 @@ export function initNetworkMonitor(): void {
   isInitialized = true
 
   window.addEventListener("message", (event) => {
-    const { type, payload } = event.data || {}
+    if (event.origin !== window.location.origin) return
 
-    // 在油猴脚本中，event.source 可能与 window 或 unsafeWindow 不完全相等
-    // 或者由于沙箱机制，window.postMessage 发送的消息 source 可能是 proxy
-    // 主要依赖消息类型进行验证
-    if (event.source !== window) {
-      // 放宽检查：如果是我们关心的消息类型，则允许通过
+    const data = event.data
+    if (!data || typeof data !== "object") return
+
+    const { type } = data
+    if (!ACCEPTED_TYPES.has(type)) return
+
+    // In userscript sandboxes event.source may be a proxy object, so fall
+    // back to an origin-only check when source !== window.
+    if (event.source !== window && event.origin !== window.location.origin) return
+
+    if (type === EVENT_MONITOR_INIT) {
+      const payload = data.payload
       if (
-        type !== EVENT_MONITOR_INIT &&
-        type !== EVENT_MONITOR_COMPLETE &&
-        type !== EVENT_MONITOR_START
+        !payload ||
+        typeof payload !== "object" ||
+        !Array.isArray(payload.urlPatterns) ||
+        typeof payload.silenceThreshold !== "number"
       ) {
         return
       }
-    }
-
-    if (type === EVENT_MONITOR_INIT) {
       if (monitor) monitor.stop()
       monitor = new NetworkMonitor({
-        urlPatterns: payload?.urlPatterns,
-        silenceThreshold: payload?.silenceThreshold,
-        onStart: (info) => window.postMessage({ type: EVENT_MONITOR_START, payload: info }, "*"),
+        urlPatterns: payload.urlPatterns,
+        silenceThreshold: payload.silenceThreshold,
+        onStart: (info) =>
+          window.postMessage({ type: EVENT_MONITOR_START, payload: info }, window.location.origin),
         onComplete: (info) =>
-          window.postMessage({ type: EVENT_MONITOR_COMPLETE, payload: info }, "*"),
+          window.postMessage(
+            { type: EVENT_MONITOR_COMPLETE, payload: info },
+            window.location.origin,
+          ),
       })
       monitor.start()
     }

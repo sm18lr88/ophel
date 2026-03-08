@@ -58,7 +58,7 @@ export const DisclaimerModal: React.FC = () => {
 
             <div className="action-row">
               <a
-                href="https://github.com/urzeye/ophel"
+                href="https://github.com/sm18lr88/ophel"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="star-btn">
@@ -78,7 +78,7 @@ export const DisclaimerModal: React.FC = () => {
 
             <div className="secondary-links">
               <a
-                href="https://github.com/urzeye/ophel/pulls"
+                href="https://github.com/sm18lr88/ophel/pulls"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="sec-link">
@@ -86,7 +86,7 @@ export const DisclaimerModal: React.FC = () => {
               </a>
               <span className="divider">/</span>
               <a
-                href="https://github.com/urzeye/ophel/issues"
+                href="https://github.com/sm18lr88/ophel/issues"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="sec-link">

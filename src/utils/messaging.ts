@@ -26,6 +26,7 @@ export const MSG_PROXY_FETCH = "PROXY_FETCH"
 
 export interface ProxyFetchPayload {
   url: string
+  purpose: "gemini-watermark"
 }
 
 export interface ProxyFetchMessage extends ProxyFetchPayload {
@@ -74,6 +75,7 @@ export interface CheckPermissionsMessage extends CheckPermissionsPayload {
 export const MSG_REQUEST_PERMISSIONS = "REQUEST_PERMISSIONS"
 
 export interface RequestPermissionsPayload {
+  permType?: string
   origins?: string[]
   permissions?: string[]
 }

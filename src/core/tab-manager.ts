@@ -110,7 +110,7 @@ export class TabManager {
             silenceThreshold: config.silenceThreshold,
           },
         },
-        "*",
+        window.location.origin,
       )
     }
   }
@@ -274,12 +274,13 @@ export class TabManager {
   }
 
   private handleMessage(event: MessageEvent) {
-    // 兼容性与安全性平衡：
-    // 1. 移除 event.source === window 检查（油猴脚本中 source 可能不一致）
-    // 2. 增加 origin 检查，防止跨域 iframe 干扰
     if (event.origin !== window.location.origin) return
+    if (event.source !== window && event.origin !== window.location.origin) return
 
-    const { type } = event.data || {}
+    const data = event.data
+    if (!data || typeof data !== "object") return
+
+    const { type } = data
 
     if (type === EVENT_MONITOR_START) {
       this.lastAiState = this.aiState
@@ -288,11 +289,9 @@ export class TabManager {
     } else if (type === EVENT_MONITOR_COMPLETE) {
       this.onAiComplete()
     } else if (type === EVENT_PRIVACY_TOGGLE) {
-      // 切换隐私模式
       const isPrivacy = this.togglePrivacyMode()
-      // 动态导入 toast 显示提示
       setTimeout(() => {
-        showToast(isPrivacy ? "隐私模式已开启" : "隐私模式已关闭", 2000)
+        showToast(isPrivacy ? "Privacy mode enabled" : "Privacy mode disabled", 2000)
       }, 0)
     }
   }

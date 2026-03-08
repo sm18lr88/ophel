@@ -17,7 +17,7 @@ hero:
       link: /en/guide/features/
     - theme: alt
       text: GitHub
-      link: https://github.com/urzeye/ophel
+      link: https://github.com/sm18lr88/ophel
 
 features:
   - icon: "📑"

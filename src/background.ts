@@ -20,7 +20,20 @@ import {
   MSG_WEBDAV_REQUEST,
   type ExtensionMessage,
 } from "~utils/messaging"
+import {
+  getWebDavPermissionOrigin,
+  sanitizeErrorMessage,
+  sanitizeWebDavHeaders,
+  validateLlmProviderUrl,
+  validateOpenTabUrl,
+  validatePermissionOriginPattern,
+  validateWatermarkFetchUrl,
+  validateWebDavMethod,
+  validatePublicHttpsUrl,
+} from "~utils/network-security"
 import { localStorage, type Settings } from "~utils/storage"
+
+const ALLOWED_OPTIONAL_PERMISSIONS = new Set(["cookies", "notifications"])
 
 /**
  * Ophel - Background Service Worker
@@ -39,14 +52,27 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // 监听权限移除
 chrome.permissions.onRemoved.addListener(async (removed) => {
-  if (removed.origins && removed.origins.includes("<all_urls>")) {
-    // 获取当前设置
-    const settings = await localStorage.get<Settings>("settings")
-    if (settings && settings.content?.watermarkRemoval) {
-      // 关闭去水印
-      settings.content.watermarkRemoval = false
+  if (!removed.origins || removed.origins.length === 0) {
+    return
+  }
+
+  const settings = await localStorage.get<Settings>("settings")
+  const webdavUrl = settings?.webdav?.url
+  if (!settings || !webdavUrl) {
+    return
+  }
+
+  try {
+    const expectedOrigin = getWebDavPermissionOrigin(webdavUrl)
+    if (removed.origins.includes(expectedOrigin)) {
+      settings.webdav = {
+        ...settings.webdav,
+        enabled: false,
+      }
       await localStorage.set("settings", settings)
     }
+  } catch {
+    // Ignore invalid saved WebDAV URLs.
   }
 })
 
@@ -54,8 +80,13 @@ chrome.permissions.onRemoved.addListener(async (removed) => {
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === "open-global-url") {
     const settings = await localStorage.get<Settings>("settings")
-    const url = settings?.shortcuts?.globalUrl || "https://gemini.google.com"
-    chrome.tabs.create({ url, active: true })
+    const raw = settings?.shortcuts?.globalUrl || "https://gemini.google.com"
+    try {
+      const url = validateLlmProviderUrl(raw).toString()
+      chrome.tabs.create({ url, active: true })
+    } catch {
+      chrome.tabs.create({ url: "https://gemini.google.com", active: true })
+    }
   }
 })
 
@@ -123,25 +154,6 @@ async function setupDynamicRules() {
           ],
         },
       },
-      {
-        id: 1002,
-        priority: 2,
-        action: {
-          type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-          requestHeaders: headerActionHeaders.requestHeaders,
-          responseHeaders: headerActionHeaders.responseHeaders,
-        },
-        condition: {
-          // 排除页面本身发起的请求
-          excludedInitiatorDomains: ["google.com", "gemini.google.com"],
-          urlFilter: "*://*.google.com/*",
-          resourceTypes: [
-            chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST,
-            chrome.declarativeNetRequest.ResourceType.IMAGE,
-            chrome.declarativeNetRequest.ResourceType.OTHER,
-          ],
-        },
-      },
     ],
   })
 }
@@ -173,6 +185,12 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_PROXY_FETCH:
       ;(async () => {
         try {
+          if (message.purpose !== "gemini-watermark") {
+            throw new Error("Blocked proxy fetch with unknown purpose")
+          }
+
+          const targetUrl = validateWatermarkFetchUrl(message.url).toString()
+
           // 确保规则已设置
           const rules = await chrome.declarativeNetRequest.getDynamicRules()
           if (!rules || rules.length === 0 || !rules.find((r) => r.id === 1001)) {
@@ -181,7 +199,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
           // 携带credentials以便访问需要认证的图片资源
           // Dynamic Rules会自动处理 Referer/Origin 和 Access-Control-Allow-Origin
-          const response = await fetch(message.url, {
+          const response = await fetch(targetUrl, {
             credentials: "include",
           })
 
@@ -199,8 +217,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
           }
           reader.readAsDataURL(blob)
         } catch (err) {
-          console.error("Proxy fetch failed:", err)
-          sendResponse({ success: false, error: (err as Error).message })
+          console.error("Proxy fetch failed:", sanitizeErrorMessage(err))
+          sendResponse({ success: false, error: sanitizeErrorMessage(err) })
         }
       })()
       break
@@ -209,7 +227,9 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       ;(async () => {
         try {
           const { method, url, body, headers, auth } = message as any
-          const fetchHeaders: Record<string, string> = { ...headers }
+          const validatedMethod = validateWebDavMethod(method)
+          const targetUrl = validatePublicHttpsUrl(url).toString()
+          const fetchHeaders: Record<string, string> = sanitizeWebDavHeaders(headers)
 
           // 添加 Basic Auth
           if (auth?.username && auth?.password) {
@@ -217,8 +237,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
             fetchHeaders["Authorization"] = `Basic ${credentials}`
           }
 
-          const response = await fetch(url, {
-            method,
+          const response = await fetch(targetUrl, {
+            method: validatedMethod,
             headers: fetchHeaders,
             body: body || undefined,
           })
@@ -234,8 +254,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
             headers: Object.fromEntries(response.headers.entries()),
           })
         } catch (err) {
-          console.error("WebDAV request failed:", err)
-          sendResponse({ success: false, error: (err as Error).message })
+          console.error("WebDAV request failed:", sanitizeErrorMessage(err))
+          sendResponse({ success: false, error: sanitizeErrorMessage(err) })
         }
       })()
       break
@@ -244,8 +264,9 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       ;(async () => {
         try {
           const { origin } = message as any
+          const safeOrigin = validatePermissionOriginPattern(origin)
           const hasPermission = await chrome.permissions.contains({
-            origins: [origin],
+            origins: [safeOrigin],
           })
           sendResponse({ success: true, hasPermission })
         } catch (err) {
@@ -260,9 +281,17 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       ;(async () => {
         try {
           const { origins, permissions } = message as any
+          const safeOrigins = Array.isArray(origins)
+            ? origins.map((origin: string) => validatePermissionOriginPattern(origin))
+            : undefined
+          const safePermissions = Array.isArray(permissions)
+            ? permissions.filter((permission: string) =>
+                ALLOWED_OPTIONAL_PERMISSIONS.has(permission),
+              )
+            : undefined
           const hasPermission = await chrome.permissions.contains({
-            origins,
-            permissions,
+            origins: safeOrigins,
+            permissions: safePermissions,
           })
           sendResponse({ success: true, hasPermission })
         } catch (err) {
@@ -277,9 +306,17 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       ;(async () => {
         try {
           const { origins, permissions } = message as any
+          const safeOrigins = Array.isArray(origins)
+            ? origins.map((origin: string) => validatePermissionOriginPattern(origin))
+            : undefined
+          const safePermissions = Array.isArray(permissions)
+            ? permissions.filter((permission: string) =>
+                ALLOWED_OPTIONAL_PERMISSIONS.has(permission),
+              )
+            : undefined
           const removed = await chrome.permissions.remove({
-            origins,
-            permissions,
+            origins: safeOrigins,
+            permissions: safePermissions,
           })
           sendResponse({ success: true, removed })
         } catch (err) {
@@ -293,9 +330,29 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_REQUEST_PERMISSIONS:
       ;(async () => {
         try {
-          // 从消息中获取权限类型，默认为 allUrls
-          const permType = (message as any).permType || "allUrls"
-          const url = chrome.runtime.getURL(`tabs/perm-request.html?type=${permType}`)
+          const permType =
+            typeof (message as any).permType === "string" ? (message as any).permType : ""
+          const rawOrigins = Array.isArray((message as any).origins) ? (message as any).origins : []
+          const rawPermissions = Array.isArray((message as any).permissions)
+            ? (message as any).permissions
+            : []
+          const safeOrigins = rawOrigins.map((origin: string) =>
+            validatePermissionOriginPattern(origin),
+          )
+          const safePermissions = rawPermissions.filter((permission: string) =>
+            ALLOWED_OPTIONAL_PERMISSIONS.has(permission),
+          )
+          const params = new URLSearchParams()
+          if (permType) {
+            params.set("type", permType)
+          }
+          if (safeOrigins.length > 0) {
+            params.set("origins", JSON.stringify(safeOrigins))
+          }
+          if (safePermissions.length > 0) {
+            params.set("permissions", JSON.stringify(safePermissions))
+          }
+          const url = chrome.runtime.getURL(`tabs/perm-request.html?${params.toString()}`)
 
           // 获取当前窗口信息以计算居中位置
           const currentWindow = await chrome.windows.getCurrent()
@@ -317,8 +374,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
           sendResponse({ success: true })
         } catch (err) {
-          console.error("Request permissions flow failed:", err)
-          sendResponse({ success: false, error: (err as Error).message })
+          console.error("Request permissions flow failed:", sanitizeErrorMessage(err))
+          sendResponse({ success: false, error: sanitizeErrorMessage(err) })
         }
       })()
       break
@@ -344,8 +401,9 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
       ;(async () => {
         try {
           const { url } = message as any
+          const targetUrl = validateOpenTabUrl(url)
           await chrome.tabs.create({
-            url,
+            url: targetUrl,
             active: true,
           })
           sendResponse({ success: true })
@@ -367,7 +425,6 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
             "https://chat.openai.com/*",
             "https://chatgpt.com/*",
             "https://claude.ai/*",
-            "https://www.doubao.com/*",
           ]
           const tabs = await chrome.tabs.query({ url: targets })
           await Promise.all(
@@ -400,7 +457,6 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
             "https://chat.openai.com/*",
             "https://chatgpt.com/*",
             "https://claude.ai/*",
-            "https://www.doubao.com/*",
           ]
           const tabs = await chrome.tabs.query({ url: targets })
           await Promise.all(
@@ -454,8 +510,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
           sendResponse({ success: true, reloadedTabs: claudeTabs.length })
         } catch (err) {
-          console.error("Set Claude SessionKey failed:", err)
-          sendResponse({ success: false, error: (err as Error).message })
+          console.error("Set Claude SessionKey failed:", sanitizeErrorMessage(err))
+          sendResponse({ success: false, error: sanitizeErrorMessage(err) })
         }
       })()
       break
@@ -706,11 +762,11 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
             // 忽略恢复失败
           }
 
-          console.error("Test Claude Token failed:", err)
+          console.error("Test Claude Token failed:", sanitizeErrorMessage(err))
           sendResponse({
             success: true,
             isValid: false,
-            error: (err as Error).message,
+            error: sanitizeErrorMessage(err),
           })
         }
       })()
@@ -737,10 +793,10 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
             })
           }
         } catch (err) {
-          console.error("Get Claude SessionKey failed:", err)
+          console.error("Get Claude SessionKey failed:", sanitizeErrorMessage(err))
           sendResponse({
             success: false,
-            error: (err as Error).message,
+            error: sanitizeErrorMessage(err),
           })
         }
       })()
@@ -826,8 +882,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
             })
           }
         } catch (err) {
-          console.error("Get AI Studio models failed:", err)
-          sendResponse({ success: false, error: (err as Error).message })
+          console.error("Get AI Studio models failed:", sanitizeErrorMessage(err))
+          sendResponse({ success: false, error: sanitizeErrorMessage(err) })
         }
       })()
       break

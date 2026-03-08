@@ -4,6 +4,7 @@
 import { SITE_IDS } from "~constants"
 import { DOMToolkit } from "~utils/dom-toolkit"
 import { htmlToMarkdown } from "~utils/exporter"
+import { setSafeHTML } from "~utils/trusted-types"
 
 import {
   SiteAdapter,
@@ -1386,7 +1387,7 @@ export class GeminiAdapter extends SiteAdapter {
     // 创建渲染容器
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
-    rendered.innerHTML = html
+    setSafeHTML(rendered, html)
 
     // 插入到原容器后面
     textContainer.after(rendered)

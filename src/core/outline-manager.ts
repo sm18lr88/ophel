@@ -159,9 +159,11 @@ export class OutlineManager {
 
   private handleMessage(event: MessageEvent) {
     if (event.source !== window) return
-    // Imports needed: EVENT_MONITOR_START, EVENT_MONITOR_COMPLETE
-    // I will add them to the top of the file
-    const { type } = event.data || {}
+    if (event.origin !== window.location.origin) return
+
+    const data = event.data
+    if (!data || typeof data !== "object") return
+    const { type } = data
 
     if (type === "GH_MONITOR_START" /* EVENT_MONITOR_START */) {
       if (this.settings.autoUpdate) {

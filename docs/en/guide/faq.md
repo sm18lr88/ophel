@@ -142,7 +142,7 @@ Common questions and solutions collected here.
 
 ### How to Report Issues
 
-1. Visit [GitHub Issues](https://github.com/urzeye/ophel/issues)
+1. Visit [GitHub Issues](https://github.com/sm18lr88/ophel/issues)
 2. Describe the problem in detail
 3. Provide browser version, OS info
 4. Attach screenshots or error logs if possible

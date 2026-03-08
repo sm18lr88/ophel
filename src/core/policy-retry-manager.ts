@@ -13,6 +13,7 @@ export class PolicyRetryManager {
   private retryCounts = new Map<string, number>() // promptHash -> count
   private lastPromptValues = new WeakMap<Element, string>()
   private monitorInitialized = false
+  private boundHandleMessage: (event: MessageEvent) => void
 
   constructor(
     adapter: SiteAdapter,
@@ -20,9 +21,9 @@ export class PolicyRetryManager {
   ) {
     this.adapter = adapter as GeminiEnterpriseAdapter
     this.settings = settings
-    window.addEventListener("message", this.handleMessage.bind(this))
+    this.boundHandleMessage = this.handleMessage.bind(this)
+    window.addEventListener("message", this.boundHandleMessage)
 
-    // 如果功能已启用，立即初始化网络监控
     if (this.settings.enabled) {
       this.initNetworkMonitor()
     }
@@ -54,25 +55,30 @@ export class PolicyRetryManager {
             silenceThreshold: config.silenceThreshold,
           },
         },
-        "*",
+        window.location.origin,
       )
       this.monitorInitialized = true
     }
   }
 
   private handleMessage(event: MessageEvent) {
-    // 只有 Gemini Enterprise 才启用
+    if (event.origin !== window.location.origin) return
+    if (event.source !== window && event.origin !== window.location.origin) return
+
     if (this.adapter.getSiteId() !== SITE_IDS.GEMINI_ENTERPRISE) {
       return
     }
 
     const message = event.data
-    if (message && message.type === EVENT_MONITOR_COMPLETE) {
-      if (!this.settings.enabled) {
-        return
-      }
-      this.checkAndRetry()
+    if (
+      !message ||
+      typeof message !== "object" ||
+      message.type !== EVENT_MONITOR_COMPLETE ||
+      !this.settings.enabled
+    ) {
+      return
     }
+    this.checkAndRetry()
   }
 
   private async checkAndRetry() {

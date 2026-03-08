@@ -2,6 +2,7 @@
  * ChatGPT 适配器 (chatgpt.com)
  */
 import { SITE_IDS } from "~constants"
+import { setSafeHTML } from "~utils/trusted-types"
 
 import {
   SiteAdapter,
@@ -1030,7 +1031,7 @@ export class ChatGPTAdapter extends SiteAdapter {
     // 创建渲染容器
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
-    rendered.innerHTML = html
+    setSafeHTML(rendered, html)
 
     // 插入到原容器后面
     textContainer.after(rendered)

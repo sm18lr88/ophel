@@ -3,6 +3,7 @@
  */
 import { SITE_IDS } from "~constants"
 import { htmlToMarkdown } from "~utils/exporter"
+import { setSafeHTML } from "~utils/trusted-types"
 
 import {
   SiteAdapter,
@@ -1208,7 +1209,7 @@ export class ClaudeAdapter extends SiteAdapter {
       // 创建替换元素
       const rendered = document.createElement("div")
       rendered.className = "gh-claude-enhanced whitespace-pre-wrap break-words"
-      rendered.innerHTML = html
+      setSafeHTML(rendered, html)
 
       // 替换原始 <p> 元素
       p.replaceWith(rendered)

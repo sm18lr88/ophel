@@ -21,26 +21,25 @@ Prompt Library is one of Ophel's core features, helping you efficiently manage a
 
 Use <code v-pre>{{variable}}</code> syntax to define dynamic variables that prompt for input:
 
-**Example: Translation Assistant**
+**Example: Writing Assistant**
 
 ```markdown
-You are a professional translator. Please translate the following into {{target_language}}:
+Rewrite the following in clear professional English:
 
-{{content_to_translate}}
+{{content_to_rewrite}}
 
 Requirements:
 
-- Maintain original style
-- Natural and fluent translation
-- Accurate terminology
+- Preserve meaning
+- Improve clarity
+- Keep terminology accurate
 ```
 
 **When using:**
 
 1. Click to use this prompt
 2. Dialog prompts for variables:
-   - Target language: `English`
-   - Content to translate: `Hello, world!`
+   - Content to rewrite: `Hello, world!`
 3. Auto-generates final prompt and inserts into input
 
 **Advanced Variable Usage:**
@@ -48,7 +47,7 @@ Requirements:
 | Syntax                                           | Description        | Example                                               |
 | ------------------------------------------------ | ------------------ | ----------------------------------------------------- |
 | <code v-pre>{{variable}}</code>                  | Basic variable     | <code v-pre>{{topic}}</code>                          |
-| <code v-pre>{{variable:default}}</code>          | With default value | <code v-pre>{{language:English}}</code>               |
+| <code v-pre>{{variable:default}}</code>          | With default value | <code v-pre>{{tone:Professional}}</code>              |
 | <code v-pre>{{variable:option1\|option2}}</code> | Dropdown selection | <code v-pre>{{style:formal\|casual\|humorous}}</code> |
 
 ### Markdown Preview
@@ -121,8 +120,8 @@ Prompt data managed independently:
   "prompts": [
     {
       "id": "xxx",
-      "title": "Translation Assistant",
-      "content": "You are a professional translator...",
+      "title": "Writing Assistant",
+      "content": "Rewrite the following in clear professional English...",
       "category": "Productivity",
       "pinned": true,
       "useCount": 42
@@ -161,7 +160,7 @@ Ophel includes several useful prompt templates:
 
 | Name                     | Purpose                    |
 | ------------------------ | -------------------------- |
-| 🌐 Translation Assistant | Multi-language translation |
+| ✍️ Writing Assistant    | Rewrite and polish text    |
 | ⚡ Code Optimizer        | Improve code quality       |
 | 📝 Copy Editor           | Polish text expression     |
 | 🤔 Deep Analysis         | Comprehensive analysis     |

@@ -12,6 +12,7 @@ import type {
   PlatformCapability,
   PlatformStorage,
 } from "../types"
+import { validateLlmProviderUrl } from "~utils/network-security"
 
 /**
  * 扩展版存储实现
@@ -53,36 +54,25 @@ export const platform: Platform = {
   storage: extensionStorage,
 
   async fetch(url: string, options?: FetchOptions): Promise<FetchResponse> {
-    // 通过 background 代理请求
-    const response = await chrome.runtime.sendMessage({
-      type: "PROXY_FETCH",
-      url,
-      ...options,
+    const targetUrl = validateLlmProviderUrl(url, globalThis.location?.href).toString()
+    const response = await globalThis.fetch(targetUrl, {
+      method: options?.method,
+      headers: options?.headers,
+      body: options?.body,
+      credentials: options?.credentials,
     })
-
-    if (!response.success) {
-      throw new Error(response.error || "Fetch failed")
-    }
-
-    // 模拟 Response 接口
-    const data = response.data
     return {
-      ok: true,
-      status: 200,
-      statusText: "OK",
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
       async text() {
-        return typeof data === "string" ? data : JSON.stringify(data)
+        return response.text()
       },
       async json() {
-        return typeof data === "string" ? JSON.parse(data) : data
+        return response.json()
       },
       async blob() {
-        // Base64 data URL 转 Blob
-        if (typeof data === "string" && data.startsWith("data:")) {
-          const res = await globalThis.fetch(data)
-          return res.blob()
-        }
-        return new Blob([data])
+        return response.blob()
       },
     }
   },

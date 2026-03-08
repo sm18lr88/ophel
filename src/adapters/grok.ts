@@ -13,6 +13,7 @@
  * - document.documentElement.style.colorScheme 同步
  */
 import { SITE_IDS } from "~constants"
+import { setSafeHTML } from "~utils/trusted-types"
 
 import {
   SiteAdapter,
@@ -1096,7 +1097,10 @@ export class GrokAdapter extends SiteAdapter {
     // Tiptap 编辑器使用 contenteditable
     if (editor.getAttribute("contenteditable") === "true") {
       // 清空现有内容并插入新内容
-      editor.innerHTML = `<p>${content}</p>`
+      editor.replaceChildren()
+      const paragraph = document.createElement("p")
+      paragraph.textContent = content
+      editor.appendChild(paragraph)
       // 触发 input 事件通知 Tiptap
       editor.dispatchEvent(new Event("input", { bubbles: true }))
       // 将光标移到末尾
@@ -1124,8 +1128,13 @@ export class GrokAdapter extends SiteAdapter {
     this.textarea.focus()
     if (this.textarea.getAttribute("contenteditable") === "true") {
       // 清空 Tiptap 编辑器
-      this.textarea.innerHTML =
-        '<p class="is-empty is-editor-empty"><br class="ProseMirror-trailingBreak"></p>'
+      this.textarea.replaceChildren()
+      const paragraph = document.createElement("p")
+      paragraph.className = "is-empty is-editor-empty"
+      const lineBreak = document.createElement("br")
+      lineBreak.className = "ProseMirror-trailingBreak"
+      paragraph.appendChild(lineBreak)
+      this.textarea.appendChild(paragraph)
       this.textarea.dispatchEvent(new Event("input", { bubbles: true }))
     }
   }
@@ -1227,7 +1236,7 @@ export class GrokAdapter extends SiteAdapter {
     // 创建渲染容器
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
-    rendered.innerHTML = html
+    setSafeHTML(rendered, html)
 
     // 插入到 markdownContainer 开头
     markdownContainer.insertBefore(rendered, originalWrapper)

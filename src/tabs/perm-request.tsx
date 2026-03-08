@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react"
 
 import { useSettingsHydrated, useSettingsStore } from "~stores/settings-store"
 import { setLanguage, t } from "~utils/i18n"
+import { sanitizeErrorMessage } from "~utils/network-security"
 
 import "~styles/settings.css"
 
@@ -24,10 +25,10 @@ const PERM_PAGE_STYLES = `
 
 // 权限配置
 const PERMISSION_CONFIGS = {
-  allUrls: {
-    titleKey: "permAllUrlsTitle",
-    descKey: "permAllUrlsDesc",
-    origins: ["<all_urls>"],
+  webdav: {
+    titleKey: "permWebdavTitle",
+    descKey: "permWebdavDesc",
+    origins: [] as string[],
     permissions: [] as string[],
   },
   notifications: {
@@ -46,14 +47,27 @@ const PERMISSION_CONFIGS = {
 
 type PermissionType = keyof typeof PERMISSION_CONFIGS
 
+function parseJsonArrayParam(value: string | null): string[] {
+  if (!value) return []
+
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : []
+  } catch {
+    return []
+  }
+}
+
 const PermissionRequestPage: React.FC = () => {
   const [status, setStatus] = useState<"pending" | "granted" | "denied">("pending")
   // 优先从 URL 参数获取权限类型
   const [permType, setPermType] = useState<PermissionType>(() => {
     const params = new URLSearchParams(window.location.search)
     const type = params.get("type") as PermissionType
-    return type && type in PERMISSION_CONFIGS ? type : "allUrls"
+    return type && type in PERMISSION_CONFIGS ? type : "webdav"
   })
+  const [requestedOrigins, setRequestedOrigins] = useState<string[]>([])
+  const [requestedPermissions, setRequestedPermissions] = useState<string[]>([])
   const [_langReady, setLangReady] = useState(false)
   const { settings } = useSettingsStore()
   const isHydrated = useSettingsHydrated()
@@ -86,20 +100,30 @@ const PermissionRequestPage: React.FC = () => {
     if (type && PERMISSION_CONFIGS[type]) {
       setPermType(type)
     }
+    setRequestedOrigins(parseJsonArrayParam(params.get("origins")))
+    setRequestedPermissions(parseJsonArrayParam(params.get("permissions")))
   }, [])
 
   const config = PERMISSION_CONFIGS[permType]
+  const origins = requestedOrigins.length > 0 ? requestedOrigins : config.origins
+  const permissions =
+    requestedPermissions.length > 0 ? requestedPermissions : config.permissions
+  const primaryOrigin = origins[0]?.replace(/\/\*$/, "")
+  const description =
+    permType === "webdav" && primaryOrigin
+      ? `${t(config.descKey) || "WebDAV sync needs access to your server. Backup and restore will be available after authorization."}\n\n${primaryOrigin}`
+      : t(config.descKey) || "This feature requires additional permission."
 
   // 请求权限
   const handleRequest = async () => {
     try {
       console.warn("[PermRequest] Requesting permissions:", {
-        origins: config.origins,
-        permissions: config.permissions,
+        origins,
+        permissions,
       })
       const granted = await chrome.permissions.request({
-        origins: config.origins.length > 0 ? config.origins : undefined,
-        permissions: config.permissions.length > 0 ? config.permissions : undefined,
+        origins: origins.length > 0 ? origins : undefined,
+        permissions: permissions.length > 0 ? permissions : undefined,
       })
 
       console.warn("[PermRequest] Permission granted:", granted)
@@ -117,7 +141,7 @@ const PermissionRequestPage: React.FC = () => {
         }, 1000)
       }
     } catch (e) {
-      console.error("[PermRequest] Permission request failed:", e)
+      console.error("[PermRequest] Permission request failed:", sanitizeErrorMessage(e))
       setStatus("denied")
       setTimeout(() => {
         window.close()
@@ -173,8 +197,9 @@ const PermissionRequestPage: React.FC = () => {
                 color: "var(--gh-text-secondary, #6b7280)",
                 marginBottom: "24px",
                 lineHeight: 1.5,
+                whiteSpace: "pre-wrap",
               }}>
-              {t(config.descKey) || "此功能需要额外权限才能正常工作。"}
+              {description}
             </p>
 
             {/* 按钮 */}

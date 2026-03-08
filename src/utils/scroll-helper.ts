@@ -112,16 +112,17 @@ function sendScrollRequest(
   return new Promise((resolve) => {
     const handler = (event: MessageEvent) => {
       if (event.source !== window) return
-      if (event.data?.type === "OPHEL_SCROLL_RESPONSE") {
-        window.removeEventListener("message", handler)
-        resolve(event.data as ScrollResponse)
-      }
+      if (event.origin !== window.location.origin) return
+      const data = event.data
+      if (!data || typeof data !== "object" || data.type !== "OPHEL_SCROLL_RESPONSE") return
+      window.removeEventListener("message", handler)
+      resolve(data as ScrollResponse)
     }
 
     window.addEventListener("message", handler)
 
     // 发送请求到 Main World
-    window.postMessage({ type: "OPHEL_SCROLL_REQUEST", action, position }, "*")
+    window.postMessage({ type: "OPHEL_SCROLL_REQUEST", action, position }, window.location.origin)
 
     // 超时处理（100ms 后如果没有响应，认为 Main World 脚本未加载或无 Flutter 容器）
     setTimeout(() => {
@@ -174,21 +175,7 @@ export async function smartScrollToTop(adapter: SiteAdapter | null): Promise<{
     const previousScrollTop = container.scrollTop
     const scrollHeight = container.scrollHeight
 
-    // Check for column-reverse (used by Doubao)
-    const isReverse =
-      adapter?.getSiteId() === "doubao" &&
-      typeof window !== "undefined" &&
-      window.getComputedStyle(container).flexDirection === "column-reverse"
-
-    if (isReverse) {
-      container.scrollTo({
-        top: -scrollHeight,
-        behavior: "instant",
-        ...{ __bypassLock: true },
-      } as any)
-    } else {
-      container.scrollTo({ top: 0, behavior: "instant", ...{ __bypassLock: true } } as any)
-    }
+    container.scrollTo({ top: 0, behavior: "instant", ...{ __bypassLock: true } } as any)
 
     return { container, previousScrollTop, scrollHeight }
   }
@@ -224,21 +211,11 @@ export async function smartScrollToBottom(adapter: SiteAdapter | null): Promise<
   if (container && container.scrollHeight > container.clientHeight) {
     const previousScrollTop = container.scrollTop
 
-    // Check for column-reverse (used by Doubao)
-    const isReverse =
-      adapter?.getSiteId() === "doubao" &&
-      typeof window !== "undefined" &&
-      window.getComputedStyle(container).flexDirection === "column-reverse"
-
-    if (isReverse) {
-      container.scrollTo({ top: 0, behavior: "instant", ...{ __bypassLock: true } } as any)
-    } else {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: "instant",
-        ...{ __bypassLock: true },
-      } as any)
-    }
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "instant",
+      ...{ __bypassLock: true },
+    } as any)
 
     return { container, previousScrollTop }
   }

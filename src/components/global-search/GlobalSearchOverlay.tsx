@@ -192,7 +192,7 @@ export const GlobalSearchOverlay = <TItem, TCategoryId extends string>(
 
   const containerRef = React.useRef<HTMLDivElement>(null)
 
-  // 防止 Doubao/Grok/Claude 等站点在 keydown 时抢占焦点或拦截快捷键
+  // 防止 Grok/Claude 等站点在 keydown 时抢占焦点或拦截快捷键
   React.useEffect(() => {
     if (!isOpen) return
 

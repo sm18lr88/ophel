@@ -391,7 +391,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
               onDoubleClick={() => {
                 // 发送隐私模式切换事件给 TabManager
-                window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, "*")
+                window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, window.location.origin)
               }}>
               <span style={{ fontSize: "16px" }}>✨</span>
               <span style={{ fontSize: "15px", fontWeight: 600 }}>{t("panelTitle")}</span>
