@@ -9,6 +9,31 @@ import type { PlasmoCSConfig } from "plasmo"
 
 import { WATERMARK_BLOCKER_CODE } from "~constants/scripts"
 
+interface AIStudioSettings {
+  removeWatermark?: boolean
+  collapseNavbar?: boolean
+  collapseTools?: boolean
+  collapseAdvanced?: boolean
+  enableSearch?: boolean
+  defaultModel?: string
+  collapseRunSettings?: boolean
+}
+
+interface ModelLockSiteSettings {
+  enabled?: boolean
+}
+
+interface ParsedSettings {
+  state?: {
+    settings?: {
+      aistudio?: AIStudioSettings
+      modelLock?: Record<string, ModelLockSiteSettings>
+    }
+  }
+  aistudio?: AIStudioSettings
+  modelLock?: Record<string, ModelLockSiteSettings>
+}
+
 // 配置：仅匹配 AI Studio，在 document_start 阶段执行
 export const config: PlasmoCSConfig = {
   matches: ["https://aistudio.google.com/*"],
@@ -20,12 +45,12 @@ export const config: PlasmoCSConfig = {
   try {
     // Zustand 使用 chrome.storage.local，key 为 "settings"
     const result = await chrome.storage.local.get("settings")
-    const allData = result as Record<string, any>
+    const allData = result as Record<string, unknown>
 
     // 读取 aistudio 设置
     // Zustand persist 格式: { state: { settings: { aistudio: {...} } }, version: 0 }
     // chrome.storage 存储的是 JSON 字符串
-    let settingsObj = allData.settings
+    let settingsObj: unknown = allData.settings
     if (typeof settingsObj === "string") {
       try {
         settingsObj = JSON.parse(settingsObj)
@@ -36,7 +61,9 @@ export const config: PlasmoCSConfig = {
     }
 
     // 从 Zustand persist 格式中提取 aistudio 设置
-    const aistudioSettings = settingsObj?.state?.settings?.aistudio || settingsObj?.aistudio
+    const parsedSettings =
+      settingsObj && typeof settingsObj === "object" ? (settingsObj as ParsedSettings) : null
+    const aistudioSettings = parsedSettings?.state?.settings?.aistudio || parsedSettings?.aistudio
 
     // 如果没有 AI Studio 设置，直接返回
     if (!aistudioSettings) {
@@ -117,7 +144,8 @@ export const config: PlasmoCSConfig = {
     // 检查是否开启了模型锁定
     // 如果开启了模型锁定，则暂不收起运行设置面板（因为锁定模型需要操作面板）
     // 同时也暂不操作工具栏（collapseTools），以免影响面板展开
-    const modelLockSettings = settingsObj?.state?.settings?.modelLock || settingsObj?.modelLock
+    const modelLockSettings =
+      parsedSettings?.state?.settings?.modelLock || parsedSettings?.modelLock
     const isModelLockEnabled =
       modelLockSettings && modelLockSettings["ai-studio"] && modelLockSettings["ai-studio"].enabled
 

@@ -25,6 +25,16 @@ interface OutlineTabProps {
   onJumpBefore?: () => void
 }
 
+type OutlineWindowFlags = Window & {
+  __ophelPendingSearchOutline?: boolean
+  __ophelPendingLocateOutline?: boolean
+}
+
+type BypassScrollIntoViewOptions = ScrollIntoViewOptions & {
+  behavior?: ScrollBehavior | "instant"
+  __bypassLock?: boolean
+}
+
 const buildVisibilityMaps = (
   tree: OutlineNode[],
   displayLevel: number,
@@ -432,6 +442,8 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
 
   // 监听并执行搜索聚焦
   useEffect(() => {
+    const outlineWindow = window as OutlineWindowFlags
+
     const handleSearchOutline = () => {
       if (inputRef.current) {
         inputRef.current.focus()
@@ -442,8 +454,8 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     window.addEventListener("ophel:searchOutline", handleSearchOutline)
 
     // 检查是否有待处理的搜索请求
-    if ((window as any).__ophelPendingSearchOutline) {
-      delete (window as any).__ophelPendingSearchOutline
+    if (outlineWindow.__ophelPendingSearchOutline) {
+      delete outlineWindow.__ophelPendingSearchOutline
       // 延迟确保渲染完成
       setTimeout(handleSearchOutline, 100)
     }
@@ -833,11 +845,12 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
           await onJumpBefore()
         }
         // 传入 __bypassLock: true 以绕过 ScrollLockManager 的拦截
-        targetElement.scrollIntoView({
+        const scrollOptions: BypassScrollIntoViewOptions = {
           behavior: "instant",
           block: "start",
           __bypassLock: true,
-        } as any)
+        }
+        targetElement.scrollIntoView(scrollOptions)
         // 高亮效果
         targetElement.classList.add("outline-highlight")
         setTimeout(() => targetElement?.classList.remove("outline-highlight"), 2000)
@@ -977,13 +990,12 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     manager.revealNode(currentItem.index)
 
     // 4. 延迟滚动和高亮（等待 DOM 更新）
+    const currentIndex = currentItem.index
     setTimeout(() => {
       const listContainer = listRef.current
       if (!listContainer) return
 
-      const outlineItem = listContainer.querySelector(
-        `.outline-item[data-index="${currentItem!.index}"]`,
-      )
+      const outlineItem = listContainer.querySelector(`.outline-item[data-index="${currentIndex}"]`)
       if (!outlineItem) return
 
       // 滚动大纲面板到该项（居中显示）
@@ -1007,14 +1019,16 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
 
   // 监听快捷键触发的定位事件
   useEffect(() => {
+    const outlineWindow = window as OutlineWindowFlags
+
     const handleLocateEvent = () => {
       // 清除全局标记
-      ;(window as any).__ophelPendingLocateOutline = false
+      outlineWindow.__ophelPendingLocateOutline = false
       handleLocateCurrent()
     }
 
     // 检查挂载时是否有待处理的定位请求
-    if ((window as any).__ophelPendingLocateOutline) {
+    if (outlineWindow.__ophelPendingLocateOutline) {
       // 延迟执行，确保组件完全渲染
       setTimeout(() => {
         handleLocateEvent()

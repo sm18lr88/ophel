@@ -22,9 +22,70 @@ export const config: PlasmoCSConfig = {
   run_at: "document_start", // 尽早运行以劫持 API
 }
 
+type ScrollAction = "scrollToTop" | "scrollToBottom" | "scrollTo" | "getScrollInfo"
+
+type ScrollLockToggleMessage = {
+  type: "OPHEL_SCROLL_LOCK_TOGGLE"
+  enabled: boolean
+}
+
+type ScrollRequestMessage = {
+  type: "OPHEL_SCROLL_REQUEST"
+  action: ScrollAction
+  position?: number
+}
+
+type ScrollLockMessage = ScrollLockToggleMessage | ScrollRequestMessage
+
+type ScrollIntoViewWithBypass = ScrollIntoViewOptions & { __bypassLock?: boolean }
+
+type OriginalApis = {
+  scrollIntoView: Element["scrollIntoView"]
+  scrollTo: Window["scrollTo"]
+  scrollTopDescriptor?: PropertyDescriptor
+}
+
+type ScrollLockWindow = Window & {
+  __ophelScrollLockInitialized?: boolean
+  __ophelOriginalApis?: OriginalApis
+  __ophelScrollLockEnabled?: boolean
+}
+
+const scrollLockWindow = window as ScrollLockWindow
+
+const callWindowScrollTo = (
+  originalScrollTo: Window["scrollTo"],
+  targetWindow: Window,
+  x?: ScrollToOptions | number,
+  y?: number,
+) => {
+  if (typeof x === "number") {
+    return originalScrollTo.call(targetWindow, x, y ?? 0)
+  }
+  if (typeof x === "object") {
+    return originalScrollTo.call(targetWindow, x)
+  }
+  return originalScrollTo.call(targetWindow)
+}
+
+const callElementScrollMethod = (
+  method: (this: Element, optionsOrX?: ScrollToOptions | number, y?: number) => void,
+  element: Element,
+  optionsOrX?: ScrollToOptions | number,
+  y?: number,
+) => {
+  if (typeof optionsOrX === "number") {
+    return method.call(element, optionsOrX, y ?? 0)
+  }
+  if (typeof optionsOrX === "object") {
+    return method.call(element, optionsOrX)
+  }
+  return method.call(element)
+}
+
 // 防止重复初始化
-if (!(window as any).__ophelScrollLockInitialized) {
-  ;(window as any).__ophelScrollLockInitialized = true
+if (!scrollLockWindow.__ophelScrollLockInitialized) {
+  scrollLockWindow.__ophelScrollLockInitialized = true
 
   // 保存原始 API
   const originalApis = {
@@ -36,33 +97,36 @@ if (!(window as any).__ophelScrollLockInitialized) {
   }
 
   // 保存原始 API 供恢复使用
-  ;(window as any).__ophelOriginalApis = originalApis
+  scrollLockWindow.__ophelOriginalApis = originalApis
 
   // 默认禁用，等待 Content Script 通过消息启用
-  ;(window as any).__ophelScrollLockEnabled = false
+  scrollLockWindow.__ophelScrollLockEnabled = false
 
   // 1. 劫持 Element.prototype.scrollIntoView
   Element.prototype.scrollIntoView = function (options?: boolean | ScrollIntoViewOptions) {
     // 检查是否包含绕过锁定的标志
-    const shouldBypass = options && typeof options === "object" && (options as any).__bypassLock
+    const shouldBypass =
+      options &&
+      typeof options === "object" &&
+      Boolean((options as ScrollIntoViewWithBypass).__bypassLock)
 
     // 如果劫持未启用，直接调用原始 API
-    if (!(window as any).__ophelScrollLockEnabled) {
-      return originalApis.scrollIntoView.call(this, options as any)
+    if (!scrollLockWindow.__ophelScrollLockEnabled) {
+      return originalApis.scrollIntoView.call(this, options)
     }
 
     if (!shouldBypass) {
       return
     }
 
-    return originalApis.scrollIntoView.call(this, options as any)
+    return originalApis.scrollIntoView.call(this, options)
   }
 
   // 2. 劫持 window.scrollTo
-  ;(window as any).scrollTo = function (x?: ScrollToOptions | number, y?: number) {
+  scrollLockWindow.scrollTo = function (x?: ScrollToOptions | number, y?: number) {
     // 如果劫持未启用，直接调用原始 API
-    if (!(window as any).__ophelScrollLockEnabled) {
-      return originalApis.scrollTo.apply(window, arguments as any)
+    if (!scrollLockWindow.__ophelScrollLockEnabled) {
+      return callWindowScrollTo(originalApis.scrollTo, scrollLockWindow, x, y)
     }
 
     // 解析目标 Y 位置
@@ -78,7 +142,7 @@ if (!(window as any).__ophelScrollLockInitialized) {
       return
     }
 
-    return originalApis.scrollTo.apply(window, arguments as any)
+    return callWindowScrollTo(originalApis.scrollTo, scrollLockWindow, x, y)
   }
 
   // 3. 劫持 scrollTop setter
@@ -90,7 +154,7 @@ if (!(window as any).__ophelScrollLockInitialized) {
       },
       set: function (value: number) {
         // 如果劫持未启用，直接设置
-        if (!(window as any).__ophelScrollLockEnabled) {
+        if (!scrollLockWindow.__ophelScrollLockEnabled) {
           if (descriptor.set) {
             descriptor.set.call(this, value)
           }
@@ -120,8 +184,8 @@ if (!(window as any).__ophelScrollLockInitialized) {
     y?: number,
   ) {
     // 如果劫持未启用，直接调用原始 API
-    if (!(window as any).__ophelScrollLockEnabled) {
-      return originalElementScrollTo.apply(this, arguments as any)
+    if (!scrollLockWindow.__ophelScrollLockEnabled) {
+      return callElementScrollMethod(originalElementScrollTo, this, optionsOrX, y)
     }
 
     // 解析目标 Y 位置
@@ -140,7 +204,7 @@ if (!(window as any).__ophelScrollLockInitialized) {
       return
     }
 
-    return originalElementScrollTo.apply(this, arguments as any)
+    return callElementScrollMethod(originalElementScrollTo, this, optionsOrX, y)
   }
 
   // 5. 劫持 Element.prototype.scroll（scrollTo 的别名）
@@ -151,8 +215,8 @@ if (!(window as any).__ophelScrollLockInitialized) {
     y?: number,
   ) {
     // 如果劫持未启用，直接调用原始 API
-    if (!(window as any).__ophelScrollLockEnabled) {
-      return originalElementScroll.apply(this, arguments as any)
+    if (!scrollLockWindow.__ophelScrollLockEnabled) {
+      return callElementScrollMethod(originalElementScroll, this, optionsOrX, y)
     }
 
     // 解析目标 Y 位置
@@ -171,7 +235,7 @@ if (!(window as any).__ophelScrollLockInitialized) {
       return
     }
 
-    return originalElementScroll.apply(this, arguments as any)
+    return callElementScrollMethod(originalElementScroll, this, optionsOrX, y)
   }
 
   // 6. 劫持 Element.prototype.scrollBy（相对滚动方法）
@@ -182,8 +246,8 @@ if (!(window as any).__ophelScrollLockInitialized) {
     y?: number,
   ) {
     // 如果劫持未启用，直接调用原始 API
-    if (!(window as any).__ophelScrollLockEnabled) {
-      return originalElementScrollBy.apply(this, arguments as any)
+    if (!scrollLockWindow.__ophelScrollLockEnabled) {
+      return callElementScrollMethod(originalElementScrollBy, this, optionsOrX, y)
     }
 
     // 解析 Y 偏移量
@@ -199,22 +263,23 @@ if (!(window as any).__ophelScrollLockInitialized) {
       return
     }
 
-    return originalElementScrollBy.apply(this, arguments as any)
+    return callElementScrollMethod(originalElementScrollBy, this, optionsOrX, y)
   }
 
   window.addEventListener("message", (event) => {
     if (event.source !== window) return
     if (event.origin !== window.location.origin) return
 
-    const data = event.data
-    if (
-      !data ||
-      typeof data !== "object" ||
-      data.type !== "OPHEL_SCROLL_LOCK_TOGGLE" ||
-      typeof data.enabled !== "boolean"
-    ) {
+    const data = event.data as unknown
+    if (!data || typeof data !== "object") {
       return
     }
-    ;(window as any).__ophelScrollLockEnabled = data.enabled
+
+    const message = data as ScrollLockMessage
+    if (message.type !== "OPHEL_SCROLL_LOCK_TOGGLE" || typeof message.enabled !== "boolean") {
+      return
+    }
+
+    scrollLockWindow.__ophelScrollLockEnabled = message.enabled
   })
 }

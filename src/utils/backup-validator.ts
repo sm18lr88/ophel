@@ -14,7 +14,7 @@ export interface ValidationResult {
  * @param data 解析后的备份数据对象
  * @returns 校验结果，errorKeys 为国际化 key
  */
-export function validateBackupData(data: any): ValidationResult {
+export function validateBackupData(data: unknown): ValidationResult {
   const errorKeys: string[] = []
 
   // 基础格式校验
@@ -22,16 +22,18 @@ export function validateBackupData(data: any): ValidationResult {
     return { valid: false, errorKeys: ["backupValidationInvalidFormat"] }
   }
 
-  if (!data.version) {
+  const parsedData = data as { version?: unknown; data?: Record<string, unknown> }
+
+  if (!parsedData.version) {
     errorKeys.push("backupValidationMissingVersion")
   }
 
-  if (!data.data || typeof data.data !== "object") {
+  if (!parsedData.data || typeof parsedData.data !== "object") {
     errorKeys.push("backupValidationMissingData")
     return { valid: false, errorKeys }
   }
 
-  const backupData = data.data
+  const backupData = parsedData.data
 
   // 数据类型校验
   if (backupData.settings !== undefined) {

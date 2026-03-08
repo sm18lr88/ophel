@@ -6,7 +6,6 @@
  */
 
 import type { SiteAdapter } from "~adapters/base"
-import { SITE_IDS } from "~constants"
 import { DOMToolkit } from "~utils/dom-toolkit"
 import { initCopyButtons, showCopySuccess } from "~utils/icons"
 import { getHighlightStyles, renderMarkdown } from "~utils/markdown"

@@ -334,7 +334,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           transform: "translateY(-50%)",
           width: `${currentSettings.panel?.width ?? 320}px`,
           height: `${currentSettings.panel?.height ?? 85}vh`,
-          // @ts-ignore - 注入 CSS 变量供吸附计算使用
+          // @ts-expect-error - 注入 CSS 变量供吸附计算使用
           "--panel-width": `${currentSettings.panel?.width ?? 320}px`,
           minHeight: "500px",
           backgroundColor: "var(--gh-bg, #ffffff)",

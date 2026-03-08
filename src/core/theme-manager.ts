@@ -18,10 +18,14 @@ import {
 export type ThemeMode = "light" | "dark"
 export type ThemePreference = "light" | "dark" | "system"
 
-// Extend Document interface for View Transitions API
 declare global {
+  interface ViewTransition {
+    readonly ready: Promise<void>
+    readonly finished: Promise<void>
+  }
+
   interface Document {
-    startViewTransition(callback?: any): any
+    startViewTransition(callback?: () => void): ViewTransition
   }
 }
 

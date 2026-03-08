@@ -16,6 +16,7 @@ import {
 import { platform } from "~platform"
 import { useClaudeSessionKeysStore } from "~stores/claude-sessionkeys-store"
 import { t } from "~utils/i18n"
+import type { ClaudeSessionKey } from "~utils/storage"
 import {
   MSG_CHECK_CLAUDE_GENERATING,
   MSG_CHECK_PERMISSIONS,
@@ -36,6 +37,17 @@ type DialogState =
   | { type: "add" }
   | { type: "import-name"; sessionKey: string }
   | { type: "delete"; id: string; name: string }
+
+const isClaudeSessionKey = (value: unknown): value is ClaudeSessionKey => {
+  if (typeof value !== "object" || value === null) return false
+  const record = value as Record<string, unknown>
+  return (
+    typeof record.id === "string" &&
+    typeof record.name === "string" &&
+    typeof record.key === "string" &&
+    typeof record.createdAt === "number"
+  )
+}
 
 const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
   const { keys, currentKeyId, addKey, deleteKey, setCurrentKey, testKey, setKeys } =
@@ -293,7 +305,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
         }
 
         const existingKeys = new Set(keys.map((k) => k.key))
-        const newKeys = imported.filter((k: any) => !existingKeys.has(k.key))
+        const newKeys = imported.filter(isClaudeSessionKey).filter((k) => !existingKeys.has(k.key))
 
         if (newKeys.length === 0) {
           showToast(t("claudeNoNewTokens"), TOAST_DURATION.SHORT)

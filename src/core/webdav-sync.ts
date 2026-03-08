@@ -15,6 +15,28 @@ import {
   validateWebDavMethod,
 } from "~utils/network-security"
 
+declare const __PLATFORM__: "extension" | "userscript" | undefined
+
+interface GMXMLHttpResponse {
+  status: number
+  statusText: string
+  responseText: string
+  responseHeaders?: string
+}
+
+interface GMXMLHttpRequestDetails {
+  method: string
+  url: string
+  headers?: Record<string, string>
+  data?: string
+  onload?: (response: GMXMLHttpResponse) => void
+  onerror?: (error: unknown) => void
+  ontimeout?: () => void
+  timeout?: number
+}
+
+declare function GM_xmlhttpRequest(details: GMXMLHttpRequestDetails): void
+
 function safeDecodeURIComponent(str: string) {
   try {
     return decodeURIComponent(str)
@@ -67,7 +89,7 @@ function generateBackupFileName(): string {
 export interface SyncResult {
   success: boolean
   messageKey: string // 国际化键名
-  messageArgs?: Record<string, any> // 消息参数（如错误详情）
+  messageArgs?: Record<string, unknown> // 消息参数（如错误详情）
   timestamp?: number
 }
 
@@ -185,7 +207,7 @@ export class WebDAVSyncManager {
       await this.saveConfig({ lastSyncStatus: "syncing" })
 
       // 获取本地所有数据
-      const localData = await new Promise<Record<string, any>>((resolve) =>
+      const localData = await new Promise<Record<string, unknown>>((resolve) =>
         chrome.storage.local.get(null, resolve),
       )
 
@@ -440,7 +462,7 @@ export class WebDAVSyncManager {
 
           // 处理 Zustand stores
           if (ZUSTAND_KEYS.includes(k)) {
-            let state: Record<string, any>
+            let state: Record<string, unknown>
             if (MULTI_PROP_STORES.includes(k)) {
               // 多属性 store（如 conversations, readingHistory）
               // 通过检查 v 中是否包含与 store 同名的属性来区分格式
@@ -448,13 +470,13 @@ export class WebDAVSyncManager {
                 const obj = v as Record<string, unknown>
                 if (k === "conversations" && obj.conversations !== undefined) {
                   // 已包装格式：{ conversations: {...}, lastUsedFolderId: "..." }
-                  state = v
+                  state = obj
                 } else if (
                   k === "readingHistory" &&
                   (obj.history !== undefined || obj.lastCleanupRun !== undefined)
                 ) {
                   // 已包装格式：{ history: {...}, lastCleanupRun: number }
-                  state = v
+                  state = obj
                 } else {
                   // 扁平化格式（旧版本导出）
                   state = k === "readingHistory" ? { history: v } : { [k]: v }
@@ -582,7 +604,6 @@ export class WebDAVSyncManager {
     const requestHeaders = sanitizeWebDavHeaders(headers)
 
     // 检测是否为油猴脚本环境
-    // @ts-ignore - __PLATFORM__ 是构建时注入的全局变量
     const isUserscript = typeof __PLATFORM__ !== "undefined" && __PLATFORM__ === "userscript"
 
     if (isUserscript) {
@@ -611,13 +632,12 @@ export class WebDAVSyncManager {
         requestHeaders["Authorization"] = `Basic ${credentials}`
       }
 
-      // @ts-ignore - GM_xmlhttpRequest 是油猴脚本 API
       GM_xmlhttpRequest({
         method,
         url,
         headers: requestHeaders,
         data: body || undefined,
-        onload: (response: any) => {
+        onload: (response: GMXMLHttpResponse) => {
           // 构造一个类 Response 对象返回
           resolve({
             ok: response.status >= 200 && response.status < 300,
@@ -639,13 +659,13 @@ export class WebDAVSyncManager {
             },
           } as unknown as Response)
         },
-        onerror: (error: any) => {
+        onerror: (error: unknown) => {
           reject(new Error(sanitizeErrorMessage(error, "GM_xmlhttpRequest failed")))
         },
         ontimeout: () => {
           reject(new Error("Request timeout"))
         },
-        timeout: 15000 as any,
+        timeout: 15000,
       })
     })
   }

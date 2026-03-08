@@ -22,27 +22,49 @@ function getPageWindow(): typeof globalThis {
 interface NetworkMonitorOptions {
   urlPatterns?: string[]
   silenceThreshold?: number
-  onComplete?: (ctx: any) => void
-  onStart?: (ctx: any) => void
-  domValidation?: (ctx: any) => boolean
+  onComplete?: (ctx: MonitorContext) => void
+  onStart?: (ctx: MonitorContext) => void
+  domValidation?: (ctx: MonitorContext) => boolean
+}
+
+interface MonitorContext {
+  timestamp: number
+  activeCount?: number
+  lastUrl?: string
+  url?: string
+  type?: "fetch" | "xhr"
+}
+
+interface MonitorInitPayload {
+  urlPatterns: string[]
+  silenceThreshold: number
+}
+
+interface MonitorInitWindowMessage {
+  type: typeof EVENT_MONITOR_INIT
+  payload: MonitorInitPayload
+}
+
+interface NetworkTrackedXMLHttpRequest extends XMLHttpRequest {
+  _networkMonitorUrl?: string
 }
 
 class NetworkMonitor {
   private urlPatterns: string[]
   private silenceThreshold: number
-  private onComplete: (ctx: any) => void
-  private onStart: ((ctx: any) => void) | null
-  private domValidation: ((ctx: any) => boolean) | null
+  private onComplete: (ctx: MonitorContext) => void
+  private onStart: ((ctx: MonitorContext) => void) | null
+  private domValidation: ((ctx: MonitorContext) => boolean) | null
 
   private _activeCount = 0
-  private _silenceTimer: any = null
+  private _silenceTimer: ReturnType<typeof setTimeout> | null = null
   private _isMonitoring = false
-  private _originalFetch: any = null
-  private _originalXhrOpen: any = null
-  private _originalXhrSend: any = null
+  private _originalFetch: typeof fetch | null = null
+  private _originalXhrOpen: typeof XMLHttpRequest.prototype.open | null = null
+  private _originalXhrSend: typeof XMLHttpRequest.prototype.send | null = null
   private _lastUrl = ""
   private _hasTriggeredStart = false
-  private _boundHookedFetch: any
+  private _boundHookedFetch: typeof fetch
 
   constructor(options: NetworkMonitorOptions = {}) {
     this.urlPatterns = options.urlPatterns || []
@@ -118,14 +140,19 @@ class NetworkMonitor {
     }
   }
 
-  private async _hookedFetch(...args: any[]) {
+  private async _hookedFetch(...args: Parameters<typeof fetch>) {
     // 获取正确的页面上下文（油猴脚本环境使用 unsafeWindow）
     const pageWindow = getPageWindow()
     const url = args[0] ? args[0].toString() : ""
     const isTarget = this._isTargetUrl(url)
 
+    const originalFetch = this._originalFetch
+    if (!originalFetch) {
+      return pageWindow.fetch(...args)
+    }
+
     if (!isTarget) {
-      return this._originalFetch.call(pageWindow, ...args)
+      return originalFetch.call(pageWindow, ...args)
     }
 
     this._activeCount++
@@ -144,7 +171,7 @@ class NetworkMonitor {
     }
 
     try {
-      const response = await this._originalFetch.call(pageWindow, ...args)
+      const response = await originalFetch.call(pageWindow, ...args)
       const clone = response.clone()
       this._readStream(clone).catch(() => {})
       return response
@@ -184,20 +211,38 @@ class NetworkMonitor {
     this._originalXhrOpen = PageXHR.prototype.open
     this._originalXhrSend = PageXHR.prototype.send
 
-    // @ts-ignore
-    PageXHR.prototype.open = function (method: string, url: string | URL, ...rest: any[]) {
-      // @ts-ignore
+    PageXHR.prototype.open = function (
+      this: NetworkTrackedXMLHttpRequest,
+      method: string,
+      url: string | URL,
+      async?: boolean,
+      username?: string | null,
+      password?: string | null,
+    ) {
       this._networkMonitorUrl = url ? url.toString() : ""
-      // @ts-ignore
-      return self._originalXhrOpen.call(this, method, url, ...rest)
+      return self._originalXhrOpen?.call(
+        this,
+        method,
+        url,
+        async,
+        username ?? undefined,
+        password ?? undefined,
+      )
     }
 
-    PageXHR.prototype.send = function (body: any) {
-      // @ts-ignore
+    PageXHR.prototype.send = function (
+      this: NetworkTrackedXMLHttpRequest,
+      body?: Document | XMLHttpRequestBodyInit | null,
+    ) {
       const url = this._networkMonitorUrl || ""
 
+      const originalSend = self._originalXhrSend
+      if (!originalSend) {
+        return
+      }
+
       if (!self._isTargetUrl(url)) {
-        return self._originalXhrSend.call(this, body)
+        return originalSend.call(this, body)
       }
 
       self._activeCount++
@@ -224,7 +269,7 @@ class NetworkMonitor {
       this.addEventListener("abort", onComplete)
       this.addEventListener("timeout", onComplete)
 
-      return self._originalXhrSend.call(this, body)
+      return originalSend.call(this, body)
     }
   }
 
@@ -259,10 +304,11 @@ export function initNetworkMonitor(): void {
   window.addEventListener("message", (event) => {
     if (event.origin !== window.location.origin) return
 
-    const data = event.data
+    const data = event.data as unknown
     if (!data || typeof data !== "object") return
 
-    const { type } = data
+    const type = (data as { type?: unknown }).type
+    if (typeof type !== "string") return
     if (!ACCEPTED_TYPES.has(type)) return
 
     // In userscript sandboxes event.source may be a proxy object, so fall
@@ -270,7 +316,7 @@ export function initNetworkMonitor(): void {
     if (event.source !== window && event.origin !== window.location.origin) return
 
     if (type === EVENT_MONITOR_INIT) {
-      const payload = data.payload
+      const payload = (data as MonitorInitWindowMessage).payload
       if (
         !payload ||
         typeof payload !== "object" ||

@@ -564,12 +564,12 @@ export function initUrlChangeObserver(ctx: ModulesContext): void {
   // Monkey-patch pushState / replaceState
   const originalPushState = history.pushState
   const originalReplaceState = history.replaceState
-  history.pushState = function (...args) {
-    originalPushState.apply(this, args as any)
+  history.pushState = function (...args: Parameters<History["pushState"]>) {
+    originalPushState.apply(this, args)
     handleUrlChange()
   }
-  history.replaceState = function (...args) {
-    originalReplaceState.apply(this, args as any)
+  history.replaceState = function (...args: Parameters<History["replaceState"]>) {
+    originalReplaceState.apply(this, args)
     handleUrlChange()
   }
 

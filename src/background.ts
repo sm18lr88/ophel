@@ -33,6 +33,31 @@ import {
 } from "~utils/network-security"
 import { localStorage, type Settings } from "~utils/storage"
 
+interface ClaudeSessionKey {
+  id: string
+  key: string
+  name: string
+  accountType?: string
+  isValid?: boolean
+}
+
+interface ClaudeSessionKeysPersistedState {
+  state?: {
+    keys?: unknown
+    currentKeyId?: string
+  }
+}
+
+function isClaudeSessionKey(value: unknown): value is ClaudeSessionKey {
+  if (!value || typeof value !== "object") return false
+  const candidate = value as Record<string, unknown>
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.key === "string" &&
+    typeof candidate.name === "string"
+  )
+}
+
 const ALLOWED_OPTIONAL_PERMISSIONS = new Set(["cookies", "notifications"])
 
 /**
@@ -226,7 +251,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_WEBDAV_REQUEST:
       ;(async () => {
         try {
-          const { method, url, body, headers, auth } = message as any
+          const { method, url, body, headers, auth } = message
           const validatedMethod = validateWebDavMethod(method)
           const targetUrl = validatePublicHttpsUrl(url).toString()
           const fetchHeaders: Record<string, string> = sanitizeWebDavHeaders(headers)
@@ -263,7 +288,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_CHECK_PERMISSION:
       ;(async () => {
         try {
-          const { origin } = message as any
+          const { origin } = message
           const safeOrigin = validatePermissionOriginPattern(origin)
           const hasPermission = await chrome.permissions.contains({
             origins: [safeOrigin],
@@ -280,7 +305,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_CHECK_PERMISSIONS:
       ;(async () => {
         try {
-          const { origins, permissions } = message as any
+          const { origins, permissions } = message
           const safeOrigins = Array.isArray(origins)
             ? origins.map((origin: string) => validatePermissionOriginPattern(origin))
             : undefined
@@ -305,7 +330,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_REVOKE_PERMISSIONS:
       ;(async () => {
         try {
-          const { origins, permissions } = message as any
+          const { origins, permissions } = message
           const safeOrigins = Array.isArray(origins)
             ? origins.map((origin: string) => validatePermissionOriginPattern(origin))
             : undefined
@@ -330,12 +355,9 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_REQUEST_PERMISSIONS:
       ;(async () => {
         try {
-          const permType =
-            typeof (message as any).permType === "string" ? (message as any).permType : ""
-          const rawOrigins = Array.isArray((message as any).origins) ? (message as any).origins : []
-          const rawPermissions = Array.isArray((message as any).permissions)
-            ? (message as any).permissions
-            : []
+          const permType = typeof message.permType === "string" ? message.permType : ""
+          const rawOrigins = Array.isArray(message.origins) ? message.origins : []
+          const rawPermissions = Array.isArray(message.permissions) ? message.permissions : []
           const safeOrigins = rawOrigins.map((origin: string) =>
             validatePermissionOriginPattern(origin),
           )
@@ -400,7 +422,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_OPEN_URL:
       ;(async () => {
         try {
-          const { url } = message as any
+          const { url } = message
           const targetUrl = validateOpenTabUrl(url)
           await chrome.tabs.create({
             url: targetUrl,
@@ -479,7 +501,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
     case MSG_SET_CLAUDE_SESSION_KEY:
       ;(async () => {
         try {
-          const { key } = message as any
+          const { key } = message
 
           if (key) {
             // 设置cookie
@@ -521,8 +543,12 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
         try {
           // 1. 获取所有 keys 和当前 ID
           // Zustand persist 存储结构: { state: { keys: [], currentKeyId: "" }, version: 0 }
-          const storageData = await localStorage.get<any>("claudeSessionKeys")
-          const rawKeys = storageData?.state?.keys || []
+          const storageData =
+            await localStorage.get<ClaudeSessionKeysPersistedState>("claudeSessionKeys")
+          const rawStoredKeys = storageData?.state?.keys
+          const rawKeys = Array.isArray(rawStoredKeys)
+            ? rawStoredKeys.filter(isClaudeSessionKey)
+            : []
 
           if (rawKeys.length === 0) {
             sendResponse({ success: false, error: "No keys found" })
@@ -533,7 +559,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
           // 2. 筛选可用 Keys 并排序 (Pro 优先)
           // 规则: isValid !== false (undefined 也视为可用)，优先Pro，其次按名称排序
-          let availableKeys = rawKeys.filter((k: any) => k.isValid !== false)
+          let availableKeys = rawKeys.filter((k) => k.isValid !== false)
 
           // 如果没有可用 Key，尝试使用所有 Key (防止死循环或无法切换)
           if (availableKeys.length === 0) {
@@ -541,7 +567,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
           }
 
           // 排序: Pro 优先，然后是名称
-          availableKeys.sort((a: any, b: any) => {
+          availableKeys.sort((a, b) => {
             const isAPro = a.accountType?.toLowerCase()?.includes("pro")
             const isBPro = b.accountType?.toLowerCase()?.includes("pro")
             if (isAPro && !isBPro) return -1
@@ -551,7 +577,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
 
           // 3. 找到下一个 Key
           // 在排序后的列表里找当前 Key 的位置
-          const currentIndex = availableKeys.findIndex((k: any) => k.id === currentId)
+          const currentIndex = availableKeys.findIndex((k) => k.id === currentId)
 
           // 如果只有一个 Key 且当前正在使用它，则不执行切换
           if (availableKeys.length === 1 && currentIndex !== -1) {
@@ -613,7 +639,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
         let originalCookie: chrome.cookies.Cookie | null = null
 
         try {
-          const { sessionKey } = message as any
+          const { sessionKey } = message
 
           // 1. 备份当前的 sessionKey cookie
           const existingCookies = await chrome.cookies.getAll({

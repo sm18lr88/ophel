@@ -24,6 +24,19 @@ import { getSettingsState, useSettingsStore } from "~stores/settings-store"
 import { useTagsStore } from "~stores/tags-store"
 import { MSG_CLEAR_ALL_DATA, MSG_RESTORE_DATA } from "~utils/messaging"
 
+type AIStudioModelAdapter = {
+  getModelList: () => Promise<unknown>
+}
+
+function hasAIStudioModelList(adapter: unknown): adapter is AIStudioModelAdapter {
+  return (
+    typeof adapter === "object" &&
+    adapter !== null &&
+    "getModelList" in adapter &&
+    typeof (adapter as Record<string, unknown>).getModelList === "function"
+  )
+}
+
 const resetAllStores = () => {
   useSettingsStore.getState().resetSettings()
   usePromptsStore.getState().setPrompts(getDefaultPrompts())
@@ -117,10 +130,10 @@ if (!window.ophelInitialized) {
         // AI Studio 获取模型列表
         if (message.type === "GET_MODEL_LIST") {
           // 检查是否是 AI Studio 适配器且有 getModelList 方法
-          if (siteId === SITE_IDS.AISTUDIO && typeof (adapter as any).getModelList === "function") {
+          if (siteId === SITE_IDS.AISTUDIO && hasAIStudioModelList(adapter)) {
             ;(async () => {
               try {
-                const models = await (adapter as any).getModelList()
+                const models = await adapter.getModelList()
                 sendResponse({ success: true, models })
               } catch (err) {
                 console.error("[Ophel] getModelList failed:", err)

@@ -42,8 +42,22 @@ const ALLOWED_TAGS = new Set([
 const DROP_TAGS = new Set(["iframe", "object", "embed", "script", "style", "link", "meta"])
 
 // Trusted Types 策略缓存
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let htmlPolicy: any = null
+type SafeTrustedHtml = TrustedHTML | string
+
+interface TrustedTypesPolicyLike {
+  createHTML: (value: string) => SafeTrustedHtml
+}
+
+interface TrustedTypesFactoryLike {
+  createPolicy: (
+    name: string,
+    policy: {
+      createHTML: (value: string) => string
+    },
+  ) => TrustedTypesPolicyLike
+}
+
+let htmlPolicy: TrustedTypesPolicyLike | null = null
 
 export function sanitizeHTML(html: string): string {
   if (typeof document === "undefined" || !html) return html
@@ -61,7 +75,7 @@ function initTrustedTypesPolicy(): boolean {
   if (htmlPolicy) return true
   if (typeof window === "undefined") return false
 
-  const tt = (window as any).trustedTypes
+  const tt = (window as Window & { trustedTypes?: TrustedTypesFactoryLike }).trustedTypes
   if (tt?.createPolicy) {
     try {
       // 使用唯一的策略名称，避免冲突
@@ -86,7 +100,7 @@ function initTrustedTypesPolicy(): boolean {
  * 创建安全的 HTML 对象 (TrustedHTML)
  * 如果环境支持且初始化成功，返回 TrustedHTML 对象；否则返回原字符串
  */
-export function createSafeHTML(html: string): any {
+export function createSafeHTML(html: string): SafeTrustedHtml {
   const sanitized = sanitizeHTML(html)
 
   if (!htmlPolicy) {
@@ -109,7 +123,7 @@ export function createSafeHTML(html: string): any {
 export function setSafeHTML(element: HTMLElement, html: string): boolean {
   try {
     const safeHtml = createSafeHTML(html)
-    element.innerHTML = safeHtml
+    element.innerHTML = safeHtml as unknown as string
     return true
   } catch (e) {
     console.warn("[TrustedTypes] Failed to set innerHTML:", e)

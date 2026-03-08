@@ -1134,9 +1134,14 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                       const btn = target.closest(".gh-code-copy-btn") as HTMLElement
                       if (btn) {
                         const code = btn.nextElementSibling?.textContent || ""
-                        navigator.clipboard.writeText(code).then(() => {
-                          showCopySuccess(btn, { size: 14 })
-                        })
+                        navigator.clipboard
+                          .writeText(code)
+                          .then(() => {
+                            showCopySuccess(btn, { size: 14 })
+                          })
+                          .catch(() => {
+                            /* clipboard unavailable */
+                          })
                       }
                     }}
                     dangerouslySetInnerHTML={{
@@ -1372,9 +1377,14 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               const btn = target.closest(".gh-code-copy-btn") as HTMLElement
               if (btn) {
                 const code = btn.nextElementSibling?.textContent || ""
-                navigator.clipboard.writeText(code).then(() => {
-                  showCopySuccess(btn, { size: 14 })
-                })
+                navigator.clipboard
+                  .writeText(code)
+                  .then(() => {
+                    showCopySuccess(btn, { size: 14 })
+                  })
+                  .catch(() => {
+                    /* clipboard unavailable */
+                  })
               }
             }}
             dangerouslySetInnerHTML={{

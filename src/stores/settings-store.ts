@@ -35,12 +35,17 @@ interface SettingsState {
 
   // Actions
   setSettings: (settings: Partial<Settings>) => void
-  updateNestedSetting: <K extends keyof Settings>(
+  updateNestedSetting: <K extends keyof Settings, P extends keyof NonNullable<Settings[K]>>(
     section: K,
-    key: keyof Settings[K],
-    value: any,
+    key: P,
+    value: NonNullable<Settings[K]>[P],
   ) => void
-  updateDeepSetting: (section: keyof Settings, subsection: string, key: string, value: any) => void
+  updateDeepSetting: (
+    section: keyof Settings,
+    subsection: string,
+    key: string,
+    value: unknown,
+  ) => void
   replaceSettings: (settings: Settings) => void
   resetSettings: () => void
   setHasHydrated: (state: boolean) => void
@@ -199,14 +204,15 @@ if (isExtension) {
         const currentSettings = currentState.settings
         // 仅当设置确实发生变化时更新（避免循环更新）
         // 使用 sortedStringify 进行稳定比较
-        const sortedStringify = (obj: any): string => {
+        const sortedStringify = (obj: unknown): string => {
           if (typeof obj !== "object" || obj === null) return JSON.stringify(obj)
           if (Array.isArray(obj)) return JSON.stringify(obj.map(sortedStringify))
           return JSON.stringify(
             Object.keys(obj)
               .sort()
-              .reduce((result: any, key) => {
-                result[key] = sortedStringify(obj[key])
+              .reduce<Record<string, string>>((result, key) => {
+                const objectValue = obj as Record<string, unknown>
+                result[key] = sortedStringify(objectValue[key])
                 return result
               }, {}),
           )

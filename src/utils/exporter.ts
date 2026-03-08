@@ -191,7 +191,7 @@ export function htmlToMarkdown(el: Element): string {
         default:
           // 处理 Shadow DOM
           if ((element as HTMLElement).shadowRoot) {
-            return Array.from((element as HTMLElement).shadowRoot!.childNodes)
+            return Array.from((element as HTMLElement).shadowRoot?.childNodes || [])
               .map(processNode)
               .join("")
           }

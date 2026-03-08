@@ -202,11 +202,24 @@ export interface AIStudioModelInfo {
   name: string
 }
 
+export interface BackgroundMessageResponse {
+  success?: boolean
+  hasPermission?: boolean
+  removed?: boolean
+  isGenerating?: boolean
+  data?: string
+  error?: string
+  models?: AIStudioModelInfo[]
+  [key: string]: unknown
+}
+
 /**
  * Send a message to the background service worker with type safety
  */
-export function sendToBackground<T extends ExtensionMessage>(message: T): Promise<any> {
-  return chrome.runtime.sendMessage(message)
+export function sendToBackground<T extends ExtensionMessage, R = BackgroundMessageResponse>(
+  message: T,
+): Promise<R> {
+  return chrome.runtime.sendMessage(message) as Promise<R>
 }
 
 // ============================================================================
@@ -233,5 +246,5 @@ export interface MonitorEventPayload {
 
 export interface WindowMessage {
   type: string
-  payload?: any
+  payload?: unknown
 }

@@ -21,14 +21,28 @@ interface ScrollResponse {
   reason?: string
 }
 
+type ScrollWindow = Window & {
+  unsafeWindow?: Window
+}
+
+type ExtendedScrollToOptions = ScrollToOptions & {
+  behavior?: ScrollBehavior | "instant"
+  __bypassLock?: boolean
+}
+
+type FlutterProxyElement = HTMLElement & {
+  __isFlutterProxy?: boolean
+}
+
 /**
  * 获取主世界的 window 对象
  * 油猴脚本：使用 unsafeWindow
  * 浏览器插件：使用普通 window
  */
 function getMainWindow(): Window {
-  if (isUserscript && (window as any).unsafeWindow) {
-    return (window as any).unsafeWindow
+  const scrollWindow = window as ScrollWindow
+  if (isUserscript && scrollWindow.unsafeWindow) {
+    return scrollWindow.unsafeWindow
   }
   return window
 }
@@ -175,7 +189,8 @@ export async function smartScrollToTop(adapter: SiteAdapter | null): Promise<{
     const previousScrollTop = container.scrollTop
     const scrollHeight = container.scrollHeight
 
-    container.scrollTo({ top: 0, behavior: "instant", ...{ __bypassLock: true } } as any)
+    const options: ExtendedScrollToOptions = { top: 0, behavior: "instant", __bypassLock: true }
+    container.scrollTo(options)
 
     return { container, previousScrollTop, scrollHeight }
   }
@@ -211,11 +226,12 @@ export async function smartScrollToBottom(adapter: SiteAdapter | null): Promise<
   if (container && container.scrollHeight > container.clientHeight) {
     const previousScrollTop = container.scrollTop
 
-    container.scrollTo({
+    const options: ExtendedScrollToOptions = {
       top: container.scrollHeight,
       behavior: "instant",
-      ...{ __bypassLock: true },
-    } as any)
+      __bypassLock: true,
+    }
+    container.scrollTo(options)
 
     return { container, previousScrollTop }
   }
@@ -243,16 +259,22 @@ export async function smartScrollTo(
   const container = adapter?.getScrollContainer()
 
   if (container && container.scrollHeight > container.clientHeight) {
-    container.scrollTo({ top: position, behavior: "instant", ...{ __bypassLock: true } } as any)
+    const options: ExtendedScrollToOptions = {
+      top: position,
+      behavior: "instant",
+      __bypassLock: true,
+    }
+    container.scrollTo(options)
     return { success: true, currentScrollTop: container.scrollTop }
   }
 
   // 最终回退
-  document.documentElement.scrollTo({
+  const options: ExtendedScrollToOptions = {
     top: position,
     behavior: "instant",
-    ...{ __bypassLock: true },
-  } as any)
+    __bypassLock: true,
+  }
+  document.documentElement.scrollTo(options)
   return { success: true, currentScrollTop: document.documentElement.scrollTop }
 }
 
@@ -314,5 +336,5 @@ function createFlutterScrollProxy(): HTMLElement {
  * 检查容器是否是 Flutter 代理
  */
 export function isFlutterProxy(container: HTMLElement): boolean {
-  return (container as any).__isFlutterProxy === true
+  return (container as FlutterProxyElement).__isFlutterProxy === true
 }

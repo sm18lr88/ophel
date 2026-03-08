@@ -24,7 +24,12 @@ import { validateBackupData } from "~utils/backup-validator"
 import { t } from "~utils/i18n"
 import { MSG_CLEAR_ALL_DATA, MSG_RESTORE_DATA } from "~utils/messaging"
 import { getWebDavPermissionOrigin, sanitizeErrorMessage } from "~utils/network-security"
-import { CLEAR_ALL_FLAG_KEY, DEFAULT_SETTINGS, RESTORE_FLAG_KEY } from "~utils/storage"
+import {
+  CLEAR_ALL_FLAG_KEY,
+  DEFAULT_SETTINGS,
+  RESTORE_FLAG_KEY,
+  type Settings,
+} from "~utils/storage"
 import { showToast as showDomToast } from "~utils/toast"
 
 import { PageTitle, SettingCard, SettingRow } from "../components"
@@ -46,6 +51,10 @@ const formatSize = (bytes: number) => {
 const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message
   return String(error)
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
 const formatBackupTypeLabel = (type: unknown): string => {
@@ -289,10 +298,13 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
   const [pasteContent, setPasteContent] = useState("")
 
   // WebDAV 本地表单状态（与 Store 解耦，仅点击保存时同步）
-  const [webdavForm, setWebdavForm] = useState<any>({
+  const [webdavForm, setWebdavForm] = useState<NonNullable<Settings["webdav"]>>({
     url: "",
     username: "",
     password: "",
+    enabled: false,
+    syncMode: "manual",
+    syncInterval: 30,
     remoteDir: "ophel",
   })
 
@@ -335,13 +347,13 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
 
   const handleExport = async (type: "full" | "prompts" | "settings") => {
     try {
-      let exportData: any = {}
+      let exportData: Record<string, unknown> = {}
       const timestamp = new Date().toISOString()
       let filename = `ophel-backup-${timestamp.slice(0, 10)}.json`
 
       if (type === "full") {
         // 1. 完整导出
-        const localData = await new Promise<Record<string, any>>((resolve) =>
+        const localData = await new Promise<Record<string, unknown>>((resolve) =>
           chrome.storage.local.get(null, resolve),
         )
         // 过滤和处理数据
@@ -375,7 +387,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
       } else if (type === "prompts") {
         // 2. 仅提示词导出 (KEY: prompts)
         // 注意：不包含 folders 和 tags，按需求
-        const raw = await new Promise<Record<string, any>>((resolve) =>
+        const raw = await new Promise<Record<string, unknown>>((resolve) =>
           chrome.storage.local.get("prompts", resolve),
         )
         // 解析 Zustand 结构
@@ -398,7 +410,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
         filename = `ophel-prompts-${timestamp.slice(0, 10)}.json`
       } else if (type === "settings") {
         // 3. 仅设置导出 (KEY: settings)
-        const raw = await new Promise<Record<string, any>>((resolve) =>
+        const raw = await new Promise<Record<string, unknown>>((resolve) =>
           chrome.storage.local.get("settings", resolve),
         )
         let settingsData = {}
@@ -498,7 +510,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
           setConfirmConfig((prev) => ({ ...prev, show: false }))
           try {
             // 数据回填逻辑 (Rehydration)
-            const updates: Record<string, any> = {}
+            const updates: Record<string, unknown> = {}
 
             Object.entries(data.data).forEach(([k, v]) => {
               if (v === null || v === undefined) return
@@ -539,7 +551,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
                   // 如果 v 是 array (prompts list)，这里需要包装成 { prompts: v }
                   if (k === "prompts" && Array.isArray(v)) {
                     stateContent = { prompts: v }
-                  } else if (k === "settings" && !v["settings"]) {
+                  } else if (k === "settings" && (!isRecord(v) || v.settings === undefined)) {
                     // settings store 结构是 { settings: {...}, ...actions }
                     // 导出的 v 是 settings 对象本身
                     stateContent = { settings: v }
@@ -683,11 +695,11 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
 
     try {
       const origin = getWebDavPermissionOrigin(url)
-      const checkResult: any = await chrome.runtime.sendMessage({
+      const checkResult: unknown = await chrome.runtime.sendMessage({
         type: "CHECK_PERMISSION",
         origin,
       })
-      if (!checkResult.hasPermission) {
+      if (!isRecord(checkResult) || !checkResult.hasPermission) {
         setPermissionConfirm({
           show: true,
           onConfirm: async () => {

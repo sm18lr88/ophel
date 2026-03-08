@@ -81,6 +81,12 @@ interface UseShortcutsOptions {
   onToggleScrollLock?: () => void // 切换滚动锁定
 }
 
+type ShortcutWindowFlags = Window & {
+  __ophelPendingLocateOutline?: boolean
+  __ophelPendingSearchOutline?: boolean
+  __ophelPendingLocateConversation?: boolean
+}
+
 export function useShortcuts({
   settings,
   adapter,
@@ -367,6 +373,8 @@ export function useShortcuts({
 
   // 定位大纲（Alt+L）
   const locateOutline = useCallback(() => {
+    const shortcutWindow = window as ShortcutWindowFlags
+
     // 检查大纲功能是否启用
     if (!settings?.features?.outline?.enabled) {
       showToast(t("outlineDisabled") || "大纲功能已禁用")
@@ -384,7 +392,7 @@ export function useShortcuts({
 
     // 设置全局标记，OutlineTab 挂载时会检查这个标记
     // 同时触发事件，如果组件已挂载则立即处理
-    ;(window as any).__ophelPendingLocateOutline = true
+    shortcutWindow.__ophelPendingLocateOutline = true
     window.dispatchEvent(new CustomEvent("ophel:locateOutline"))
 
     showToast(t("locatingOutline") || "正在定位大纲位置...")
@@ -392,6 +400,8 @@ export function useShortcuts({
 
   // 搜索大纲（Alt+F）
   const searchOutline = useCallback(() => {
+    const shortcutWindow = window as ShortcutWindowFlags
+
     // 检查大纲功能是否启用
     if (!settings?.features?.outline?.enabled) {
       showToast(t("outlineDisabled") || "大纲功能已禁用")
@@ -408,7 +418,7 @@ export function useShortcuts({
     }
 
     // 设置全局标记，确保 OutlineTab 挂载后能检测到
-    ;(window as any).__ophelPendingSearchOutline = true
+    shortcutWindow.__ophelPendingSearchOutline = true
 
     // 触发事件通知 MainPanel 切换 Tab，以及 OutlineTab 聚焦输入框
     setTimeout(() => {
@@ -418,6 +428,8 @@ export function useShortcuts({
 
   // 定位当前会话（Alt+Shift+L）
   const locateConversation = useCallback(() => {
+    const shortcutWindow = window as ShortcutWindowFlags
+
     // 检查会话功能是否启用
     if (!settings?.features?.conversations?.enabled) {
       showToast(t("conversationsDisabled") || "会话功能已禁用")
@@ -440,7 +452,7 @@ export function useShortcuts({
     }
 
     // 设置全局标记，ConversationsTab 挂载时会检查这个标记
-    ;(window as any).__ophelPendingLocateConversation = true
+    shortcutWindow.__ophelPendingLocateConversation = true
     window.dispatchEvent(new CustomEvent("ophel:locateConversation"))
 
     showToast(t("locatingConversation") || "正在定位当前会话...")
@@ -667,13 +679,9 @@ export function useShortcuts({
           showToast(t("noClaudeKeys") || "未配置任何 Session Key", 2000)
         } else {
           // 尝试翻译错误信息，如果没有翻译则显示原始错误
-          const translatedError = t(result.error as any)
-          showToast(
-            translatedError !== result.error
-              ? translatedError
-              : result.error || t("operationFailed"),
-            2000,
-          )
+          const errorKey = result.error || "operationFailed"
+          const translatedError = t(errorKey)
+          showToast(translatedError !== errorKey ? translatedError : errorKey, 2000)
         }
       }
     } catch (error) {

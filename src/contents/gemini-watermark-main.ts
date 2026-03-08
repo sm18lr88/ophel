@@ -5,14 +5,35 @@ const OPHEL_WATERMARK_PROCESS_REQUEST = "OPHEL_WATERMARK_PROCESS_REQUEST"
 const OPHEL_WATERMARK_PROCESS_RESPONSE = "OPHEL_WATERMARK_PROCESS_RESPONSE"
 const GEMINI_MAIN_IMAGE_URL_PATTERN = /^https:\/\/lh3\.googleusercontent\.com\//i
 
+type GeminiWatermarkResponseMessage = {
+  type: typeof OPHEL_WATERMARK_PROCESS_RESPONSE
+  requestId?: string
+  success?: boolean
+  dataUrl?: string
+  error?: string
+}
+
+type GeminiWatermarkToggleMessage = {
+  type: typeof OPHEL_WATERMARK_FETCH_TOGGLE
+  enabled?: boolean
+}
+
+type GeminiWatermarkMainMessage = GeminiWatermarkResponseMessage | GeminiWatermarkToggleMessage
+
+type GeminiWatermarkMainWindow = Window & {
+  __ophelGeminiWatermarkMainInitialized?: boolean
+}
+
+const mainWindow = window as GeminiWatermarkMainWindow
+
 export const config: PlasmoCSConfig = {
   matches: ["https://gemini.google.com/*"],
   world: "MAIN",
   run_at: "document_start",
 }
 
-if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
-  ;(window as any).__ophelGeminiWatermarkMainInitialized = true
+if (!mainWindow.__ophelGeminiWatermarkMainInitialized) {
+  mainWindow.__ophelGeminiWatermarkMainInitialized = true
   document.documentElement.setAttribute("data-ophel-wm-main", "1")
   document.documentElement.setAttribute("data-ophel-wm-main-fetch-enabled", "0")
 
@@ -125,18 +146,18 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
 
     const normalizedUrl = replaceWithNormalSize(requestUrl)
 
-    const nextArgs = [...args] as Parameters<typeof fetch>
-    if (typeof nextArgs[0] === "string") {
-      nextArgs[0] = normalizedUrl as any
-    } else if (nextArgs[0] instanceof Request) {
-      nextArgs[0] = new Request(normalizedUrl, nextArgs[0]) as any
+    let requestInput: RequestInfo | URL = args[0]
+    if (typeof requestInput === "string") {
+      requestInput = normalizedUrl
+    } else if (requestInput instanceof Request) {
+      requestInput = new Request(normalizedUrl, requestInput)
     }
 
     let originalResponse: Response | null = null
     let originalBlob: Blob | null = null
 
     try {
-      originalResponse = await originalFetch(...nextArgs)
+      originalResponse = await originalFetch(requestInput, args[1])
       if (!originalResponse.ok) {
         return originalResponse
       }
@@ -175,11 +196,13 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
     if (event.source !== window) return
     if (event.origin !== window.location.origin) return
 
-    const data = event.data
+    const data = event.data as unknown
     if (!data || typeof data !== "object") return
 
-    if (data.type === OPHEL_WATERMARK_FETCH_TOGGLE) {
-      watermarkFetchEnabled = !!data.enabled
+    const message = data as GeminiWatermarkMainMessage
+
+    if (message.type === OPHEL_WATERMARK_FETCH_TOGGLE) {
+      watermarkFetchEnabled = !!message.enabled
       document.documentElement.setAttribute(
         "data-ophel-wm-main-fetch-enabled",
         watermarkFetchEnabled ? "1" : "0",
@@ -190,8 +213,8 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
       return
     }
 
-    if (data.type === OPHEL_WATERMARK_PROCESS_RESPONSE) {
-      const requestId = data.requestId
+    if (message.type === OPHEL_WATERMARK_PROCESS_RESPONSE) {
+      const requestId = message.requestId
       if (typeof requestId !== "string" || !pendingWatermarkRequests.has(requestId)) return
 
       const pending = pendingWatermarkRequests.get(requestId)
@@ -200,10 +223,10 @@ if (!(window as any).__ophelGeminiWatermarkMainInitialized) {
       pendingWatermarkRequests.delete(requestId)
       window.clearTimeout(pending.timeoutId)
 
-      if (data.success && typeof data.dataUrl === "string") {
-        pending.resolve(data.dataUrl)
+      if (message.success && typeof message.dataUrl === "string") {
+        pending.resolve(message.dataUrl)
       } else {
-        pending.reject(new Error(data.error || "Watermark process failed"))
+        pending.reject(new Error(message.error || "Watermark process failed"))
       }
     }
   })

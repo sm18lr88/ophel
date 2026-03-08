@@ -25,6 +25,13 @@ declare function GM_getValue<T>(key: string, defaultValue?: T): T
 declare function GM_setValue(key: string, value: unknown): void
 declare function GM_deleteValue(key: string): void
 
+type UserscriptWindow = Window & {
+  chrome?: typeof chrome
+  ophelUserscriptInitialized?: boolean
+}
+
+const userscriptWindow = window as UserscriptWindow
+
 if (typeof chrome === "undefined" || !chrome.storage) {
   // 创建 chrome.storage.local polyfill
   // 定义所有已知的 storage keys（用于 get(null) 时获取全部数据）
@@ -38,7 +45,7 @@ if (typeof chrome === "undefined" || !chrome.storage) {
     "conversations",
   ]
 
-  ;(window as any).chrome = {
+  userscriptWindow.chrome = {
     storage: {
       local: {
         get: (
@@ -145,23 +152,23 @@ if (typeof chrome === "undefined" || !chrome.storage) {
       getURL: (path: string) => path,
       sendMessage: () => Promise.resolve({}),
     },
-  }
+  } as unknown as typeof chrome
 }
 
-const chromeStorage = (window as any).chrome?.storage
+const chromeStorage = userscriptWindow.chrome?.storage
 if (chromeStorage && !chromeStorage.onChanged) {
   chromeStorage.onChanged = {
     addListener: () => {},
     removeListener: () => {},
-  }
+  } as unknown as typeof chrome.storage.onChanged
 }
 
-const chromeRuntime = (window as any).chrome?.runtime
+const chromeRuntime = userscriptWindow.chrome?.runtime
 if (chromeRuntime && !chromeRuntime.onMessage) {
   chromeRuntime.onMessage = {
     addListener: () => {},
     removeListener: () => {},
-  }
+  } as unknown as typeof chrome.runtime.onMessage
 }
 
 // 防止在 iframe 中执行
@@ -170,10 +177,10 @@ if (window.top !== window.self) {
 }
 
 // 防止重复初始化
-if ((window as any).ophelUserscriptInitialized) {
+if (userscriptWindow.ophelUserscriptInitialized) {
   throw new Error("Ophel: Already initialized")
 }
-;(window as any).ophelUserscriptInitialized = true
+userscriptWindow.ophelUserscriptInitialized = true
 
 // 注意：Flutter 滚动容器现在在 scroll-helper.ts 中直接通过 unsafeWindow 访问
 // 不再需要在这里注入 Main World 监听器

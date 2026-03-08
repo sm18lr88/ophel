@@ -24,8 +24,8 @@ declare function GM_xmlhttpRequest(details: {
   url: string
   headers?: Record<string, string>
   responseType?: string
-  onload?: (response: any) => void
-  onerror?: (error: any) => void
+  onload?: (response: { status: number; response: Blob }) => void
+  onerror?: (error: unknown) => void
 }): void
 
 async function fetchImageAsBlob(url: string): Promise<Blob> {
@@ -351,9 +351,14 @@ export class WatermarkRemover {
     this.userscriptOriginalFetch = pageWindow.fetch.bind(pageWindow)
 
     pageWindow.fetch = (async (...args: Parameters<typeof fetch>) => {
+      const originalFetch = this.userscriptOriginalFetch
+      if (!originalFetch) {
+        throw new Error("Original userscript fetch is unavailable")
+      }
+
       const requestUrl = this.getRequestUrl(args[0])
       if (!this.enabled || !requestUrl || !this.shouldInterceptGeminiImageUrl(requestUrl)) {
-        return this.userscriptOriginalFetch!.apply(pageWindow, args as any)
+        return originalFetch(...args)
       }
 
       try {
@@ -367,7 +372,7 @@ export class WatermarkRemover {
           }),
         })
       } catch {
-        return this.userscriptOriginalFetch!.apply(pageWindow, args as any)
+        return originalFetch(...args)
       }
     }) as typeof fetch
   }

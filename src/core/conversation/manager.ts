@@ -51,6 +51,8 @@ export interface ConversationBatchDeleteResult {
 
 type GeminiCidMigrationResult = "migrated" | "pending_email" | "noop"
 
+type DOMToolkitMultiWatcher = ReturnType<typeof DOMToolkit.watchMultiple>
+
 export class ConversationManager {
   public readonly siteAdapter: SiteAdapter
 
@@ -58,7 +60,7 @@ export class ConversationManager {
   private observerConfig: ConversationObserverConfig | null = null
   private sidebarObserverStop: (() => void) | null = null
   private observerContainer: Node | null = null
-  private titleWatcher: any = null // DOMToolkit watcher instance
+  private titleWatcher: DOMToolkitMultiWatcher | null = null // DOMToolkit watcher instance
   private pollInterval: NodeJS.Timeout | null = null
   private geminiMigrationTimer: NodeJS.Timeout | null = null
   private geminiMigrationRetryCount = 0

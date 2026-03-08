@@ -42,7 +42,6 @@ import { useGlobalSearchPreview } from "./global-search/useGlobalSearchPreview"
 import { useGlobalSearchSyntax } from "./global-search/useGlobalSearchSyntax"
 import type {
   GlobalSearchCategoryId,
-  GlobalSearchGroupedResult,
   GlobalSearchMatchReason,
   GlobalSearchResultCategory,
   GlobalSearchResultItem,
@@ -54,7 +53,6 @@ import {
   parseGlobalSearchQuery,
   stringifyGlobalSearchQuery,
   toGlobalSearchTokens,
-  type GlobalSearchSyntaxFilter,
 } from "./global-search/syntax"
 import { useTagsStore } from "~stores/tags-store"
 import {
@@ -2083,8 +2081,20 @@ export const App = () => {
   useEffect(() => {
     if (!conversationManager || typeof chrome === "undefined") return
 
-    const handler = (message: any, _sender: any, sendResponse: any) => {
-      if (message?.type === MSG_CLEAR_ALL_DATA) {
+    const isClearAllDataMessage = (
+      value: unknown,
+    ): value is {
+      type: typeof MSG_CLEAR_ALL_DATA
+    } => {
+      return typeof value === "object" && value !== null && "type" in value
+    }
+
+    const handler: Parameters<typeof chrome.runtime.onMessage.addListener>[0] = (
+      message,
+      _sender,
+      sendResponse,
+    ) => {
+      if (isClearAllDataMessage(message) && message.type === MSG_CLEAR_ALL_DATA) {
         conversationManager.destroy()
         sendResponse({ success: true })
         return true

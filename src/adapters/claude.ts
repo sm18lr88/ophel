@@ -588,7 +588,7 @@ export class ClaudeAdapter extends SiteAdapter {
 
   private async findConversationMenuButton(
     row: HTMLElement,
-    id: string,
+    _id: string,
   ): Promise<HTMLElement | null> {
     const owner = (row.closest("li") || row.parentElement || row) as HTMLElement
     const menuSelector = [
@@ -936,8 +936,10 @@ export class ClaudeAdapter extends SiteAdapter {
     const calculateUserQueryWordCount = (startEl: Element): number => {
       // Claude 结构：用户消息和AI回复在同一滚动容器中，不是严格的siblings
       // 需要向下遍历找到下一个用户消息之前的所有AI回复
-      const allUserQueries = Array.from(scrollContainer!.querySelectorAll(userQuerySelector))
-      const allResponses = Array.from(scrollContainer!.querySelectorAll(".font-claude-response"))
+      const allUserQueries = Array.from(scrollContainer?.querySelectorAll(userQuerySelector) ?? [])
+      const allResponses = Array.from(
+        scrollContainer?.querySelectorAll(".font-claude-response") ?? [],
+      )
 
       const startIndex = allUserQueries.indexOf(startEl)
       if (startIndex === -1) return 0

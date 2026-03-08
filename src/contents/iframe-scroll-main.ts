@@ -17,9 +17,15 @@ export const config: PlasmoCSConfig = {
   run_at: "document_start",
 }
 
+type IframeScrollWindow = Window & {
+  __ophelIframeScrollInitialized?: boolean
+}
+
+const iframeScrollWindow = window as IframeScrollWindow
+
 // 防止重复初始化
-if (!(window as any).__ophelIframeScrollInitialized) {
-  ;(window as any).__ophelIframeScrollInitialized = true
+if (!iframeScrollWindow.__ophelIframeScrollInitialized) {
+  iframeScrollWindow.__ophelIframeScrollInitialized = true
 
   /**
    * 查找 iframe 内的 Flutter 滚动容器（图文并茂模式）

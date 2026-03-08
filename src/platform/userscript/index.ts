@@ -6,6 +6,7 @@
 
 import { t } from "~utils/i18n"
 import { sanitizeErrorMessage, validateLlmProviderUrl } from "~utils/network-security"
+import type { ClaudeSessionKey, ClaudeSessionKeysState } from "~utils/storage"
 
 import type {
   FetchOptions,
@@ -79,6 +80,11 @@ const userscriptStorage: PlatformStorage = {
   },
 }
 
+interface ClaudeSessionKeysPersistedData {
+  state?: ClaudeSessionKeysState
+  version?: number
+}
+
 /**
  * 油猴脚本平台实现
  */
@@ -115,7 +121,7 @@ export const platform: Platform = {
                   url: targetUrl,
                   method: options?.method || "GET",
                   headers: options?.headers,
-                  responseType: "blob" as any,
+                  responseType: "blob",
                   onload(blobResponse) {
                     res(blobResponse.response as Blob)
                   },
@@ -272,8 +278,10 @@ export const platform: Platform = {
     try {
       // 1. 从 GM 存储读取 claudeSessionKeys
       // Zustand persist 存储结构: { state: { keys: [], currentKeyId: "" }, version: 0 }
-      const storageData = GM_getValue("claudeSessionKeys") as any
-      const rawKeys = storageData?.state?.keys || []
+      const storageData = GM_getValue<ClaudeSessionKeysPersistedData | undefined>(
+        "claudeSessionKeys",
+      )
+      const rawKeys: ClaudeSessionKey[] = storageData?.state?.keys || []
 
       if (rawKeys.length === 0) {
         return { success: false, error: "noClaudeKeys" }
@@ -282,7 +290,7 @@ export const platform: Platform = {
       const currentId = storageData?.state?.currentKeyId
 
       // 2. 筛选可用 Keys 并排序 (Pro 优先)
-      let availableKeys = rawKeys.filter((k: any) => k.isValid !== false)
+      let availableKeys = rawKeys.filter((k) => k.isValid !== false)
 
       // 如果没有可用 Key，尝试使用所有 Key
       if (availableKeys.length === 0) {
@@ -290,7 +298,7 @@ export const platform: Platform = {
       }
 
       // 排序: Pro 优先，然后是名称
-      availableKeys.sort((a: any, b: any) => {
+      availableKeys.sort((a, b) => {
         const isAPro = a.accountType?.toLowerCase()?.includes("pro")
         const isBPro = b.accountType?.toLowerCase()?.includes("pro")
         if (isAPro && !isBPro) return -1
@@ -299,7 +307,7 @@ export const platform: Platform = {
       })
 
       // 3. 找到下一个 Key
-      const currentIndex = availableKeys.findIndex((k: any) => k.id === currentId)
+      const currentIndex = availableKeys.findIndex((k) => k.id === currentId)
 
       // 如果只有一个 Key 且当前正在使用它，则不执行切换
       if (availableKeys.length === 1 && currentIndex !== -1) {

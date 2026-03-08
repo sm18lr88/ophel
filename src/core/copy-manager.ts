@@ -134,6 +134,7 @@ export class CopyManager {
       .writeText(copyText)
       .then(() => showToast(t("formulaCopied")))
       .catch((err) => {
+        /* clipboard fallback */
         console.error("[FormulaCopy] Copy failed:", err)
         showToast(t("copyFailed"))
       })
@@ -330,6 +331,7 @@ export class CopyManager {
             showCopySuccess(btn, { size: 14 })
           })
           .catch((err) => {
+            /* clipboard fallback */
             console.error("[TableCopy] Copy failed:", err)
             showToast(t("copyFailed"))
           })
