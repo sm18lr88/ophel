@@ -1,9 +1,3 @@
-/**
- * Folders Store - Zustand 状态管理
- *
- * 管理会话文件夹列表
- */
-
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 
@@ -33,10 +27,7 @@ const normalizeFolder = (folder: Folder): Folder => ({
 
 const normalizeFolders = (folders: Folder[]): Folder[] => folders.map(normalizeFolder)
 
-// ==================== Store 类型定义 ====================
-
 interface FoldersState {
-  // 状态
   folders: Folder[]
   _hasHydrated: boolean
 
@@ -47,8 +38,6 @@ interface FoldersState {
   moveFolder: (id: string, direction: "up" | "down") => void
   setHasHydrated: (state: boolean) => void
 }
-
-// ==================== Store 创建 ====================
 
 export const useFoldersStore = create<FoldersState>()(
   persist(
@@ -84,7 +73,6 @@ export const useFoldersStore = create<FoldersState>()(
         })),
 
       deleteFolder: (id) => {
-        // 不允许删除 inbox
         if (id === "inbox") return
         set((state) => ({
           folders: state.folders.filter((f) => f.id !== id),
@@ -94,7 +82,7 @@ export const useFoldersStore = create<FoldersState>()(
       moveFolder: (id, direction) =>
         set((state) => {
           const index = state.folders.findIndex((f) => f.id === id)
-          if (index === -1 || index === 0) return state // Inbox 固定在第一位
+          if (index === -1 || index === 0) return state
 
           const newIndex = direction === "up" ? index - 1 : index + 1
           if (newIndex <= 0 || newIndex >= state.folders.length) return state
@@ -130,12 +118,8 @@ export const useFoldersStore = create<FoldersState>()(
   ),
 )
 
-// ==================== 便捷 Hooks ====================
-
 export const useFoldersHydrated = () => useFoldersStore((state) => state._hasHydrated)
 export const useFolders = () => useFoldersStore((state) => state.folders)
-
-// ==================== 非 React 环境使用 ====================
 
 export const getFoldersState = () => useFoldersStore.getState().folders
 export const getFoldersStore = () => useFoldersStore.getState()

@@ -1,16 +1,16 @@
 /**
- * 会话 Tab 样式
- * 从油猴脚本 geminiHelper.user.js 11608~12124 行原封不动迁移
+ *  Tab 
+ *  geminiHelper.user.js 11608~12124 
  */
 
-/* ========== 主面板内容区滚动条隐藏 ========== */
+/* ==========  ========== */
 .gh-panel-content::-webkit-scrollbar {
   display: none;
   width: 0;
   height: 0;
 }
 
-/* ========== createUI 内联样式修复 ========== */
+/* ========== createUI  ========== */
 .conversations-folder-item.expanded {
   border-bottom-left-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -26,7 +26,7 @@
   border-top: none !important;
 }
 
-/* 统一工具栏按钮风格 (Ghost Button - 仿大纲 Tab) */
+/*  (Ghost Button -  Tab) */
 .conversations-toolbar-btn {
   background: transparent !important;
   border: 1px solid transparent !important;
@@ -55,14 +55,14 @@
   border-color: var(--gh-primary, #3b82f6) !important;
 }
 
-/* 修复 SVG 颜色 */
+/*  SVG  */
 .conversations-toolbar-btn svg {
   fill: currentColor !important;
   width: 16px !important;
   height: 16px !important;
 }
 
-/* ========== 会话面板样式 ========== */
+/* ==========  ========== */
 .conversations-content {
   display: flex;
   flex-direction: column;
@@ -176,7 +176,7 @@
   height: 0;
 } /* Chrome */
 
-/* 会话 Tab 主容器隐藏滚动条 */
+/*  Tab  */
 .conversations-content {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
@@ -210,7 +210,7 @@
 }
 
 .conversations-folder-item.expanded {
-  /* background 由组件内联样式控制，移除此处的 !important */
+  /* background  !important */
   border: 2px solid var(--gh-border-active);
   box-shadow: 0 2px 8px var(--gh-shadow-sm);
   border-radius: 8px 8px 0 0;
@@ -353,7 +353,7 @@
   font-size: 14px;
 }
 
-/* 搜索栏样式 */
+/*  */
 .conversations-search-bar {
   padding: 8px 12px;
   border-bottom: 1px solid var(--gh-border, #e5e7eb);
@@ -443,7 +443,7 @@
   display: block;
 }
 
-/* 标签样式 */
+/*  */
 .conversations-tag {
   display: inline-flex;
   align-items: center;
@@ -507,7 +507,7 @@
   flex-shrink: 0;
 }
 
-/* 标签筛选按钮 */
+/*  */
 .conversations-tag-search-btn {
   cursor: pointer;
   width: 36px;
@@ -571,7 +571,7 @@
   pointer-events: none;
 }
 
-/* 标签筛选菜单 */
+/*  */
 .conversations-tag-filter-menu {
   position: absolute;
   top: calc(100% + 4px);
@@ -664,7 +664,7 @@
   justify-content: center;
 }
 
-/* 标签管理弹窗 */
+/*  */
 .conversations-tag-manager-list {
   max-height: 250px;
   overflow-y: auto;
@@ -733,7 +733,7 @@
   color: var(--gh-primary, #3b82f6);
 }
 
-/* 颜色选择器 */
+/*  */
 .conversations-color-picker {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
@@ -760,7 +760,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 会话列表样式 */
+/*  */
 .conversations-list {
   width: calc(100% - 8px);
   margin-left: 4px;
@@ -884,7 +884,7 @@
   justify-content: center;
 }
 
-/* 自定义复选框样式 */
+/*  */
 .conversations-folder-checkbox,
 .conversations-item-checkbox {
   appearance: none;
@@ -904,14 +904,14 @@
   transition: all 0.2s;
 }
 
-/* 选中状态 */
+/*  */
 .conversations-folder-checkbox:checked,
 .conversations-item-checkbox:checked {
   background-color: var(--gh-primary, #4285f4);
   border-color: var(--gh-primary, #4285f4);
 }
 
-/* 选中时的勾号图标 */
+/*  */
 .conversations-folder-checkbox:checked::after,
 .conversations-item-checkbox:checked::after {
   content: "";
@@ -924,7 +924,7 @@
   display: block;
 }
 
-/* 悬停状态 */
+/*  */
 .conversations-folder-checkbox:hover,
 .conversations-item-checkbox:hover {
   border-color: var(--gh-primary, #4285f4);
@@ -1006,7 +1006,7 @@
   background: var(--gh-bg-danger, #fef2f2);
 }
 
-/* 定位高亮动画 */
+/*  */
 .conversations-item.locate-highlight {
   background: var(--gh-outline-locate-bg) !important;
   border: 2px solid var(--gh-outline-locate-border) !important;
@@ -1025,7 +1025,7 @@
   }
 }
 
-/* 复选框样式 */
+/*  */
 .conversations-folder-checkbox {
   margin-right: 8px;
   width: 16px;
@@ -1044,7 +1044,7 @@
   flex-shrink: 0;
 }
 
-/* 底部批量操作栏 */
+/*  */
 .conversations-batch-bar {
   position: sticky;
   bottom: 0;
@@ -1111,7 +1111,7 @@
   border: none;
 }
 
-/* 会话对话框样式 */
+/*  */
 .conversations-dialog-overlay {
   position: fixed;
   top: 0;
@@ -1183,7 +1183,7 @@
   margin-top: 20px;
 }
 
-/* 文件夹选择列表 */
+/*  */
 .conversations-folder-select-list {
   max-height: 250px;
   overflow-y: auto;
@@ -1202,7 +1202,7 @@
   background: var(--gh-hover, #f3f4f6);
 }
 
-/* Emoji 选择器 */
+/* Emoji  */
 .conversations-emoji-picker {
   display: flex;
   flex-wrap: wrap;
@@ -1231,14 +1231,14 @@
   box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
 
-/* 搜索高亮 */
+/*  */
 .conversations-highlight {
   background: rgba(255, 213, 0, 0.4);
   padding: 0 2px;
   border-radius: 2px;
 }
 
-/* 动画 */
+/*  */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1248,7 +1248,7 @@
   }
 }
 
-/* 隐藏滚动条 */
+/*  */
 .conversations-tag-filter-list,
 .conversations-tag-manager-list {
   max-height: 200px;
@@ -1264,7 +1264,7 @@
   height: 0;
 }
 
-/* 标签筛选菜单 */
+/*  */
 .conversations-tag-filter-menu {
   position: absolute;
   top: 100%;

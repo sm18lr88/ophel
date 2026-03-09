@@ -1,8 +1,5 @@
 /**
- * 页面内收藏图标管理器
  *
- * 在页面的标题元素（h1~h6）和用户问题旁边注入收藏图标，
- * 用户可直接点击收藏/取消收藏，无需打开大纲面板。
  */
 
 import type { OutlineItem, SiteAdapter } from "~adapters/base"
@@ -12,10 +9,8 @@ import { useBookmarkStore } from "~stores/bookmarks-store"
 import { DOMToolkit } from "~utils/dom-toolkit"
 import { createSVGElement } from "~utils/icons"
 
-// 显示模式
 export type InlineBookmarkDisplayMode = "always" | "hover" | "hidden"
 
-// 图标容器的 class 名
 const ICON_CLASS = "gh-inline-bookmark"
 const ICON_BOOKMARKED_CLASS = "gh-inline-bookmark--bookmarked"
 
@@ -41,28 +36,21 @@ export class InlineBookmarkManager {
     this.adapter = adapter
     this.displayMode = displayMode
 
-    // 1. 注入全局 CSS 变量定义（Head）
     this.injectGlobalStyles()
 
-    // 订阅大纲变化
     this.unsubscribe = outlineManager.subscribe(() => {
       this.injectBookmarkIcons()
     })
 
-    // 订阅书签变化
     this.unsubscribeBookmarks = useBookmarkStore.subscribe(() => {
       this.updateAllIconStates()
     })
 
-    // 初始注入
     this.injectBookmarkIcons()
-    // 设置初始显示模式
     this.setDisplayMode(displayMode)
   }
 
   /**
-   * 1. 注入全局 CSS 变量 (Inheritable)
-   * 控制不同模式下的 Opacity 和 Display
    */
   private injectGlobalStyles() {
     if (document.getElementById(GLOBAL_STYLE_ID)) return
@@ -84,8 +72,8 @@ export class InlineBookmarkManager {
 
       body.gh-inline-bookmark-mode-hover {
         --gh-icon-display: flex;
-        --gh-icon-opacity-default: 0; /* 默认隐藏 */
-        --gh-icon-opacity-parent-hover: 0.5; /* 父元素悬停时显示 */
+        --gh-icon-opacity-default: 0;
+        --gh-icon-opacity-parent-hover: 0.5;
       }
 
       body.gh-inline-bookmark-mode-hidden {
@@ -97,17 +85,12 @@ export class InlineBookmarkManager {
   }
 
   /**
-   * 2. 注入 Scoped CSS (Into Shadow Root or Document)
-   * 包含具体的布局和交互样式，使用全局变量
    */
   private injectScopedStyles(root: Node) {
     if (this.injectedRoots.has(root)) return
 
-    // 如果是 Document，检查是否已存在（避免重复）
-    // 如果是 ShadowRoot，需要在该 Root 下查找
     // const parent = root instanceof Document ? document.head : root
 
-    // 检查是否存在
     if (root instanceof Document) {
       // Global styles handled separately, but scoped styles for main doc also needed?
       // Actually injectGlobalStyles handles body classes.
@@ -130,7 +113,7 @@ export class InlineBookmarkManager {
     style.textContent = `
       .${ICON_CLASS} {
         position: absolute;
-        left: var(--gh-icon-left, -24px); /* 支持通过 CSS 变量调整位置 */
+        left: var(--gh-icon-left, -24px);
         top: 50%;
         transform: translateY(-50%);
         cursor: pointer;
@@ -142,7 +125,6 @@ export class InlineBookmarkManager {
         z-index: 10;
         color: var(--gh-primary, #f59e0b);
 
-        /* 使用 CSS 变量控制显示 */
         display: var(--gh-icon-display, flex);
         opacity: var(--gh-icon-opacity-default, 0.3);
       }
@@ -179,7 +161,6 @@ export class InlineBookmarkManager {
   }
 
   /**
-   * 设置显示模式
    */
   setDisplayMode(mode: InlineBookmarkDisplayMode) {
     this.displayMode = mode
@@ -188,12 +169,10 @@ export class InlineBookmarkManager {
       "gh-inline-bookmark-mode-hover",
       "gh-inline-bookmark-mode-hidden",
     )
-    // 这会触发全局 CSS 变量的更新，进而通过继承影响所有 Shadow DOM 内的图标
     document.body.classList.add(`gh-inline-bookmark-mode-${mode}`)
   }
 
   /**
-   * 注入收藏图标到所有标题元素
    */
   injectBookmarkIcons() {
     const flatItems = this.outlineManager.getFlatItems()
@@ -206,27 +185,22 @@ export class InlineBookmarkManager {
 
       const element = item.element as HTMLElement
 
-      // 1. 确保该元素所在的 Root (Document 或 ShadowRoot) 注入了 Scoped CSS
       const root = element.getRootNode()
       if (root) {
         this.injectScopedStyles(root)
       }
 
-      // 2. 注入图标 (同前，防止重复)
       if (this.injectedElements.has(element)) continue
       if (element.querySelector(`.${ICON_CLASS}`)) {
         this.injectedElements.add(element)
         continue
       }
 
-      // 确保元素有 position: relative
       element.classList.add("gh-has-inline-bookmark")
 
-      // 创建图标容器
       const iconWrapper = document.createElement("span")
       iconWrapper.className = ICON_CLASS
 
-      // 生成签名和检查是否已收藏
       const signature = this.outlineManager.getSignature(item)
       const isBookmarked = bookmarkStore.getBookmarkId(sessionId, signature) !== null
 
@@ -236,7 +210,6 @@ export class InlineBookmarkManager {
 
       iconWrapper.replaceChildren(this.createStarSvgElement(isBookmarked))
 
-      // 数据与事件
       iconWrapper.dataset.signature = signature
       iconWrapper.dataset.level = String(item.level)
       iconWrapper.dataset.text = item.text
@@ -253,16 +226,13 @@ export class InlineBookmarkManager {
   }
 
   /**
-   * 创建星星 SVG
    */
   /**
-   * 创建星星 SVG (DOM API)
    */
   private createStarSvgElement(filled: boolean): SVGElement {
     const fillColor = filled ? "#f59e0b" : "none"
     const strokeColor = filled ? "#f59e0b" : "currentColor"
 
-    // 1. 创建 SVG 容器
     const svg = createSVGElement("svg", {
       viewBox: "0 0 24 24",
       width: "16",
@@ -274,7 +244,6 @@ export class InlineBookmarkManager {
       "stroke-linejoin": "round",
     })
 
-    // 2. 创建 Polygon
     const polygon = createSVGElement("polygon", {
       points:
         "12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2",
@@ -285,7 +254,6 @@ export class InlineBookmarkManager {
   }
 
   /**
-   * 处理书签点击
    */
   private handleBookmarkClick(item: OutlineItem, signature: string, _iconWrapper: HTMLElement) {
     const bookmarkStore = useBookmarkStore.getState()
@@ -300,7 +268,6 @@ export class InlineBookmarkManager {
   }
 
   /**
-   * 更新所有图标状态
    */
   updateAllIconStates() {
     const bookmarkStore = useBookmarkStore.getState()
@@ -332,7 +299,6 @@ export class InlineBookmarkManager {
   }
 
   /**
-   * 清理
    */
   cleanup() {
     if (this.unsubscribe) {
@@ -344,12 +310,9 @@ export class InlineBookmarkManager {
       this.unsubscribeBookmarks = null
     }
 
-    // 清理全局样式
     document.getElementById(GLOBAL_STYLE_ID)?.remove()
-    document.getElementById(SCOPED_STYLE_ID)?.remove() // 清理 Doc 上的 Scoped
+    document.getElementById(SCOPED_STYLE_ID)?.remove()
 
-    // 清理 Shadow DOM 中的 Styles 和 Icons
-    // 注意：我们也需要清理 Shadow Root 里的 style 标签
     const scopedStyles = DOMToolkit.query(`#${SCOPED_STYLE_ID}`, {
       all: true,
       shadow: true,

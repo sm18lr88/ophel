@@ -1,6 +1,6 @@
 /* ==================== Queue Overlay ==================== */
 
-/* 折叠态胶囊 */
+/*  */
 .gh-queue-capsule {
   position: fixed;
   z-index: 99998;
@@ -47,7 +47,7 @@
   font-weight: 600;
 }
 
-/* 展开态面板 */
+/*  */
 .gh-queue-panel {
   position: fixed;
   z-index: 99999;
@@ -66,7 +66,7 @@
   font-family: var(--gh-font-family, system-ui, -apple-system, sans-serif);
 }
 
-/* 面板头部 */
+/*  */
 .gh-queue-header {
   display: flex;
   align-items: center;
@@ -110,7 +110,7 @@
   color: var(--gh-text, #1f2937);
 }
 
-/* 队列列表 */
+/*  */
 .gh-queue-list {
   flex: 1;
   overflow-y: auto;
@@ -272,7 +272,7 @@
   color: var(--gh-text, #1f2937);
 }
 
-/* 状态指示器 */
+/*  */
 .gh-queue-item[data-status="sending"] {
   border-left: 3px solid var(--gh-accent, #4285f4);
 }
@@ -285,7 +285,7 @@
   border-left: 3px solid var(--gh-text-danger, #dc2626);
 }
 
-/* 输入区 */
+/*  */
 .gh-queue-input-area {
   padding: 12px;
   border-top: 1px solid var(--gh-border-light, #f3f4f6);
@@ -347,7 +347,7 @@
   cursor: not-allowed;
 }
 
-/* 底部状态 */
+/*  */
 .gh-queue-status {
   display: flex;
   align-items: center;
@@ -386,7 +386,7 @@
   }
 }
 
-/* 快捷键提示 */
+/*  */
 .gh-queue-shortcut-hint {
   margin-left: auto;
   font-size: 10px;

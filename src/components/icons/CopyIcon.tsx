@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 复制 (两个重叠的方块)
- * 风格：Outline (stroke-based)
+ * SVG  -  ()
+ * Outline (stroke-based)
  */
 import React from "react"
 

@@ -69,14 +69,11 @@ export class ConversationManager {
   private syncUnpin: boolean = false
   private syncDelete: boolean = true
 
-  // 数据变更回调（用于通知 UI 刷新）
   private onChangeCallbacks: Array<() => void> = []
 
   constructor(adapter: SiteAdapter) {
     this.siteAdapter = adapter
   }
-
-  // ==================== Store 访问器 ====================
 
   private get folders(): Folder[] {
     return getFoldersStore().folders
@@ -95,8 +92,6 @@ export class ConversationManager {
   }
 
   /**
-   * 订阅数据变更事件
-   * @returns 取消订阅函数
    */
   onDataChange(callback: () => void): () => void {
     this.onChangeCallbacks.push(callback)
@@ -106,26 +101,21 @@ export class ConversationManager {
   }
 
   /**
-   * 触发数据变更通知
    */
   notifyDataChange() {
     this.onChangeCallbacks.forEach((cb) => cb())
   }
 
   async init() {
-    // 等待所有 stores hydration 完成
     await this.waitForHydration()
 
-    // Gemini 老用户升级迁移：将旧版数字 cid 自动迁移为当前账号邮箱 cid
     const migrateResult = this.tryMigrateGeminiLegacyCidToEmail()
     if (migrateResult === "pending_email") {
       this.startGeminiMigrationRetry()
     }
 
-    // 检查是否刚恢复了备份数据，如果是则跳过自动同步以保持备份的干净状态
     const isRestore = await consumeRestoreFlag()
 
-    // 首次安装或当前站点数据为空时，自动加载全部会话
     const currentSiteCount = Object.keys(this.getAllConversations()).length
     if (currentSiteCount === 0 && this.siteAdapter.loadAllConversations && !isRestore) {
       try {
@@ -133,15 +123,12 @@ export class ConversationManager {
         if (sidebarReady) {
           await this.autoFullSync()
         }
-      } catch {
-        // 静默处理错误
-      }
+      } catch {}
     }
 
     this.startSidebarObserver()
   }
 
-  // Gemini 老数据迁移：数字 cid(0/1/2...) -> 当前邮箱 cid
   private tryMigrateGeminiLegacyCidToEmail(): GeminiCidMigrationResult {
     if (this.siteAdapter.getSiteId() !== SITE_IDS.GEMINI) return "noop"
     const all = this.conversations
@@ -154,7 +141,6 @@ export class ConversationManager {
     const currentCid = this.siteAdapter.getCurrentCid?.()
     if (!this.isEmailCid(currentCid)) return "pending_email"
 
-    // 优先迁移与当前 /u/<n> 对应的旧分桶；若不存在且仅有一个旧分桶，则迁移该分桶（跨浏览器导入场景）
     const currentUserIndex = this.getGeminiUserIndexFromPath()
     const hasCurrentIndexBucket = legacyEntries.some(
       ([_, conv]) => (conv.cid || "0") === currentUserIndex,
@@ -196,7 +182,7 @@ export class ConversationManager {
     if (this.siteAdapter.getSiteId() !== SITE_IDS.GEMINI) return
     if (this.geminiMigrationTimer) return
 
-    const maxRetries = 120 // 约 3 分钟，覆盖页面延迟渲染场景
+    const maxRetries = 120
     this.geminiMigrationRetryCount = 0
 
     this.geminiMigrationTimer = setInterval(() => {
@@ -328,11 +314,6 @@ export class ConversationManager {
     }
   }
 
-  // ================= Data Loading（已迁移到 Zustand stores）=================
-
-  // 不再需要 loadData / loadTags / saveFolders / saveConversations / saveTags
-  // 数据加载由 Zustand persist 自动处理
-
   // ================= Observer Logic =================
 
   startSidebarObserver() {
@@ -420,7 +401,6 @@ export class ConversationManager {
     const existing = conversations[info.id]
 
     if (isNew && !existing) {
-      // 新会话
       getConversationsStore().addConversation({
         id: info.id,
         siteId: this.siteAdapter.getSiteId(),
@@ -434,7 +414,6 @@ export class ConversationManager {
       })
       this.notifyDataChange()
     } else if (existing) {
-      // 更新现有会话
       if (info.isPinned !== undefined && info.isPinned !== existing.pinned) {
         if (info.isPinned) {
           getConversationsStore().updateConversation(info.id, { pinned: true })
@@ -467,11 +446,9 @@ export class ConversationManager {
 
           const existing = this.conversations[info.id]
           if (!existing) {
-            // 新会话
             this.updateConversationFromObservation(info, true)
             this.monitorConversationTitle(el as HTMLElement, info.id)
           } else {
-            // 检测标题变更
             if (info.title && info.title !== existing.title) {
               getConversationsStore().updateConversation(info.id, { title: info.title })
               this.notifyDataChange()
@@ -544,7 +521,6 @@ export class ConversationManager {
   }
 
   getConversations(folderId?: string) {
-    // 按当前站点和团队过滤
     const currentCid = this.siteAdapter.getCurrentCid?.() || null
 
     let result = Object.values(this.conversations).filter((c) => this.matchesCid(c, currentCid))
@@ -564,9 +540,8 @@ export class ConversationManager {
   }
 
   deleteFolder(id: string) {
-    if (id === "inbox") return // 禁止删除 inbox
+    if (id === "inbox") return
 
-    // 将会话移动到 inbox
     getConversationsStore().moveConversationsToInbox(id)
 
     getFoldersStore().deleteFolder(id)
@@ -724,7 +699,6 @@ export class ConversationManager {
 
   deleteTag(tagId: string) {
     getTagsStore().deleteTag(tagId)
-    // 从所有会话中移除该标签引用
     getConversationsStore().removeTagFromAll(tagId)
   }
 
@@ -757,7 +731,6 @@ export class ConversationManager {
   }
 
   /**
-   * 获取当前站点/团队的所有会话
    */
   getAllConversations(): Record<string, Conversation> {
     const currentCid = this.siteAdapter.getCurrentCid?.() || null
@@ -772,7 +745,6 @@ export class ConversationManager {
   }
 
   /**
-   * 从侧边栏同步会话（增量）
    */
   syncConversations(
     targetFolderId: string | null = null,
@@ -796,7 +768,6 @@ export class ConversationManager {
       const existing = conversations[storageKey]
 
       if (existing) {
-        // 更新已有会话
         const updates: Partial<Conversation> = {}
         let needsUpdate = false
 
@@ -825,7 +796,6 @@ export class ConversationManager {
           updatedCount++
         }
       } else {
-        // 新会话
         store.addConversation({
           id: item.id,
           siteId: this.siteAdapter.getSiteId(),
@@ -841,7 +811,6 @@ export class ConversationManager {
       }
     })
 
-    // 记住用户选择
     if (targetFolderId) {
       store.setLastUsedFolderId(targetFolderId)
     }
@@ -850,7 +819,6 @@ export class ConversationManager {
   }
 
   /**
-   * 检查会话是否属于当前站点和团队
    */
   matchesCid(conv: Conversation, currentCid: string | null): boolean {
     const currentSiteId = this.siteAdapter.getSiteId()
@@ -863,7 +831,6 @@ export class ConversationManager {
   }
 
   /**
-   * 获取侧边栏会话顺序
    */
   getSidebarConversationOrder(): string[] {
     const config = this.siteAdapter.getConversationObserverConfig?.()
@@ -882,7 +849,6 @@ export class ConversationManager {
   // ================= Utility Methods =================
 
   /**
-   * 格式化时间显示
    */
   formatTime(timestamp: number): string {
     if (!timestamp) return ""
@@ -901,7 +867,6 @@ export class ConversationManager {
   // ================= Export Functionality =================
 
   /**
-   * 导出会话
    */
   async exportConversation(
     convId: string,
@@ -913,7 +878,6 @@ export class ConversationManager {
       return false
     }
 
-    // 检查是否为当前会话
     const currentSessionId = this.siteAdapter.getSessionId()
     if (currentSessionId !== convId) {
       showToast(t("exportNeedOpenFirst"))
@@ -935,7 +899,6 @@ export class ConversationManager {
     let exportLifecycleState: unknown = null
 
     try {
-      // 加载完整历史（滚动到顶部）
       if (scrollContainer) {
         let prevHeight = 0
         let retries = 0
@@ -956,24 +919,21 @@ export class ConversationManager {
         }
       }
 
-      // 导出前钩子（站点可选实现）
       exportLifecycleEnabled = true
       exportLifecycleState = await this.siteAdapter.prepareConversationExport(exportContext)
 
-      // 提取对话内容
       const messages = this.extractConversationMessages()
       if (messages.length === 0) {
         console.error("[ConversationManager] No messages found")
         return false
       }
 
-      // 格式化
       const safeTitle = (conv.title || "conversation")
         .replace(/[<>:"/\\|?*]/g, "_")
         .substring(0, 50)
 
       const metadata = createExportMetadata(
-        conv.title || "未命名",
+        conv.title || "Untitled",
         this.siteAdapter.getName(),
         conv.id,
         {
@@ -1036,7 +996,6 @@ export class ConversationManager {
         }
       }
 
-      // 无论导出成功与否，尽量恢复用户原始阅读位置
       if (scrollContainer && initialScrollTop !== null) {
         scrollContainer.scrollTop = initialScrollTop
       } else {
@@ -1046,7 +1005,6 @@ export class ConversationManager {
   }
 
   /**
-   * 提取当前页面的对话消息
    */
   private extractConversationMessages(): Array<{
     role: "user" | "assistant"
@@ -1077,12 +1035,10 @@ export class ConversationManager {
     const maxLen = Math.max(userMessages.length, aiMessages.length)
     for (let i = 0; i < maxLen; i++) {
       if (userMessages[i]) {
-        // 使用适配器方法提取文本，保留换行并过滤掉 gh-user-query-markdown 节点
         const userContent = this.siteAdapter.extractUserQueryText(userMessages[i])
         messages.push({ role: "user", content: userContent })
       }
       if (aiMessages[i]) {
-        // 优先使用适配器的自定义提取逻辑；未覆盖时回退到 HTML->Markdown
         const adapterExtract = this.siteAdapter.extractAssistantResponseText
         const baseExtract = SiteAdapter.prototype.extractAssistantResponseText
         let aiContent = ""

@@ -1,6 +1,6 @@
 /**
- * 备份与同步页面
- * 包含：本地备份导出/导入 (支持部分导出) | WebDAV 同步配置与管理
+ * 
+ * / () | WebDAV 
  */
 import React, { useEffect, useRef, useState } from "react"
 
@@ -39,7 +39,7 @@ interface BackupPageProps {
   onNavigate?: (page: string) => void
 }
 
-// 辅助函数：格式化文件大小
+// 
 const formatSize = (bytes: number) => {
   if (bytes === 0) return "0 B"
   const k = 1024
@@ -58,13 +58,13 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 }
 
 const formatBackupTypeLabel = (type: unknown): string => {
-  if (type === "full") return t("fullBackup") || "完整备份"
-  if (type === "prompts") return t("promptsBackup") || "仅提示词"
-  if (type === "settings") return t("settingsBackup") || "仅设置"
-  return String(type || t("unknown") || "未知")
+  if (type === "full") return t("fullBackup") || ""
+  if (type === "prompts") return t("promptsBackup") || ""
+  if (type === "settings") return t("settingsBackup") || ""
+  return String(type || t("unknown") || "")
 }
 
-// ==================== 远程备份列表模态框 (保持原有逻辑) ====================
+// ====================  () ====================
 const RemoteBackupModal: React.FC<{
   onClose: () => void
   onRestore: () => void
@@ -91,7 +91,7 @@ const RemoteBackupModal: React.FC<{
       const files = await manager.getBackupList()
       setBackups(files)
     } catch (e) {
-      showDomToast("加载失败: " + String(e))
+      showDomToast(": " + String(e))
     } finally {
       setLoading(false)
     }
@@ -104,8 +104,8 @@ const RemoteBackupModal: React.FC<{
   const handleRestoreClick = (file: BackupFile) => {
     setConfirmConfig({
       show: true,
-      title: t("restore") || "恢复",
-      message: `确定要恢复备份 "${file.name}" 吗？当前数据将被覆盖，${t("openAiPagesWillRefresh") || "已打开的 AI 页面将被刷新。"}`,
+      title: t("restore") || "",
+      message: ` "${file.name}" ${t("openAiPagesWillRefresh") || " AI "}`,
       danger: true,
       onConfirm: async () => {
         setConfirmConfig((prev) => ({ ...prev, show: false }))
@@ -126,16 +126,16 @@ const RemoteBackupModal: React.FC<{
             } catch {
               // ignore
             }
-            showDomToast(t("restoreSuccess") || "恢复成功，即将刷新页面...")
+            showDomToast(t("restoreSuccess") || "...")
             setTimeout(() => {
               onRestore()
             }, 1500)
           } else {
-            showDomToast(t("restoreError") || "恢复失败: " + result.messageKey)
+            showDomToast(t("restoreError") || ": " + result.messageKey)
             setLoading(false)
           }
         } catch (e) {
-          showDomToast("恢复失败: " + String(e))
+          showDomToast(": " + String(e))
           setLoading(false)
         }
       },
@@ -145,8 +145,8 @@ const RemoteBackupModal: React.FC<{
   const handleDeleteClick = (file: BackupFile) => {
     setConfirmConfig({
       show: true,
-      title: t("delete") || "删除",
-      message: `确定要删除云端备份 "${file.name}" 吗？此操作不可逆。`,
+      title: t("delete") || "",
+      message: ` "${file.name}" `,
       danger: true,
       onConfirm: async () => {
         setConfirmConfig((prev) => ({ ...prev, show: false }))
@@ -155,14 +155,14 @@ const RemoteBackupModal: React.FC<{
           const manager = getWebDAVSyncManager()
           const result = await manager.deleteFile(file.name)
           if (result.success) {
-            showDomToast(t("deleteSuccess") || "删除成功")
+            showDomToast(t("deleteSuccess") || "")
             loadBackups()
           } else {
-            showDomToast(t("deleteError") || "删除失败")
+            showDomToast(t("deleteError") || "")
             setLoading(false)
           }
         } catch (e) {
-          showDomToast("删除失败: " + String(e))
+          showDomToast(": " + String(e))
           setLoading(false)
         }
       },
@@ -214,10 +214,10 @@ const RemoteBackupModal: React.FC<{
             alignItems: "center",
           }}>
           <div style={{ fontWeight: 600, fontSize: "16px" }}>
-            {t("webdavBackupList") || "WebDAV 备份列表"}
+            {t("webdavBackupList") || "WebDAV "}
           </div>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-            <Tooltip content={t("refresh") || "刷新"}>
+            <Tooltip content={t("refresh") || ""}>
               <button
                 onClick={loadBackups}
                 className="settings-btn settings-btn-secondary"
@@ -238,12 +238,12 @@ const RemoteBackupModal: React.FC<{
           {loading ? (
             <div
               style={{ textAlign: "center", padding: "20px", color: "var(--gh-text-secondary)" }}>
-              {t("loading") || "加载中..."}
+              {t("loading") || "..."}
             </div>
           ) : backups.length === 0 ? (
             <div
               style={{ textAlign: "center", padding: "20px", color: "var(--gh-text-secondary)" }}>
-              {t("noBackupsFound") || "未找到备份文件"}
+              {t("noBackupsFound") || ""}
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -269,7 +269,7 @@ const RemoteBackupModal: React.FC<{
                       onClick={() => handleRestoreClick(file)}
                       className="settings-btn settings-btn-primary"
                       style={{ padding: "6px 12px", fontSize: "12px" }}>
-                      {t("restore") || "恢复"}
+                      {t("restore") || ""}
                     </button>
                     <button
                       onClick={() => handleDeleteClick(file)}
@@ -288,16 +288,16 @@ const RemoteBackupModal: React.FC<{
   )
 }
 
-// ==================== 主页面组件 ====================
+// ====================  ====================
 const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _onNavigate }) => {
   const { settings, setSettings, resetSettings } = useSettingsStore()
 
-  // 状态管理
+  // 
   const [showRemoteBackups, setShowRemoteBackups] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pasteContent, setPasteContent] = useState("")
 
-  // WebDAV 本地表单状态（与 Store 解耦，仅点击保存时同步）
+  // WebDAV  Store 
   const [webdavForm, setWebdavForm] = useState<NonNullable<Settings["webdav"]>>({
     url: "",
     username: "",
@@ -308,7 +308,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     remoteDir: "ophel",
   })
 
-  // 初始化表单
+  // 
   useEffect(() => {
     if (settings?.webdav) {
       setWebdavForm((prev) => ({
@@ -318,7 +318,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     }
   }, [settings?.webdav])
 
-  // 弹窗状态
+  // 
   const [confirmConfig, setConfirmConfig] = useState<{
     show: boolean
     title: string
@@ -332,7 +332,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     onConfirm: () => {},
   })
 
-  // 权限弹窗状态
+  // 
   const [permissionConfirm, setPermissionConfirm] = useState<{
     show: boolean
     onConfirm: () => void
@@ -343,7 +343,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
 
   if (!settings) return null
 
-  // -------------------- 导出功能 --------------------
+  // --------------------  --------------------
 
   const handleExport = async (type: "full" | "prompts" | "settings") => {
     try {
@@ -352,21 +352,21 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
       let filename = `ophel-backup-${timestamp.slice(0, 10)}.json`
 
       if (type === "full") {
-        // 1. 完整导出
+        // 1. 
         const localData = await new Promise<Record<string, unknown>>((resolve) =>
           chrome.storage.local.get(null, resolve),
         )
-        // 过滤和处理数据
+        // 
         const hydratedData = Object.fromEntries(
           Object.entries(localData).map(([k, v]) => {
             try {
               let parsed = typeof v === "string" ? JSON.parse(v) : v
               if (ZUSTAND_KEYS.includes(k) && parsed?.state) {
                 if (MULTI_PROP_STORES.includes(k)) {
-                  // 多属性 store：保留整个 state（含 lastUsedFolderId 等辅助属性）
+                  //  store state lastUsedFolderId 
                   parsed = parsed.state
                 } else if (parsed.state[k] !== undefined) {
-                  // 单属性 store：直接提取主数据
+                  //  store
                   parsed = parsed.state[k]
                 } else {
                   parsed = parsed.state
@@ -385,12 +385,12 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
           data: hydratedData,
         }
       } else if (type === "prompts") {
-        // 2. 仅提示词导出 (KEY: prompts)
-        // 注意：不包含 folders 和 tags，按需求
+        // 2.  (KEY: prompts)
+        //  folders  tags
         const raw = await new Promise<Record<string, unknown>>((resolve) =>
           chrome.storage.local.get("prompts", resolve),
         )
-        // 解析 Zustand 结构
+        //  Zustand 
         let promptsData = []
         try {
           const parsed = typeof raw.prompts === "string" ? JSON.parse(raw.prompts) : raw.prompts
@@ -409,7 +409,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
         }
         filename = `ophel-prompts-${timestamp.slice(0, 10)}.json`
       } else if (type === "settings") {
-        // 3. 仅设置导出 (KEY: settings)
+        // 3.  (KEY: settings)
         const raw = await new Promise<Record<string, unknown>>((resolve) =>
           chrome.storage.local.get("settings", resolve),
         )
@@ -429,12 +429,12 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
           version: 3,
           timestamp,
           type: "settings",
-          data: { settings: settingsData }, // 此处 settings 对应 settings store key
+          data: { settings: settingsData }, //  settings  settings store key
         }
         filename = `ophel-settings-${timestamp.slice(0, 10)}.json`
       }
 
-      // 下载
+      // 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
         type: "application/json",
       })
@@ -444,33 +444,33 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
       a.download = filename
       a.click()
       URL.revokeObjectURL(url)
-      showDomToast(t("exportSuccess") || "导出成功！")
+      showDomToast(t("exportSuccess") || "")
     } catch (err) {
-      showDomToast(t("exportError") || "导出失败：" + String(err))
+      showDomToast(t("exportError") || "" + String(err))
     }
   }
 
-  // -------------------- 导入功能 --------------------
+  // --------------------  --------------------
 
   const processImport = async (jsonString: string) => {
     try {
       const data = JSON.parse(jsonString)
 
-      // 数据格式验证
+      // 
       const validation = validateBackupData(data)
       if (!validation.valid) {
         const errorMsgs = validation.errorKeys.map((key) => t(key) || key).join(", ")
         console.error("Backup validation failed:", validation.errorKeys)
-        showDomToast(t("invalidBackupFile") || "无效的格式: " + errorMsgs)
+        showDomToast(t("invalidBackupFile") || ": " + errorMsgs)
         return
       }
 
       setConfirmConfig({
         show: true,
-        title: t("importData") || "导入数据",
+        title: t("importData") || "",
         message: (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <div>{t("importConfirm") || "确定导入？"}</div>
+            <div>{t("importConfirm") || ""}</div>
             <div
               style={{
                 border: "1px solid var(--gh-border, #e5e7eb)",
@@ -487,13 +487,13 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
                   alignItems: "start",
                 }}>
                 <div style={{ color: "var(--gh-text-secondary, #6b7280)" }}>
-                  {t("backupTime") || "备份时间"}
+                  {t("backupTime") || ""}
                 </div>
                 <div style={{ color: "var(--gh-text, #111827)", fontWeight: 500 }}>
                   {String(data.timestamp || "-")}
                 </div>
                 <div style={{ color: "var(--gh-text-secondary, #6b7280)" }}>
-                  {t("backupType") || "类型"}
+                  {t("backupType") || ""}
                 </div>
                 <div style={{ color: "var(--gh-text, #111827)", fontWeight: 500 }}>
                   {formatBackupTypeLabel(data.type)}
@@ -501,7 +501,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               </div>
             </div>
             <div style={{ fontSize: "12px", color: "var(--gh-text-secondary, #6b7280)" }}>
-              {t("openAiPagesWillRefresh") || "已打开的 AI 页面将被刷新。"}
+              {t("openAiPagesWillRefresh") || " AI "}
             </div>
           </div>
         ),
@@ -509,61 +509,61 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
         onConfirm: async () => {
           setConfirmConfig((prev) => ({ ...prev, show: false }))
           try {
-            // 数据回填逻辑 (Rehydration)
+            //  (Rehydration)
             const updates: Record<string, unknown> = {}
 
             Object.entries(data.data).forEach(([k, v]) => {
               if (v === null || v === undefined) return
 
-              // 只导入存在的 key，避免污染
-              // 如果是 prompts 导出，data.data 只包含 prompts
+              //  key
+              //  prompts data.data  prompts
 
               if (ZUSTAND_KEYS.includes(k)) {
-                // 构建 Zustand persist 结构
+                //  Zustand persist 
                 let stateContent = v
-                // 针对 multi-prop stores 的特殊处理 (如 conversations)
+                //  multi-prop stores  ( conversations)
                 if (MULTI_PROP_STORES.includes(k)) {
-                  // 通过检查 v 中是否包含与 store 同名的属性来区分格式
+                  //  v  store 
                   if (typeof v === "object" && !Array.isArray(v)) {
                     const obj = v as Record<string, unknown>
                     if (k === "conversations" && obj.conversations !== undefined) {
-                      // 已包装格式：{ conversations: {...}, lastUsedFolderId: "..." }
+                      // { conversations: {...}, lastUsedFolderId: "..." }
                       stateContent = v
                     } else if (
                       k === "readingHistory" &&
                       (obj.history !== undefined || obj.lastCleanupRun !== undefined)
                     ) {
-                      // 已包装格式：{ history: {...}, lastCleanupRun: number }
+                      // { history: {...}, lastCleanupRun: number }
                       stateContent = v
                     } else {
-                      // 扁平化格式（旧版本导出）
+                      // 
                       stateContent = k === "readingHistory" ? { history: v } : { [k]: v }
                     }
                   } else {
-                    // 扁平化格式（旧版本导出）：v 直接是主数据
+                    // v 
                     stateContent = k === "readingHistory" ? { history: v } : { [k]: v }
                   }
                 } else {
-                  // prompts, settings 等通常 state key = store name
-                  // 但旧版本可能不同，这里统一假设 state = { [key]: value } 是安全的默认值
-                  // 实际上 store 定义是 { prompts: [...] }
-                  // 导出的 v 就是 [...] (array) 或者 object
-                  // 如果 v 是 array (prompts list)，这里需要包装成 { prompts: v }
+                  // prompts, settings  state key = store name
+                  //  state = { [key]: value } 
+                  //  store  { prompts: [...] }
+                  //  v  [...] (array)  object
+                  //  v  array (prompts list) { prompts: v }
                   if (k === "prompts" && Array.isArray(v)) {
                     stateContent = { prompts: v }
                   } else if (k === "settings" && (!isRecord(v) || v.settings === undefined)) {
-                    // settings store 结构是 { settings: {...}, ...actions }
-                    // 导出的 v 是 settings 对象本身
+                    // settings store  { settings: {...}, ...actions }
+                    //  v  settings 
                     stateContent = { settings: v }
                   } else {
-                    // 兜底
+                    // 
                     stateContent = { [k]: v }
                   }
                 }
 
                 updates[k] = JSON.stringify({ state: stateContent, version: 0 })
               } else {
-                // 普通数据
+                // 
                 if (typeof v === "object") {
                   updates[k] = JSON.stringify(v)
                 } else {
@@ -591,17 +591,17 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               // ignore
             }
 
-            showDomToast(t("importSuccess") || "导入成功")
+            showDomToast(t("importSuccess") || "")
             setTimeout(() => window.location.reload(), 1000)
           } catch (err) {
             console.error("[Backup] import storage write failed:", err)
-            showDomToast(`${t("importError") || "导入失败："}${getErrorMessage(err)}`)
+            showDomToast(`${t("importError") || ""}${getErrorMessage(err)}`)
           }
         },
       })
     } catch (e) {
       console.error("[Backup] import parse failed:", e)
-      showDomToast(`${t("importError") || "导入失败："}${getErrorMessage(e)}`)
+      showDomToast(`${t("importError") || ""}${getErrorMessage(e)}`)
     }
   }
 
@@ -609,14 +609,14 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     const file = e.target.files?.[0]
     if (!file) return
     const text = await file.text()
-    setPasteContent(text) // 预览
-    // processImport(text) // 暂时不自动导入，让用户点击按钮
+    setPasteContent(text) // 
+    // processImport(text) // 
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   const handleImportClick = () => {
     if (!pasteContent.trim()) {
-      showDomToast("请先选择文件或粘贴内容")
+      showDomToast("")
       return
     }
     processImport(pasteContent)
@@ -631,14 +631,14 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     useReadingHistoryStore.setState({ history: {}, lastCleanupRun: 0 })
   }
 
-  // 清除数据
+  // 
   const handleClearAll = () => {
     setConfirmConfig({
       show: true,
-      title: t("clearAllData") || "清除全部数据",
+      title: t("clearAllData") || "",
       message:
         t("clearAllDataConfirm") ||
-        "确定要清除所有数据吗？此操作不可逆，所有设置、提示词、会话等数据都将被删除！",
+        "",
       danger: true,
       onConfirm: async () => {
         setConfirmConfig((prev) => ({ ...prev, show: false }))
@@ -647,7 +647,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
             try {
               await chrome.runtime.sendMessage({ type: MSG_CLEAR_ALL_DATA })
             } catch {
-              // 忽略消息发送失败
+              // 
             }
           }
 
@@ -669,7 +669,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
             ),
           )
           resetLocalStores()
-          showDomToast(t("clearSuccess") || "数据已清除，即将刷新...")
+          showDomToast(t("clearSuccess") || "...")
           setTimeout(() => window.location.reload(), 1500)
         } catch (err) {
           showDomToast(t("error") + ": " + String(err))
@@ -678,16 +678,16 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
     })
   }
 
-  // -------------------- WebDAV 功能 --------------------
+  // -------------------- WebDAV  --------------------
 
   const checkAndRequestWebDAVPermission = async (onGranted: () => void): Promise<boolean> => {
-    const url = webdavForm.url // 使用表单值检查权限
+    const url = webdavForm.url // 
     if (!url) {
-      showDomToast(t("webdavConfigIncomplete") || "请填写完整的 WebDAV 配置")
+      showDomToast(t("webdavConfigIncomplete") || " WebDAV ")
       return false
     }
 
-    // 油猴脚本环境：直接执行，无需权限检查（GM_xmlhttpRequest 已通过 @grant 声明）
+    // GM_xmlhttpRequest  @grant 
     if (!platform.hasCapability("permissions")) {
       await onGranted()
       return true
@@ -723,45 +723,45 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
   }
 
   const handleSaveConfig = () => {
-    // 保存配置到 Store（持久化）
+    //  Store
     setSettings({
       webdav: {
         ...(settings.webdav ?? DEFAULT_SETTINGS.webdav ?? {}),
         ...webdavForm,
       },
     })
-    showDomToast(t("saveSuccess") || "配置已保存")
+    showDomToast(t("saveSuccess") || "")
   }
 
   const testWebDAVConnection = async () => {
     await checkAndRequestWebDAVPermission(async () => {
       const manager = getWebDAVSyncManager()
-      // 临时应用配置（不持久化）
+      // 
       await manager.setConfig(webdavForm, false)
 
       const res = await manager.testConnection()
-      if (res.success) showDomToast(t("webdavConnectionSuccess") || "连接成功")
-      else showDomToast(t("webdavConnectionFailed") || "连接失败: " + res.messageKey)
+      if (res.success) showDomToast(t("webdavConnectionSuccess") || "")
+      else showDomToast(t("webdavConnectionFailed") || ": " + res.messageKey)
     })
   }
 
   const uploadToWebDAV = async () => {
     await checkAndRequestWebDAVPermission(async () => {
       const manager = getWebDAVSyncManager()
-      // 临时应用配置（不持久化）
+      // 
       await manager.setConfig(webdavForm, false)
 
       const res = await manager.upload()
-      if (res.success) showDomToast(t("webdavUploadSuccess") || "备份上传成功")
-      else showDomToast(t("webdavUploadFailed") || "上传失败: " + res.messageKey)
+      if (res.success) showDomToast(t("webdavUploadSuccess") || "")
+      else showDomToast(t("webdavUploadFailed") || ": " + res.messageKey)
     })
   }
 
   return (
     <div className="settings-content">
-      <PageTitle title={t("navBackup") || "备份与同步"} Icon={CloudIcon} />
+      <PageTitle title={t("navBackup") || ""} Icon={CloudIcon} />
 
-      {/* 确认弹窗 */}
+      {/*  */}
       {confirmConfig.show && (
         <ConfirmDialog
           title={confirmConfig.title}
@@ -772,17 +772,17 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
         />
       )}
 
-      {/* 权限确认弹窗 */}
+      {/*  */}
       {permissionConfirm.show && (
         <ConfirmDialog
-          title={t("permissionRequired") || "需要权限"}
-          message={t("webdavPermissionDesc") || "需要访问该域名的权限才能进行 WebDAV 备份。"}
+          title={t("permissionRequired") || ""}
+          message={t("webdavPermissionDesc") || " WebDAV "}
           onConfirm={permissionConfirm.onConfirm}
           onCancel={() => setPermissionConfirm((prev) => ({ ...prev, show: false }))}
         />
       )}
 
-      {/* 远程列表弹窗 */}
+      {/*  */}
       {showRemoteBackups && (
         <RemoteBackupModal
           onClose={() => setShowRemoteBackups(false)}
@@ -790,7 +790,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
         />
       )}
 
-      {/* 主布局：两列 */}
+      {/*  */}
       <div
         className="backup-grid"
         style={{
@@ -799,12 +799,12 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
           gap: "20px",
           marginBottom: "24px",
         }}>
-        {/* 左侧：导出 */}
+        {/*  */}
         <SettingCard
-          title={t("exportData") || "导出数据"}
-          description={t("exportDataDesc") || "将数据导出为 JSON 文件进行备份"}>
+          title={t("exportData") || ""}
+          description={t("exportDataDesc") || " JSON "}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {/* 完整备份 */}
+            {/*  */}
             <div
               style={{
                 display: "flex",
@@ -816,21 +816,21 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               }}>
               <div>
                 <div style={{ fontWeight: 500, fontSize: "14px" }}>
-                  {t("fullBackup") || "完整备份"}
+                  {t("fullBackup") || ""}
                 </div>
                 <div style={{ fontSize: "12px", color: "var(--gh-text-secondary)" }}>
-                  {t("fullBackupDesc") || "推荐用于完整迁移"}
+                  {t("fullBackupDesc") || ""}
                 </div>
               </div>
               <button
                 onClick={() => handleExport("full")}
                 className="settings-btn settings-btn-success"
                 style={{ padding: "6px 16px" }}>
-                {t("export") || "导出"}
+                {t("export") || ""}
               </button>
             </div>
 
-            {/* 提示词备份 */}
+            {/*  */}
             <div
               style={{
                 display: "flex",
@@ -842,21 +842,21 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               }}>
               <div>
                 <div style={{ fontWeight: 500, fontSize: "14px" }}>
-                  {t("promptsBackup") || "仅提示词"}
+                  {t("promptsBackup") || ""}
                 </div>
                 <div style={{ fontSize: "12px", color: "var(--gh-text-secondary)" }}>
-                  {t("promptsBackupDesc") || "仅导出提示词数据"}
+                  {t("promptsBackupDesc") || ""}
                 </div>
               </div>
               <button
                 onClick={() => handleExport("prompts")}
                 className="settings-btn settings-btn-primary"
                 style={{ padding: "6px 16px" }}>
-                {t("export") || "导出"}
+                {t("export") || ""}
               </button>
             </div>
 
-            {/* 设置备份 */}
+            {/*  */}
             <div
               style={{
                 display: "flex",
@@ -868,37 +868,37 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               }}>
               <div>
                 <div style={{ fontWeight: 500, fontSize: "14px" }}>
-                  {t("settingsBackup") || "仅设置"}
+                  {t("settingsBackup") || ""}
                 </div>
                 <div style={{ fontSize: "12px", color: "var(--gh-text-secondary)" }}>
-                  {t("settingsBackupDesc") || "仅导出配置项"}
+                  {t("settingsBackupDesc") || ""}
                 </div>
               </div>
               <button
                 onClick={() => handleExport("settings")}
                 className="settings-btn settings-btn-secondary"
                 style={{ padding: "6px 16px" }}>
-                {t("export") || "导出"}
+                {t("export") || ""}
               </button>
             </div>
           </div>
         </SettingCard>
 
-        {/* 右侧：导入 */}
+        {/*  */}
         <SettingCard
-          title={t("importData") || "导入数据"}
-          description={t("importDataDesc") || "从备份文件恢复数据"}>
+          title={t("importData") || ""}
+          description={t("importDataDesc") || ""}>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {/* 文件选择 */}
+            {/*  */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ fontSize: "14px", fontWeight: 500 }}>
-                {t("selectFile") || "选择文件"}
+                {t("selectFile") || ""}
               </div>
               <button
                 className="settings-btn settings-btn-secondary"
                 onClick={() => fileInputRef.current?.click()}
                 style={{ padding: "6px 12px" }}>
-                {t("browse") || "浏览..."}
+                {t("browse") || "..."}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -909,7 +909,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               </button>
             </div>
 
-            {/* 预览区域 */}
+            {/*  */}
             <div style={{ flex: 1 }}>
               <div
                 style={{
@@ -917,13 +917,13 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
                   color: "var(--gh-text-secondary)",
                   marginBottom: "4px",
                 }}>
-                {t("dataPreview") || "数据预览 (可直接粘贴)"}
+                {t("dataPreview") || " ()"}
               </div>
               <textarea
                 className="settings-input"
                 value={pasteContent}
                 onChange={(e) => setPasteContent(e.target.value)}
-                placeholder={t("pastePlaceholder") || "粘贴 JSON 数据..."}
+                placeholder={t("pastePlaceholder") || " JSON ..."}
                 style={{
                   width: "100%",
                   height: "120px",
@@ -934,23 +934,23 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               />
             </div>
 
-            {/* 导入按钮 */}
+            {/*  */}
             <button
               onClick={handleImportClick}
               className="settings-btn settings-btn-primary"
               style={{ width: "100%", justifyContent: "center", padding: "8px" }}
               disabled={!pasteContent.trim()}>
-              {t("importBtn") || "确认导入"}
+              {t("importBtn") || ""}
             </button>
           </div>
         </SettingCard>
       </div>
 
-      {/* WebDAV 设置与操作 */}
+      {/* WebDAV  */}
       <SettingCard
-        title={t("webdavConfig") || "WebDAV 备份与同步"}
-        description={t("webdavConfigDesc") || "配置 WebDAV 服务器以启用云端同步"}>
-        {/* 提示信息 */}
+        title={t("webdavConfig") || "WebDAV "}
+        description={t("webdavConfigDesc") || " WebDAV "}>
+        {/*  */}
         <div
           style={{
             background: "var(--gh-primary-light-bg, rgba(66, 133, 244, 0.05))",
@@ -962,12 +962,12 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
             color: "var(--gh-primary, #4285f4)",
           }}>
           <div style={{ fontWeight: 600, marginBottom: "4px" }}>
-            ℹ️ {t("restoreTip") || "恢复提示"}
+            ℹ️ {t("restoreTip") || ""}
           </div>
           <div style={{ lineHeight: 1.5, opacity: 0.9 }}>{t("restoreTipContent")}</div>
         </div>
 
-        <SettingRow label={t("webdavAddress") || "服务器地址"}>
+        <SettingRow label={t("webdavAddress") || ""}>
           <input
             type="text"
             className="settings-input"
@@ -978,7 +978,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
           />
         </SettingRow>
 
-        <SettingRow label={t("username") || "用户名"}>
+        <SettingRow label={t("username") || ""}>
           <input
             type="text"
             className="settings-input"
@@ -988,7 +988,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
           />
         </SettingRow>
 
-        <SettingRow label={t("password") || "密码"}>
+        <SettingRow label={t("password") || ""}>
           <input
             type="password"
             className="settings-input"
@@ -998,7 +998,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
           />
         </SettingRow>
 
-        <SettingRow label={t("defaultDir") || "默认目录"}>
+        <SettingRow label={t("defaultDir") || ""}>
           <input
             type="text"
             className="settings-input"
@@ -1023,7 +1023,7 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
             className="settings-btn settings-btn-primary"
             onClick={handleSaveConfig}
             style={{ padding: "6px 20px" }}>
-            💾 {t("saveConfig") || "保存配置"}
+            💾 {t("saveConfig") || ""}
           </button>
           <div
             style={{
@@ -1033,33 +1033,33 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
               margin: "0 8px",
             }}></div>
           <button className="settings-btn settings-btn-secondary" onClick={testWebDAVConnection}>
-            🔗 {t("webdavTestBtn") || "测试连接"}
+            🔗 {t("webdavTestBtn") || ""}
           </button>
           <button
             className="settings-btn settings-btn-secondary"
             onClick={async () => {
               await checkAndRequestWebDAVPermission(async () => {
-                // 临时应用配置
+                // 
                 const manager = getWebDAVSyncManager()
                 await manager.setConfig(webdavForm, false)
                 setShowRemoteBackups(true)
               })
             }}>
-            📂 {t("restore") || "恢复/下载"}
+            📂 {t("restore") || "/"}
           </button>
           <button
             className="settings-btn settings-btn-success"
             onClick={uploadToWebDAV}
             style={{ marginLeft: "auto" }}>
-            ☁️ {t("backupNow") || "立即上传备份"}
+            ☁️ {t("backupNow") || ""}
           </button>
         </div>
       </SettingCard>
 
-      {/* 危险操作区 */}
+      {/*  */}
       <SettingCard
-        title={t("dangerZone") || "危险区域"}
-        description={t("dangerZoneDesc") || "破坏性操作（不可恢复）"}
+        title={t("dangerZone") || ""}
+        description={t("dangerZoneDesc") || ""}
         className="danger-zone-card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -1069,17 +1069,17 @@ const BackupPage: React.FC<BackupPageProps> = ({ siteId: _siteId, onNavigate: _o
                 fontWeight: 500,
                 color: "var(--gh-danger, #ef4444)",
               }}>
-              {t("clearAllData") || "清除全部数据"}
+              {t("clearAllData") || ""}
             </div>
             <div style={{ fontSize: "12px", color: "var(--gh-text-secondary)" }}>
-              {t("clearAllDataDesc") || "慎重操作：这将清除本地所有设置、提示词和会话数据"}
+              {t("clearAllDataDesc") || ""}
             </div>
           </div>
           <button
             className="settings-btn settings-btn-danger"
             onClick={handleClearAll}
             style={{ padding: "8px 16px", fontSize: "13px" }}>
-            {t("clearAllData") || "清除全部数据"}
+            {t("clearAllData") || ""}
           </button>
         </div>
       </SettingCard>

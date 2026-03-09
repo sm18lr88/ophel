@@ -1,18 +1,13 @@
 import { EVENT_MONITOR_COMPLETE, EVENT_MONITOR_INIT, EVENT_MONITOR_START } from "~utils/messaging"
 
-// 油猴脚本环境需要使用 unsafeWindow 才能访问页面的原生 fetch/XMLHttpRequest
 declare const unsafeWindow: Window | undefined
 
 /** Allowlisted inbound message types for this module. */
 const ACCEPTED_TYPES = new Set([EVENT_MONITOR_INIT, EVENT_MONITOR_START, EVENT_MONITOR_COMPLETE])
 
 /**
- * 获取页面 window 对象
- * - 油猴脚本环境：使用 unsafeWindow 访问页面上下文
- * - 扩展环境 (MAIN world)：直接使用 window
  */
 function getPageWindow(): typeof globalThis {
-  // 检测是否在油猴脚本环境中（有 unsafeWindow 且与 window 不同）
   if (typeof unsafeWindow !== "undefined" && unsafeWindow !== window) {
     return unsafeWindow as unknown as typeof globalThis
   }
@@ -141,7 +136,6 @@ class NetworkMonitor {
   }
 
   private async _hookedFetch(...args: Parameters<typeof fetch>) {
-    // 获取正确的页面上下文（油猴脚本环境使用 unsafeWindow）
     const pageWindow = getPageWindow()
     const url = args[0] ? args[0].toString() : ""
     const isTarget = this._isTargetUrl(url)
@@ -292,8 +286,6 @@ let monitor: NetworkMonitor | null = null
 let isInitialized = false
 
 /**
- * 初始化 NetworkMonitor 消息监听器
- * 需要显式调用此函数以避免被 tree-shaking 移除
  */
 export function initNetworkMonitor(): void {
   if (isInitialized) {

@@ -1,7 +1,7 @@
 /**
- * SVG 图标组件 - 工具箱/应用菜单
- * 风格：Outline (stroke-based)
- * 图形：2x2 圆角方块矩阵
+ * SVG  - /
+ * Outline (stroke-based)
+ * 2x2 
  */
 import React from "react"
 

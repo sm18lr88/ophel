@@ -1,30 +1,30 @@
 /**
- * 设置行组件
- * 卡片内的一行设置项，左侧 Label + Description，右侧 Control
+ * 
+ *  Label + Description Control
  */
 import React from "react"
 
 import { Switch } from "~components/ui"
 
 export interface SettingRowProps {
-  /** 标签文本或元素 */
+  /**  */
   label: React.ReactNode
-  /** 描述文本 */
+  /**  */
   description?: string
-  /** 右侧控件 */
+  /**  */
   children?: React.ReactNode
-  /** 是否禁用 */
+  /**  */
   disabled?: boolean
-  /** 禁用时点击回调 */
+  /**  */
   onDisabledClick?: () => void
-  /** 自定义样式 */
+  /**  */
   style?: React.CSSProperties
-  /** 稳定 setting id（用于定位/高亮） */
+  /**  setting id/ */
   settingId?: string
 }
 
 /**
- * 通用设置行组件
+ * 
  */
 export const SettingRow: React.FC<SettingRowProps> = ({
   label,
@@ -58,7 +58,7 @@ export const SettingRow: React.FC<SettingRowProps> = ({
 }
 
 /**
- * 带开关的设置行（常用快捷组件）
+ * 
  */
 export interface ToggleRowProps {
   label: string

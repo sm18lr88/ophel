@@ -5,12 +5,9 @@ import { createCopyIcon, showCopySuccess } from "~utils/icons"
 import type { Settings } from "~utils/storage"
 import { showToast } from "~utils/toast"
 
-// 表格扫描间隔（毫秒）
 const TABLE_RESCAN_INTERVAL = 1000
 
 /**
- * 复制功能管理器
- * 负责公式双击复制和表格 Markdown 复制
  */
 export class CopyManager {
   private settings: Settings["content"]
@@ -27,10 +24,8 @@ export class CopyManager {
   }
 
   updateSettings(settings: Settings["content"]) {
-    // 动态启用/禁用公式复制
     if (settings.formulaCopy !== this.settings.formulaCopy) {
       if (settings.formulaCopy) {
-        // 先临时赋值以便 init 读取
         this.settings = settings
         this.initFormulaCopy()
       } else {
@@ -38,10 +33,8 @@ export class CopyManager {
       }
     }
 
-    // 动态启用/禁用表格复制
     if (settings.tableCopy !== this.settings.tableCopy) {
       if (settings.tableCopy) {
-        // 先临时赋值以便 init 读取
         this.settings = settings
         this.initTableCopy()
       } else {
@@ -49,22 +42,17 @@ export class CopyManager {
       }
     }
 
-    // 更新设置
     this.settings = settings
   }
 
   // ==================== Formula Copy ====================
 
   /**
-   * 初始化公式双击复制功能
-   * 禁用公式文字选择，双击复制 LaTeX 源码
-   * 支持 Gemini (.math-block/.math-inline) 和 ChatGPT (.katex)
    */
   initFormulaCopy() {
     if (this.formulaCopyInitialized) return
     this.formulaCopyInitialized = true
 
-    // 注入 CSS（同时支持 Gemini 和 ChatGPT 的公式选择器）
     const styleId = "gh-formula-copy-style"
     if (!document.getElementById(styleId)) {
       const style = document.createElement("style")
@@ -83,11 +71,9 @@ export class CopyManager {
       document.head.appendChild(style)
     }
 
-    // 双击事件委托处理
     this.formulaDblClickHandler = (e: MouseEvent) => {
       const target = e.target as HTMLElement
 
-      // 匹配 Gemini 格式
       const geminiMathEl = target.closest(".math-block, .math-inline")
       if (geminiMathEl) {
         let latex = geminiMathEl.getAttribute("data-math")
@@ -102,13 +88,10 @@ export class CopyManager {
         }
       }
 
-      // 匹配 ChatGPT/KaTeX 格式
       const katexEl = target.closest(".katex")
       if (katexEl) {
-        // 从 annotation 标签获取 LaTeX 源码
         const annotation = katexEl.querySelector('annotation[encoding="application/x-tex"]')
         if (annotation?.textContent) {
-          // 检测是否为 display 模式（块级公式）
           const isBlock = !!katexEl.closest(".katex-display")
           this.copyLatex(annotation.textContent, isBlock)
           e.preventDefault()
@@ -122,7 +105,6 @@ export class CopyManager {
   }
 
   /**
-   * 复制 LaTeX 公式
    */
   private copyLatex(latex: string, isBlock: boolean) {
     let copyText = latex
@@ -141,7 +123,6 @@ export class CopyManager {
   }
 
   /**
-   * 销毁公式双击复制功能
    */
   destroyFormulaCopy() {
     this.formulaCopyInitialized = false
@@ -158,13 +139,11 @@ export class CopyManager {
   // ==================== Table Copy ====================
 
   /**
-   * 初始化表格 Markdown 复制功能
    */
   initTableCopy() {
     if (this.tableCopyInitialized) return
     this.tableCopyInitialized = true
 
-    // 注入 CSS 到主文档
     const styleId = "gh-table-copy-style"
     const css = `
         .gh-table-copy-btn {
@@ -207,11 +186,8 @@ export class CopyManager {
     const usesShadowDOM = this.siteAdapter?.usesShadowDOM() ?? false
 
     if (usesShadowDOM) {
-      // Shadow DOM 站点：使用定时扫描
-      // 因为 DOMToolkit.each 的 MutationObserver 无法检测 Shadow DOM 内部的变化
       this.startRescanTimer()
     } else {
-      // 普通站点：使用 DOMToolkit.each 持续监听
       this.stopTableWatch = DOMToolkit.each(
         "table",
         (table) => {
@@ -223,23 +199,18 @@ export class CopyManager {
   }
 
   /**
-   * 启动定时扫描（用于 Shadow DOM 站点）
    */
   private startRescanTimer() {
-    // 先做一次初始扫描
     this.rescanTables()
 
-    // 启动定时器
     this.rescanTimer = setInterval(() => {
       this.rescanTables()
     }, TABLE_RESCAN_INTERVAL)
   }
 
   /**
-   * 扫描页面上的表格元素
    */
   private rescanTables() {
-    // 页面不可见时暂停扫描
     if (document.hidden) return
 
     const tables = DOMToolkit.query("table", { all: true, shadow: true }) as Element[]
@@ -252,15 +223,12 @@ export class CopyManager {
     if (table.dataset.ghTableCopy) return
     table.dataset.ghTableCopy = "true"
 
-    // 检查是否在用户提问或提示词预览区域
     const isInMarkdownPreview =
       table.closest(".gh-user-query-markdown") || table.closest(".gh-markdown-preview")
 
     try {
-      // 尝试找到原生表格容器
       let container: HTMLElement
       if (isInMarkdownPreview) {
-        // Markdown 预览区域：直接用表格作为容器
         container = table
         table.style.position = "relative"
       } else {
@@ -278,7 +246,6 @@ export class CopyManager {
       btn.appendChild(createCopyIcon({ size: 14, color: "#6b7280" }))
       btn.title = t("tableCopyLabel")
 
-      // 检测是否在 Gemini Enterprise 容器中（有原生按钮），调整位置避免遮挡
       const tagName = container.tagName?.toLowerCase()
       const isGeminiEnterprise =
         tagName === "ucs-markdown-table" ||
@@ -286,7 +253,6 @@ export class CopyManager {
         container.classList.contains("gh-table-container")
       const rightOffset = isGeminiEnterprise ? "80px" : "4px"
 
-      // 使用内联样式确保定位正确（CSS 可能无法穿透 Shadow DOM）
       Object.assign(btn.style, {
         position: "absolute",
         top: "4px",
@@ -309,7 +275,6 @@ export class CopyManager {
         pointerEvents: "auto",
       })
 
-      // hover 效果（因为 CSS :hover 无法穿透 Shadow DOM）
       btn.addEventListener("mouseenter", () => {
         btn.style.opacity = "1"
         btn.style.transform = "scale(1.1)"
@@ -344,7 +309,6 @@ export class CopyManager {
   }
 
   /**
-   * 表格转 Markdown
    */
   tableToMarkdown(table: HTMLTableElement): string {
     const rows = table.querySelectorAll("tr")
@@ -354,7 +318,6 @@ export class CopyManager {
     let headerProcessed = false
 
     const getCellContent = (cell: HTMLTableCellElement) => {
-      // 如果启用了公式复制，尝试处理公式
       if (this.settings.formulaCopy) {
         const clone = cell.cloneNode(true) as HTMLElement
         const mathEls = clone.querySelectorAll(".math-block, .math-inline")
@@ -399,18 +362,15 @@ export class CopyManager {
   }
 
   /**
-   * 销毁表格复制功能
    */
   destroyTableCopy() {
     this.tableCopyInitialized = false
 
-    // 停止 DOMToolkit.each 监听
     if (this.stopTableWatch) {
       this.stopTableWatch()
       this.stopTableWatch = null
     }
 
-    // 停止定时扫描
     if (this.rescanTimer) {
       clearInterval(this.rescanTimer)
       this.rescanTimer = null
@@ -420,7 +380,6 @@ export class CopyManager {
     if (style)
       style.remove()
 
-      // 清理按钮和标记
     ;(
       DOMToolkit.query(".gh-table-copy-btn", {
         all: true,
@@ -448,7 +407,6 @@ export class CopyManager {
   }
 
   /**
-   * 停止所有功能
    */
   stop() {
     this.destroyFormulaCopy()

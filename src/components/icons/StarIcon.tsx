@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 星星 (收藏/评分)
- * 风格：Fill-based
+ * SVG  -  (/)
+ * Fill-based
  */
 import React from "react"
 

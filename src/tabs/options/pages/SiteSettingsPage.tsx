@@ -1,7 +1,7 @@
 /**
- * 站点设置页面
- * 包含：页面布局、模型锁定、内容处理
- * 这些设置与具体站点相关，按站点存储配置
+ * 
+ * 
+ * 
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
@@ -26,7 +26,7 @@ interface SiteSettingsPageProps {
   initialTab?: string
 }
 
-// 模型锁定行组件 - 只在失焦或按回车时保存
+//  - 
 const ModelLockRow: React.FC<{
   label: string
   siteKey: string
@@ -42,12 +42,12 @@ const ModelLockRow: React.FC<{
   )
   const [localKeyword, setLocalKeyword] = useState(currentConfig.keyword)
 
-  // 同步外部值变化
+  // 
   useEffect(() => {
     setLocalKeyword(currentConfig.keyword)
   }, [currentConfig.keyword])
 
-  // 保存关键词
+  // 
   const saveKeyword = useCallback(() => {
     if (localKeyword !== currentConfig.keyword) {
       setSettings({
@@ -59,7 +59,7 @@ const ModelLockRow: React.FC<{
     }
   }, [localKeyword, currentConfig, settings.modelLock, siteKey, setSettings])
 
-  // 切换启用状态
+  // 
   const toggleEnabled = () => {
     setSettings({
       modelLock: {
@@ -123,7 +123,7 @@ const ModelLockRow: React.FC<{
   )
 }
 
-// AI Studio 专用模型锁定行组件 - 带刷新按钮和下拉选择
+// AI Studio  - 
 const AIStudioModelLockRow: React.FC<{
   settings: Settings
   setSettings: (settings: Partial<Settings>) => void
@@ -133,20 +133,20 @@ const AIStudioModelLockRow: React.FC<{
   const siteKey = "aistudio"
   const currentConfig = settings.modelLock?.[siteKey] || { enabled: false, keyword: "" }
 
-  // 缓存的模型列表
+  // 
   const [modelList, setModelList] = useState<AIStudioModelInfo[]>(
     settings.aistudio?.cachedModels || [],
   )
   const [isLoading, setIsLoading] = useState(false)
 
-  // 同步缓存的模型列表
+  // 
   useEffect(() => {
     if (settings.aistudio?.cachedModels) {
       setModelList(settings.aistudio.cachedModels)
     }
   }, [settings.aistudio?.cachedModels])
 
-  // 刷新模型列表
+  // 
   const handleRefresh = async () => {
     setIsLoading(true)
     try {
@@ -156,31 +156,31 @@ const AIStudioModelLockRow: React.FC<{
 
       if (response.success && response.models) {
         setModelList(response.models)
-        // 保存到缓存
+        // 
         setSettings({
           aistudio: {
             ...settings.aistudio,
             cachedModels: response.models,
           },
         })
-        showToast(t("aistudioModelsFetched") || `获取到 ${response.models.length} 个模型`, 2000)
+        showToast(t("aistudioModelsFetched") || ` ${response.models.length} `, 2000)
       } else {
-        // 根据错误码显示本地化消息
+        // 
         const errorMsg =
           response.error === "NO_AISTUDIO_TAB"
-            ? t("aistudioNoTabError") || "请先打开 AI Studio 页面"
-            : t("aistudioModelsError") || "获取模型失败"
+            ? t("aistudioNoTabError") || " AI Studio "
+            : t("aistudioModelsError") || ""
         showToast(errorMsg, 3000)
       }
     } catch (err) {
-      showToast(t("aistudioModelsError") || "获取模型列表失败", 3000)
+      showToast(t("aistudioModelsError") || "", 3000)
       console.error("Refresh model list failed:", err)
     } finally {
       setIsLoading(false)
     }
   }
 
-  // 切换启用状态
+  // 
   const toggleEnabled = () => {
     setSettings({
       modelLock: {
@@ -190,7 +190,7 @@ const AIStudioModelLockRow: React.FC<{
     })
   }
 
-  // 选择模型
+  // 
   const handleModelChange = (modelId: string) => {
     setSettings({
       modelLock: {
@@ -221,8 +221,8 @@ const AIStudioModelLockRow: React.FC<{
         }}>
         AI Studio
       </span>
-      {/* 刷新按钮 */}
-      <Tooltip content="点击在 AI Studio 页面刷新模型列表">
+      {/*  */}
+      <Tooltip content=" AI Studio ">
         <button
           className="icon-button"
           onClick={handleRefresh}
@@ -241,7 +241,7 @@ const AIStudioModelLockRow: React.FC<{
           <RefreshIcon size={16} />
         </button>
       </Tooltip>
-      {/* 模型选择下拉框 */}
+      {/*  */}
       <div
         onMouseDown={(e) => {
           if (!currentConfig.enabled) {
@@ -259,7 +259,7 @@ const AIStudioModelLockRow: React.FC<{
             opacity: currentConfig.enabled ? 1 : 0.5,
             pointerEvents: currentConfig.enabled ? "auto" : "none",
           }}>
-          {modelList.length === 0 && <option value="">请先刷新模型列表</option>}
+          {modelList.length === 0 && <option value=""></option>}
           {modelList.map((model) => (
             <option key={model.id} value={model.id}>
               {model.name}
@@ -281,14 +281,14 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
     }
   }, [initialTab])
   const { settings, setSettings, updateNestedSetting } = useSettingsStore()
-  const prerequisiteToastTemplate = t("enablePrerequisiteToast") || "请先开启「{setting}」"
+  const prerequisiteToastTemplate = t("enablePrerequisiteToast") || "{setting}"
   const showPrerequisiteToast = (label: string) =>
     showToastThrottled(prerequisiteToastTemplate.replace("{setting}", label), 2000, {}, 1500, label)
-  const enablePageWidthLabel = t("enablePageWidth") || "启用页面宽度"
-  const enableUserQueryWidthLabel = t("enableUserQueryWidth") || "启用用户问题加宽"
-  const modelLockLabel = t("modelLockTitle") || "模型切换锁定"
+  const enablePageWidthLabel = t("enablePageWidth") || ""
+  const enableUserQueryWidthLabel = t("enableUserQueryWidth") || ""
+  const modelLockLabel = t("modelLockTitle") || ""
 
-  // 宽度布局相关状态
+  // 
   const currentPageWidth =
     settings?.layout?.pageWidth?.[siteId as keyof typeof settings.layout.pageWidth] ||
     settings?.layout?.pageWidth?._default
@@ -303,10 +303,10 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
     currentUserQueryWidth?.value || LAYOUT_CONFIG.USER_QUERY_WIDTH.DEFAULT_PX,
   )
 
-  // 焦点状态追踪，防止 Store 同步覆盖用户输入
+  //  Store 
   const [focusedInput, setFocusedInput] = useState<string | null>(null)
 
-  // 防抖定时器和输入框引用
+  // 
   const widthBlurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userQueryWidthBlurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const widthInputRef = useRef<HTMLInputElement>(null)
@@ -324,7 +324,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
     }
   }, [currentUserQueryWidth?.value, focusedInput])
 
-  // 清理防抖定时器
+  // 
   useEffect(() => {
     return () => {
       if (widthBlurTimerRef.current) clearTimeout(widthBlurTimerRef.current)
@@ -332,7 +332,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
     }
   }, [])
 
-  // 页面宽度更新
+  // 
   const commitWidth = useCallback(() => {
     let val = parseInt(tempWidth)
     const unit = currentPageWidth?.unit || "%"
@@ -410,7 +410,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
     }
   }
 
-  // 用户问题宽度更新
+  // 
   const commitUserQueryWidth = useCallback(() => {
     let val = parseInt(tempUserQueryWidth)
     const unit = currentUserQueryWidth?.unit || "px"
@@ -487,8 +487,8 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
   if (!settings) return null
 
   const tabs = [
-    { id: SITE_SETTINGS_TAB_IDS.LAYOUT, label: t("tabLayout") || "页面布局" },
-    { id: SITE_SETTINGS_TAB_IDS.MODEL_LOCK, label: t("tabModelLock") || "模型锁定" },
+    { id: SITE_SETTINGS_TAB_IDS.LAYOUT, label: t("tabLayout") || "" },
+    { id: SITE_SETTINGS_TAB_IDS.MODEL_LOCK, label: t("tabModelLock") || "" },
     { id: SITE_IDS.GEMINI, label: t("tabGemini") || "Gemini" },
     { id: SITE_IDS.AISTUDIO, label: "AI Studio" },
     { id: SITE_IDS.CHATGPT, label: "ChatGPT" },
@@ -497,21 +497,21 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
 
   return (
     <div>
-      <PageTitle title={t("navSiteSettings") || "站点设置"} Icon={LayoutIcon} />
+      <PageTitle title={t("navSiteSettings") || ""} Icon={LayoutIcon} />
       <p className="settings-page-desc">
-        {t("siteSettingsPageDesc") || "配置站点相关的页面布局和内容处理"}
+        {t("siteSettingsPageDesc") || ""}
       </p>
 
       <TabGroup tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* ========== 页面布局 Tab ========== */}
+      {/* ==========  Tab ========== */}
       {activeTab === SITE_SETTINGS_TAB_IDS.LAYOUT && (
         <>
-          {/* 页面宽度卡片 */}
-          <SettingCard title={t("layoutSettingsTitle") || "页面宽度控制"}>
+          {/*  */}
+          <SettingCard title={t("layoutSettingsTitle") || ""}>
             <ToggleRow
-              label={t("enablePageWidth") || "启用页面宽度"}
-              description={t("pageWidthDesc") || "调整聊天页面的最大宽度"}
+              label={t("enablePageWidth") || ""}
+              description={t("pageWidthDesc") || ""}
               settingId="layout-page-width-enabled"
               checked={currentPageWidth?.enabled ?? false}
               onChange={() => {
@@ -529,7 +529,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             />
 
             <SettingRow
-              label={t("pageWidthValueLabel") || "宽度值"}
+              label={t("pageWidthValueLabel") || ""}
               settingId="layout-page-width-value"
               disabled={!currentPageWidth?.enabled}
               onDisabledClick={() => showPrerequisiteToast(enablePageWidthLabel)}>
@@ -563,11 +563,11 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             </SettingRow>
           </SettingCard>
 
-          {/* 用户问题宽度卡片 */}
-          <SettingCard title={t("userQueryWidthSettings") || "用户问题宽度"}>
+          {/*  */}
+          <SettingCard title={t("userQueryWidthSettings") || ""}>
             <ToggleRow
-              label={t("enableUserQueryWidth") || "启用用户问题加宽"}
-              description={t("userQueryWidthDesc") || "调整用户问题气泡的最大宽度"}
+              label={t("enableUserQueryWidth") || ""}
+              description={t("userQueryWidthDesc") || ""}
               settingId="layout-user-query-width-enabled"
               checked={currentUserQueryWidth?.enabled ?? false}
               onChange={() => {
@@ -589,7 +589,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             />
 
             <SettingRow
-              label={t("userQueryWidthValueLabel") || "问题宽度"}
+              label={t("userQueryWidthValueLabel") || ""}
               settingId="layout-user-query-width-value"
               disabled={!currentUserQueryWidth?.enabled}
               onDisabledClick={() => showPrerequisiteToast(enableUserQueryWidthLabel)}>
@@ -623,13 +623,13 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             </SettingRow>
           </SettingCard>
 
-          {/* 禅模式 (Zen Mode) 卡片 */}
-          <SettingCard title={t("zenModeTitle") || "禅模式 (Zen Mode)"}>
+          {/*  (Zen Mode)  */}
+          <SettingCard title={t("zenModeTitle") || " (Zen Mode)"}>
             <ToggleRow
-              label={t("zenModeLabel") || "启用禅模式"}
+              label={t("zenModeLabel") || ""}
               description={
                 t("zenModeDesc") ||
-                "隐藏页面中不必要的元素（如底部的模型免责声明等），体验更纯粹的对话界面"
+                ""
               }
               settingId="layout-zen-mode-enabled"
               checked={
@@ -659,18 +659,18 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
         </>
       )}
 
-      {/* ========== 模型锁定 Tab ========== */}
+      {/* ==========  Tab ========== */}
       {activeTab === SITE_SETTINGS_TAB_IDS.MODEL_LOCK && (
         <SettingCard
-          title={t("modelLockTitle") || "模型切换锁定"}
-          description={t("modelLockDesc") || "进入页面后自动切换到指定模型"}>
+          title={t("modelLockTitle") || ""}
+          description={t("modelLockDesc") || ""}>
           {/* Gemini */}
           <ModelLockRow
             label="Gemini"
             siteKey="gemini"
             settings={settings}
             setSettings={setSettings}
-            placeholder={t("modelKeywordPlaceholder") || "模型关键词"}
+            placeholder={t("modelKeywordPlaceholder") || ""}
             onDisabledClick={() => showPrerequisiteToast(modelLockLabel)}
             settingId="model-lock-gemini"
           />
@@ -681,12 +681,12 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             siteKey="gemini-enterprise"
             settings={settings}
             setSettings={setSettings}
-            placeholder={t("modelKeywordPlaceholder") || "模型关键词"}
+            placeholder={t("modelKeywordPlaceholder") || ""}
             onDisabledClick={() => showPrerequisiteToast(modelLockLabel)}
             settingId="model-lock-gemini-enterprise"
           />
 
-          {/* AI Studio - 使用下拉选择器 */}
+          {/* AI Studio -  */}
           <AIStudioModelLockRow
             settings={settings}
             setSettings={setSettings}
@@ -700,7 +700,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             siteKey="chatgpt"
             settings={settings}
             setSettings={setSettings}
-            placeholder={t("modelKeywordPlaceholder") || "模型关键词"}
+            placeholder={t("modelKeywordPlaceholder") || ""}
             onDisabledClick={() => showPrerequisiteToast(modelLockLabel)}
             settingId="model-lock-chatgpt"
           />
@@ -711,7 +711,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             siteKey="claude"
             settings={settings}
             setSettings={setSettings}
-            placeholder={t("modelKeywordPlaceholder") || "模型关键词"}
+            placeholder={t("modelKeywordPlaceholder") || ""}
             onDisabledClick={() => showPrerequisiteToast(modelLockLabel)}
             settingId="model-lock-claude"
           />
@@ -722,21 +722,21 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             siteKey="grok"
             settings={settings}
             setSettings={setSettings}
-            placeholder={t("modelKeywordPlaceholder") || "模型关键词"}
+            placeholder={t("modelKeywordPlaceholder") || ""}
             onDisabledClick={() => showPrerequisiteToast(modelLockLabel)}
             settingId="model-lock-grok"
           />
         </SettingCard>
       )}
 
-      {/* ========== Gemini 专属 Tab ========== */}
+      {/* ========== Gemini  Tab ========== */}
       {activeTab === "gemini" && (
         <SettingCard
-          title={t("geminiSettingsTab") || "Gemini 专属"}
-          description={t("contentProcessingDesc") || "配置 AI 回复内容的处理方式"}>
+          title={t("geminiSettingsTab") || "Gemini "}
+          description={t("contentProcessingDesc") || " AI "}>
           <ToggleRow
-            label={t("markdownFixLabel") || "Markdown 加粗修复"}
-            description={t("markdownFixDesc") || "修复 Gemini 响应中未渲染的加粗文本"}
+            label={t("markdownFixLabel") || "Markdown "}
+            description={t("markdownFixDesc") || " Gemini "}
             settingId="gemini-markdown-fix"
             checked={settings.content?.markdownFix ?? true}
             onChange={() =>
@@ -745,8 +745,8 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
           />
 
           <ToggleRow
-            label={t("watermarkRemovalLabel") || "图片水印移除"}
-            description={t("watermarkRemovalDesc") || "自动移除 AI 生成图片的水印"}
+            label={t("watermarkRemovalLabel") || ""}
+            description={t("watermarkRemovalDesc") || " AI "}
             settingId="gemini-watermark-removal"
             checked={settings.content?.watermarkRemoval ?? false}
             onChange={() => {
@@ -754,7 +754,7 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
             }}
           />
 
-          {/* Gemini Enterprise 专属内容 */}
+          {/* Gemini Enterprise  */}
           <div
             className="setting-subsection"
             style={{
@@ -817,15 +817,15 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
         </SettingCard>
       )}
 
-      {/* ========== AI Studio 专属 Tab ========== */}
+      {/* ========== AI Studio  Tab ========== */}
       {activeTab === SITE_IDS.AISTUDIO && (
         <SettingCard
-          title={t("aistudioSettingsTitle") || "AI Studio 设置"}
-          description={t("aistudioSettingsDesc") || "配置 AI Studio 页面的默认行为"}>
-          {/* 界面状态开关 */}
+          title={t("aistudioSettingsTitle") || "AI Studio "}
+          description={t("aistudioSettingsDesc") || " AI Studio "}>
+          {/*  */}
           <ToggleRow
-            label={t("aistudioCollapseNavbar") || "默认折叠侧边栏"}
-            description={t("aistudioCollapseNavbarDesc") || "打开页面时自动折叠左侧导航栏"}
+            label={t("aistudioCollapseNavbar") || ""}
+            description={t("aistudioCollapseNavbarDesc") || ""}
             settingId="aistudio-collapse-navbar"
             checked={settings.aistudio?.collapseNavbar ?? false}
             onChange={() =>
@@ -839,9 +839,9 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
           />
 
           <ToggleRow
-            label={t("aistudioCollapseRunSettings") || "默认收起运行设置面板"}
+            label={t("aistudioCollapseRunSettings") || ""}
             description={
-              t("aistudioCollapseRunSettingsDesc") || "打开页面时自动收起右侧的运行设置面板"
+              t("aistudioCollapseRunSettingsDesc") || ""
             }
             settingId="aistudio-collapse-run-settings"
             checked={settings.aistudio?.collapseRunSettings ?? false}
@@ -856,8 +856,8 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
           />
 
           <ToggleRow
-            label={t("aistudioCollapseTools") || "默认收起工具面板"}
-            description={t("aistudioCollapseToolsDesc") || "打开页面时自动收起右侧运行设置面板"}
+            label={t("aistudioCollapseTools") || ""}
+            description={t("aistudioCollapseToolsDesc") || ""}
             settingId="aistudio-collapse-tools"
             checked={settings.aistudio?.collapseTools ?? false}
             onChange={() =>
@@ -871,9 +871,9 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
           />
 
           <ToggleRow
-            label={t("aistudioCollapseAdvanced") || "默认收起高级设置"}
+            label={t("aistudioCollapseAdvanced") || ""}
             description={
-              t("aistudioCollapseAdvancedDesc") || "打开页面时自动收起运行设置中的高级选项"
+              t("aistudioCollapseAdvancedDesc") || ""
             }
             settingId="aistudio-collapse-advanced"
             checked={settings.aistudio?.collapseAdvanced ?? false}
@@ -888,8 +888,8 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
           />
 
           <ToggleRow
-            label={t("aistudioEnableSearch") || "默认启用搜索工具"}
-            description={t("aistudioEnableSearchDesc") || "打开页面时自动启用 Google 实时搜索"}
+            label={t("aistudioEnableSearch") || ""}
+            description={t("aistudioEnableSearchDesc") || " Google "}
             settingId="aistudio-enable-search"
             checked={settings.aistudio?.enableSearch ?? true}
             onChange={() =>
@@ -903,10 +903,10 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
           />
 
           <ToggleRow
-            label={t("aistudioRemoveWatermark") || "移除图片水印"}
+            label={t("aistudioRemoveWatermark") || ""}
             description={
               t("aistudioRemoveWatermarkDesc") ||
-              "阻止加载水印图片，让生成图片无水印 (需刷新页面生效)"
+              " ()"
             }
             settingId="aistudio-remove-watermark"
             checked={settings.aistudio?.removeWatermark ?? false}
@@ -917,14 +917,14 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
                   removeWatermark: !settings.aistudio?.removeWatermark,
                 },
               })
-              showToast(t("aistudioReloadHint") || "设置已保存，请刷新 AI Studio 页面以生效", 3000)
+              showToast(t("aistudioReloadHint") || " AI Studio ", 3000)
             }}
           />
 
           <ToggleRow
-            label={t("aistudioMarkdownFixLabel") || "Markdown 加粗修复"}
+            label={t("aistudioMarkdownFixLabel") || "Markdown "}
             description={
-              t("aistudioMarkdownFixDesc") || "修复 AI Studio 响应中未渲染的 **加粗** 文本"
+              t("aistudioMarkdownFixDesc") || " AI Studio  **** "
             }
             settingId="aistudio-markdown-fix"
             checked={settings.aistudio?.markdownFix ?? false}
@@ -940,17 +940,17 @@ const SiteSettingsPage: React.FC<SiteSettingsPageProps> = ({ siteId, initialTab 
         </SettingCard>
       )}
 
-      {/* ========== Claude 专属 Tab ========== */}
+      {/* ========== Claude  Tab ========== */}
       {activeTab === "claude" && <ClaudeSettings siteId={siteId} />}
 
-      {/* ========== ChatGPT 专属 Tab ========== */}
+      {/* ========== ChatGPT  Tab ========== */}
       {activeTab === SITE_IDS.CHATGPT && (
         <SettingCard
-          title={t("chatgptSettingsTitle") || "ChatGPT 设置"}
-          description={t("chatgptSettingsDesc") || "配置 ChatGPT 页面的默认行为"}>
+          title={t("chatgptSettingsTitle") || "ChatGPT "}
+          description={t("chatgptSettingsDesc") || " ChatGPT "}>
           <ToggleRow
-            label={t("chatgptMarkdownFixLabel") || "Markdown 加粗修复"}
-            description={t("chatgptMarkdownFixDesc") || "修复 ChatGPT 响应中未渲染的 **加粗** 文本"}
+            label={t("chatgptMarkdownFixLabel") || "Markdown "}
+            description={t("chatgptMarkdownFixDesc") || " ChatGPT  **** "}
             settingId="chatgpt-markdown-fix"
             checked={settings.chatgpt?.markdownFix ?? false}
             onChange={() =>

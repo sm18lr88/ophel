@@ -3,8 +3,8 @@ import type { ThemePreset } from "../types"
 export const darkPresets: ThemePreset[] = [
   {
     id: "classic-dark",
-    name: "经典深黑",
-    description: "默认深色主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#1e1e1e",
       "--gh-bg-secondary": "#0b0b0b",
@@ -77,8 +77,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "midnight-blue",
-    name: "午夜蓝",
-    description: "深邃蓝色主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#0f172a",
       "--gh-bg-secondary": "#020617",
@@ -151,8 +151,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "forest",
-    name: "暗夜森林",
-    description: "深绿色主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#0f1a14",
       "--gh-bg-secondary": "#050a07",
@@ -225,8 +225,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "cyberpunk",
-    name: "赛博霓虹",
-    description: "高对比科技主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#050505",
       "--gh-bg-secondary": "#121212",
@@ -299,8 +299,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "coffee",
-    name: "醇香咖啡",
-    description: "暖调护眼主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#1c1917",
       "--gh-bg-secondary": "#292524",
@@ -373,8 +373,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "sunset",
-    name: "幻梦落日",
-    description: "紫橙渐变艺术主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#120a21",
       "--gh-bg-secondary": "#1d1136",
@@ -447,8 +447,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "dracula",
-    name: "德古拉",
-    description: "经典极客主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#282a36",
       "--gh-bg-secondary": "#21222c",
@@ -521,8 +521,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "deep-abyss",
-    name: "深海幽蓝",
-    description: "静谧蓝绿主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#042f2e",
       "--gh-bg-secondary": "#134e4a",
@@ -591,14 +591,14 @@ export const darkPresets: ThemePreset[] = [
       "--gh-highlight-pulse": "rgba(45, 212, 191, 0.3)",
       "--gh-slider-dot-bg": "#334155",
       "--gh-code-bg": "rgba(45, 212, 191, 0.1)",
-      // 深海波纹纹理
+      // 
       "--gh-bg-image": `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.02' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E")`,
     },
   },
   {
     id: "crimson-moon",
-    name: "猩红赤月",
-    description: "暗红狂野主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#0f0f0f",
       "--gh-bg-secondary": "#1c1c1c",
@@ -671,8 +671,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "retro-terminal",
-    name: "黑客终端",
-    description: "复古 CRT 主题",
+    name: "",
+    description: " CRT ",
     variables: {
       "--gh-bg": "#0c0c0c",
       "--gh-bg-secondary": "#000000",
@@ -741,7 +741,7 @@ export const darkPresets: ThemePreset[] = [
       "--gh-highlight-pulse": "rgba(34, 197, 94, 0.5)",
       "--gh-slider-dot-bg": "#14532d",
       "--gh-code-bg": "rgba(34, 197, 94, 0.15)",
-      // CRT 扫描线纹理 (微弱的绿色扫描线)
+      // CRT  ()
       "--gh-bg-image":
         "repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(34, 197, 94, 0.05) 2px, rgba(34, 197, 94, 0.05) 4px)",
       "--gh-bg-animation": "gh-scanline 8s linear infinite",
@@ -749,8 +749,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "eva-unit-01",
-    name: "代号：暴走",
-    description: "机甲撞色主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#2e1065",
       "--gh-bg-secondary": "#1e0b4b",
@@ -824,8 +824,8 @@ export const darkPresets: ThemePreset[] = [
   },
   {
     id: "aurora",
-    name: "极光行者",
-    description: "自然奇观主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#020617",
       "--gh-bg-secondary": "#0f172a",

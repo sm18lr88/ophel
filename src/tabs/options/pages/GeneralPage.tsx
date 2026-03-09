@@ -1,6 +1,6 @@
 /**
- * 基本设置页面
- * 包含：面板 | 界面排版 | 快捷按钮 | 工具箱菜单
+ * 
+ *  |  |  | 
  */
 import React, { useEffect, useState } from "react"
 
@@ -23,7 +23,7 @@ interface GeneralPageProps {
   initialTab?: string
 }
 
-// 可排序项目组件
+// 
 const SortableItem: React.FC<{
   iconNode?: React.ReactNode
   label: string
@@ -63,7 +63,7 @@ const SortableItem: React.FC<{
       cursor: "grab",
       border: isDragging ? "1px dashed var(--gh-primary)" : undefined,
     }}>
-    {/* 拖拽手柄 */}
+    {/*  */}
     <div
       className="settings-sortable-handle"
       style={{
@@ -95,17 +95,17 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
     }
   }, [initialTab])
 
-  const prerequisiteToastTemplate = t("enablePrerequisiteToast") || "请先开启「{setting}」"
+  const prerequisiteToastTemplate = t("enablePrerequisiteToast") || "{setting}"
   const showPrerequisiteToast = (label: string) =>
     showToastThrottled(prerequisiteToastTemplate.replace("{setting}", label), 2000, {}, 1500, label)
-  const edgeSnapLabel = t("edgeSnapHideLabel") || "边缘自动吸附"
+  const edgeSnapLabel = t("edgeSnapHideLabel") || ""
 
-  // 拖拽状态
+  // 
   const [draggedItem, setDraggedItem] = useState<{ type: "tab" | "button"; index: number } | null>(
     null,
   )
 
-  // 面板设置更新函数
+  // 
   const handleEdgeDistanceChange = (val: number) => {
     updateNestedSetting("panel", "defaultEdgeDistance", val)
   }
@@ -122,19 +122,19 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
     updateNestedSetting("panel", "width", val)
   }
 
-  // 处理拖拽开始
+  // 
   const handleDragStart = (e: React.DragEvent, type: "tab" | "button", index: number) => {
     setDraggedItem({ type, index })
     e.dataTransfer.effectAllowed = "move"
   }
 
-  // 处理拖拽经过
+  // 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = "move"
   }
 
-  // 处理放置 - Tab 排序
+  //  - Tab 
   const handleTabDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault()
     if (!draggedItem || draggedItem.type !== "tab") return
@@ -148,7 +148,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
     setDraggedItem(null)
   }
 
-  // 处理放置 - 按钮排序
+  //  - 
   const handleButtonDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault()
     if (!draggedItem || draggedItem.type !== "button") return
@@ -162,12 +162,12 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
     setDraggedItem(null)
   }
 
-  // 处理拖拽结束
+  // 
   const handleDragEnd = () => {
     setDraggedItem(null)
   }
 
-  // 切换按钮启用状态
+  // 
   const toggleButton = (index: number) => {
     const newButtons = [...(settings.collapsedButtons || [])]
     newButtons[index] = { ...newButtons[index], enabled: !newButtons[index].enabled }
@@ -177,25 +177,25 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
   if (!settings) return null
 
   const tabs = [
-    { id: "panel", label: t("panelTab") || "面板" },
-    { id: "tabOrder", label: t("tabOrderTab") || "界面排版" },
-    { id: "shortcuts", label: t("shortcutsTab") || "快捷按钮" },
-    { id: "toolsMenu", label: t("toolboxMenu") || "工具箱" },
+    { id: "panel", label: t("panelTab") || "" },
+    { id: "tabOrder", label: t("tabOrderTab") || "" },
+    { id: "shortcuts", label: t("shortcutsTab") || "" },
+    { id: "toolsMenu", label: t("toolboxMenu") || "" },
   ]
 
   return (
     <div>
-      <PageTitle title={t("navGeneral") || "基本设置"} Icon={GeneralIcon} />
-      <p className="settings-page-desc">{t("generalPageDesc") || "配置扩展的基本行为和界面"}</p>
+      <PageTitle title={t("navGeneral") || ""} Icon={GeneralIcon} />
+      <p className="settings-page-desc">{t("generalPageDesc") || ""}</p>
 
       <TabGroup tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* ========== 面板 Tab ========== */}
+      {/* ==========  Tab ========== */}
       {activeTab === "panel" && (
-        <SettingCard title={t("panelSettings") || "面板设置"}>
+        <SettingCard title={t("panelSettings") || ""}>
           <ToggleRow
-            label={t("defaultPanelStateLabel") || "默认显示面板"}
-            description={t("defaultPanelStateDesc") || "页面加载后自动展开面板"}
+            label={t("defaultPanelStateLabel") || ""}
+            description={t("defaultPanelStateDesc") || ""}
             settingId="panel-default-open"
             checked={settings.panel?.defaultOpen ?? false}
             onChange={() =>
@@ -203,10 +203,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
             }
           />
 
-          {/* 默认位置 */}
+          {/*  */}
           <SettingRow
-            label={t("defaultPositionLabel") || "默认位置"}
-            description={t("defaultPositionDesc") || "页面刷新后面板显示在哪一侧"}
+            label={t("defaultPositionLabel") || ""}
+            description={t("defaultPositionDesc") || ""}
             settingId="panel-default-position">
             <div
               style={{
@@ -232,7 +232,7 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
                       : "var(--gh-text-secondary, #6b7280)",
                   transition: "all 0.2s",
                 }}>
-                {t("defaultPositionLeft") || "左侧"}
+                {t("defaultPositionLeft") || ""}
               </button>
               <button
                 onClick={() => updateNestedSetting("panel", "defaultPosition", "right")}
@@ -252,15 +252,15 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
                       : "var(--gh-text-secondary, #6b7280)",
                   transition: "all 0.2s",
                 }}>
-                {t("defaultPositionRight") || "右侧"}
+                {t("defaultPositionRight") || ""}
               </button>
             </div>
           </SettingRow>
 
-          {/* 默认边距 */}
+          {/*  */}
           <SettingRow
-            label={t("defaultEdgeDistanceLabel") || "默认边距"}
-            description={t("defaultEdgeDistanceDesc") || "面板距离屏幕边缘的初始距离"}
+            label={t("defaultEdgeDistanceLabel") || ""}
+            description={t("defaultEdgeDistanceDesc") || ""}
             settingId="panel-edge-distance">
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <NumberInput
@@ -275,10 +275,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
             </div>
           </SettingRow>
 
-          {/* 面板宽度 */}
+          {/*  */}
           <SettingRow
-            label={t("panelWidthLabel") || "面板宽度"}
-            description={t("panelWidthDesc") || "面板的宽度 (px)"}
+            label={t("panelWidthLabel") || ""}
+            description={t("panelWidthDesc") || " (px)"}
             settingId="panel-width">
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <NumberInput
@@ -293,10 +293,10 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
             </div>
           </SettingRow>
 
-          {/* 面板高度 */}
+          {/*  */}
           <SettingRow
-            label={t("panelHeightLabel") || "面板高度"}
-            description={t("panelHeightDesc") || "面板占用屏幕高度的百分比"}
+            label={t("panelHeightLabel") || ""}
+            description={t("panelHeightDesc") || ""}
             settingId="panel-height">
             <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
               <NumberInput
@@ -312,17 +312,17 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
           </SettingRow>
 
           <ToggleRow
-            label={t("edgeSnapHideLabel") || "边缘自动吸附"}
-            description={t("edgeSnapHideDesc") || "拖动面板到屏幕边缘时自动吸附，悬停显示"}
+            label={t("edgeSnapHideLabel") || ""}
+            description={t("edgeSnapHideDesc") || ""}
             settingId="panel-edge-snap"
             checked={settings.panel?.edgeSnap ?? false}
             onChange={() => updateNestedSetting("panel", "edgeSnap", !settings.panel?.edgeSnap)}
           />
 
-          {/* 吸附触发距离 */}
+          {/*  */}
           <SettingRow
-            label={t("edgeSnapThresholdLabel") || "吸附触发距离"}
-            description={t("edgeSnapThresholdDesc") || "拖拽面板到边缘多近时触发吸附"}
+            label={t("edgeSnapThresholdLabel") || ""}
+            description={t("edgeSnapThresholdDesc") || ""}
             settingId="panel-edge-snap-threshold"
             disabled={!settings.panel?.edgeSnap}
             onDisabledClick={() => showPrerequisiteToast(edgeSnapLabel)}>
@@ -341,11 +341,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
           </SettingRow>
 
           <ToggleRow
-            label={t("autoHidePanelLabel") || "点击外部收起"}
+            label={t("autoHidePanelLabel") || ""}
             description={
               settings.panel?.edgeSnap
-                ? t("autoHidePanelDescEdgeSnap") || "点击面板外部区域时自动缩回边缘"
-                : t("autoHidePanelDesc") || "点击面板外部区域时自动收起为悬浮球"
+                ? t("autoHidePanelDescEdgeSnap") || ""
+                : t("autoHidePanelDesc") || ""
             }
             settingId="panel-auto-hide"
             checked={settings.panel?.autoHide ?? false}
@@ -354,11 +354,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
         </SettingCard>
       )}
 
-      {/* ========== 界面排版 Tab ========== */}
+      {/* ==========  Tab ========== */}
       {activeTab === "tabOrder" && (
         <SettingCard
-          title={t("tabOrderSettings") || "界面排版"}
-          description={t("tabOrderDesc") || "调整面板标签页的显示顺序 (拖拽排序)"}>
+          title={t("tabOrderSettings") || ""}
+          description={t("tabOrderDesc") || " ()"}>
           {settings.features?.order
             ?.filter((id) => TAB_DEFINITIONS[id])
             .map((tabId, index) => {
@@ -405,11 +405,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
         </SettingCard>
       )}
 
-      {/* ========== 快捷按钮 Tab ========== */}
+      {/* ==========  Tab ========== */}
       {activeTab === "shortcuts" && (
         <SettingCard
-          title={t("collapsedButtonsOrderTitle") || "快捷按钮组"}
-          description={t("collapsedButtonsOrderDesc") || "快捷按钮组排序与启用 (拖拽排序)"}>
+          title={t("collapsedButtonsOrderTitle") || ""}
+          description={t("collapsedButtonsOrderDesc") || " ()"}>
           {settings.collapsedButtons?.map((btn, index) => {
             const def = COLLAPSED_BUTTON_DEFS[btn.id]
             if (!def) return null
@@ -438,8 +438,8 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
             )
           })}
           <SettingRow
-            label={t("quickButtonsOpacityLabel") || "快捷按钮透明度"}
-            description={t("quickButtonsOpacityDesc") || "调整快捷按钮组整体透明度"}
+            label={t("quickButtonsOpacityLabel") || ""}
+            description={t("quickButtonsOpacityDesc") || ""}
             settingId="quick-buttons-opacity">
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
@@ -459,11 +459,11 @@ const GeneralPage: React.FC<GeneralPageProps> = ({ siteId: _siteId, initialTab }
         </SettingCard>
       )}
 
-      {/* ========== 工具箱菜单 Tab ========== */}
+      {/* ==========  Tab ========== */}
       {activeTab === "toolsMenu" && (
         <SettingCard
-          title={t("toolboxMenuTitle") || "工具箱菜单"}
-          description={t("toolboxMenuDesc") || "配置工具箱弹出菜单中显示的功能"}>
+          title={t("toolboxMenuTitle") || ""}
+          description={t("toolboxMenuDesc") || ""}>
           {TOOLS_MENU_ITEMS.filter((item) => item.id !== TOOLS_MENU_IDS.SETTINGS).map((item) => {
             const enabledIds = settings.toolsMenu ?? TOOLS_MENU_ITEMS.map((i) => i.id)
             const isEnabled = enabledIds.includes(item.id)

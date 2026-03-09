@@ -1,8 +1,8 @@
 /**
- * 最小化权限请求页面
- * 专用于请求可选权限，尺寸小（400x300），授权后自动关闭
+ * Minimal permission request page
+ * Dedicated to requesting optional permissions, small size (400x300), auto-closes after authorization
  *
- * URL 参数：
+ * URL parameters:
  * - type: webdav | tabs | notifications | watermark
  */
 import React, { useEffect, useState } from "react"
@@ -13,7 +13,7 @@ import { sanitizeErrorMessage } from "~utils/network-security"
 
 import "~styles/settings.css"
 
-// 注入页面级样式，去除滚动条
+// Inject page-level styles to hide scrollbar
 const PERM_PAGE_STYLES = `
   html, body {
     overflow: hidden !important;
@@ -23,7 +23,7 @@ const PERM_PAGE_STYLES = `
   }
 `
 
-// 权限配置
+// Permission configuration
 const PERMISSION_CONFIGS = {
   webdav: {
     titleKey: "permWebdavTitle",
@@ -52,7 +52,9 @@ function parseJsonArrayParam(value: string | null): string[] {
 
   try {
     const parsed = JSON.parse(value)
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : []
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === "string")
+      : []
   } catch {
     return []
   }
@@ -60,7 +62,7 @@ function parseJsonArrayParam(value: string | null): string[] {
 
 const PermissionRequestPage: React.FC = () => {
   const [status, setStatus] = useState<"pending" | "granted" | "denied">("pending")
-  // 优先从 URL 参数获取权限类型
+  // Prioritize getting permission type from URL parameters
   const [permType, setPermType] = useState<PermissionType>(() => {
     const params = new URLSearchParams(window.location.search)
     const type = params.get("type") as PermissionType
@@ -72,18 +74,18 @@ const PermissionRequestPage: React.FC = () => {
   const { settings } = useSettingsStore()
   const isHydrated = useSettingsHydrated()
 
-  // 初始化语言
+  // Initialize language
   useEffect(() => {
     if (isHydrated) {
       if (settings?.language) {
         setLanguage(settings.language)
       }
-      // 语言设置完成后标记为就绪，触发重渲染
+      // Mark as ready after language setup, trigger re-render
       setLangReady(true)
     }
   }, [isHydrated, settings?.language])
 
-  // 注入页面级样式（去除滚动条）
+  // Inject page-level styles (hide scrollbar)
   useEffect(() => {
     const style = document.createElement("style")
     style.textContent = PERM_PAGE_STYLES
@@ -93,7 +95,7 @@ const PermissionRequestPage: React.FC = () => {
     }
   }, [])
 
-  // 解析 URL 参数
+  // Parse URL parameters
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const type = params.get("type") as PermissionType
@@ -106,15 +108,14 @@ const PermissionRequestPage: React.FC = () => {
 
   const config = PERMISSION_CONFIGS[permType]
   const origins = requestedOrigins.length > 0 ? requestedOrigins : config.origins
-  const permissions =
-    requestedPermissions.length > 0 ? requestedPermissions : config.permissions
+  const permissions = requestedPermissions.length > 0 ? requestedPermissions : config.permissions
   const primaryOrigin = origins[0]?.replace(/\/\*$/, "")
   const description =
     permType === "webdav" && primaryOrigin
       ? `${t(config.descKey) || "WebDAV sync needs access to your server. Backup and restore will be available after authorization."}\n\n${primaryOrigin}`
       : t(config.descKey) || "This feature requires additional permission."
 
-  // 请求权限
+  // Request permission
   const handleRequest = async () => {
     try {
       console.warn("[PermRequest] Requesting permissions:", {
@@ -129,13 +130,13 @@ const PermissionRequestPage: React.FC = () => {
       console.warn("[PermRequest] Permission granted:", granted)
       if (granted) {
         setStatus("granted")
-        // 延迟关闭窗口
+        // Delay window close
         setTimeout(() => {
           window.close()
         }, 1500)
       } else {
         setStatus("denied")
-        // 被拒绝时也关闭窗口
+        // Close window on denial
         setTimeout(() => {
           window.close()
         }, 1000)
@@ -149,7 +150,7 @@ const PermissionRequestPage: React.FC = () => {
     }
   }
 
-  // 取消
+  // Cancel
   const handleCancel = () => {
     setStatus("denied")
     setTimeout(() => {
@@ -176,10 +177,8 @@ const PermissionRequestPage: React.FC = () => {
         }}>
         {status === "pending" && (
           <>
-            {/* 图标 */}
             <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔐</div>
 
-            {/* 标题 */}
             <h1
               style={{
                 fontSize: "18px",
@@ -187,10 +186,9 @@ const PermissionRequestPage: React.FC = () => {
                 marginBottom: "12px",
                 color: "var(--gh-text, #1f2937)",
               }}>
-              {t(config.titleKey) || "需要授权"}
+              {t(config.titleKey) || "Authorization required"}
             </h1>
 
-            {/* 描述 */}
             <p
               style={{
                 fontSize: "14px",
@@ -202,7 +200,7 @@ const PermissionRequestPage: React.FC = () => {
               {description}
             </p>
 
-            {/* 按钮 */}
+            {/*  */}
             <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
               <button
                 onClick={handleCancel}
@@ -215,7 +213,7 @@ const PermissionRequestPage: React.FC = () => {
                   fontSize: "14px",
                   cursor: "pointer",
                 }}>
-                {t("cancel") || "取消"}
+                {t("cancel") || "Cancel"}
               </button>
               <button
                 onClick={handleRequest}
@@ -229,7 +227,7 @@ const PermissionRequestPage: React.FC = () => {
                   fontWeight: 500,
                   cursor: "pointer",
                 }}>
-                {t("allow") || "允许"}
+                {t("allow") || "Allow"}
               </button>
             </div>
           </>
@@ -244,7 +242,7 @@ const PermissionRequestPage: React.FC = () => {
                 fontWeight: 600,
                 color: "#10b981",
               }}>
-              {t("permissionGranted") || "授权成功"}
+              {t("permissionGranted") || "Authorization successful"}
             </h1>
             <p
               style={{
@@ -252,7 +250,7 @@ const PermissionRequestPage: React.FC = () => {
                 color: "var(--gh-text-secondary, #6b7280)",
                 marginTop: "8px",
               }}>
-              {t("windowClosing") || "窗口即将关闭..."}
+              {t("windowClosing") || "Window closing..."}
             </p>
           </>
         )}
@@ -266,7 +264,7 @@ const PermissionRequestPage: React.FC = () => {
                 fontWeight: 600,
                 color: "#ef4444",
               }}>
-              {t("permissionDenied") || "授权已取消"}
+              {t("permissionDenied") || "Authorization cancelled"}
             </h1>
           </>
         )}

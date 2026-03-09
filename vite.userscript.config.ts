@@ -11,52 +11,9 @@ const author: string = pkg.author
 const version: string = pkg.version
 const license: string = pkg.license
 
-const localeMapping: Record<string, string> = {
-  en: "en",
-}
-
-// Read name and description from locale files
-function loadLocalizedMetadata(): {
-  name: Record<string, string>
-  description: Record<string, string>
-} {
-  const seoNameEN = " (Support Gemini, ChatGPT, Claude, Grok, AI Studio)"
-  const seoKeywordsEN =
-    " | Features: Real-time Outline, Conversation Manager (Folders/Pin/Export), Prompt Library, Immersion/Widescreen/Scroll Lock, Theme Switcher, Markdown Fix, LaTeX/Table Copy, WebDAV Sync, Privacy, Shortcuts, Tab Renamer, History Restore, Watermark Remover"
-  const defaultDescription =
-    "Turn AI chats into readable, navigable knowledge. Use outlines, folders, and prompts to organize your workflow and stop scrolling." +
-    seoKeywordsEN
-
-  const name: Record<string, string> = { "": "Ophel Atlas - AI Chat Organizer & Navigator" + seoNameEN }
-  const description: Record<string, string> = {
-    "": defaultDescription.substring(0, 500),
-  }
-
-  const localesDir = path.resolve(__dirname, "locales")
-  for (const [dirName, localeCode] of Object.entries(localeMapping)) {
-    const messagesPath = path.join(localesDir, dirName, "messages.json")
-    if (fs.existsSync(messagesPath)) {
-      try {
-        const messages = JSON.parse(fs.readFileSync(messagesPath, "utf-8"))
-        if (messages.extensionName?.message) {
-          let extensionName = messages.extensionName.message
-          extensionName += seoNameEN
-          name[localeCode] = extensionName
-        }
-        if (messages.extensionDescription?.message) {
-          let desc = messages.extensionDescription.message
-          desc += seoKeywordsEN
-          description[localeCode] = desc
-        }
-      } catch {
-        console.warn(`Failed to parse ${messagesPath}`)
-      }
-    }
-  }
-  return { name, description }
-}
-
-const { name: localizedName, description: localizedDescription } = loadLocalizedMetadata()
+const scriptName = "Ophel Atlas - AI Chat Organizer & Navigator (Support Gemini, ChatGPT, Claude, Grok, AI Studio)"
+const scriptDescription =
+  "Turn AI chats into readable, navigable knowledge. Use outlines, folders, and prompts to organize your workflow and stop scrolling. | Features: Real-time Outline, Conversation Manager (Folders/Pin/Export), Prompt Library, Immersion/Widescreen/Scroll Lock, Theme Switcher, Markdown Fix, LaTeX/Table Copy, WebDAV Sync, Privacy, Shortcuts, Tab Renamer, History Restore, Watermark Remover"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -65,8 +22,8 @@ export default defineConfig({
     monkey({
       entry: "src/platform/userscript/entry.tsx",
       userscript: {
-        name: localizedName,
-        description: localizedDescription,
+        name: scriptName,
+        description: scriptDescription,
         version: version,
         author: author,
         namespace: "https://github.com/sm18lr88/ophel",
@@ -108,19 +65,13 @@ export default defineConfig({
         supportURL: "https://github.com/sm18lr88/ophel/issues",
       },
       build: {
-        // CSS 自动注入到 head
         autoGrant: true,
       },
     }),
   ],
   resolve: {
     alias: {
-      // ========== Userscript Polyfills ==========
-      // 替换 @plasmohq/storage 为 GM_* 实现
       "@plasmohq/storage": path.resolve(__dirname, "src/platform/userscript/storage-polyfill.ts"),
-      // 注意：chrome-adapter.ts 已内置跨平台支持（通过 __PLATFORM__ 判断），无需 alias 替换
-
-      // ========== 路径别名（与 Plasmo 的 ~ 别名一致）==========
       "~adapters": path.resolve(__dirname, "src/adapters"),
       "~components": path.resolve(__dirname, "src/components"),
       "~constants": path.resolve(__dirname, "src/constants"),
@@ -140,7 +91,6 @@ export default defineConfig({
     },
   },
   define: {
-    // 注入平台标识
     __PLATFORM__: JSON.stringify("userscript"),
   },
   build: {
@@ -148,12 +98,11 @@ export default defineConfig({
     minify: "terser",
     terserOptions: {
       format: {
-        // 保留油猴 meta 注释
         comments: /==\/?UserScript==|@/,
+        ascii_only: true,
       },
     },
     rollupOptions: {
-      // 构建警告抑制
       onwarn(warning, warn) {
         if (warning.message.includes("dynamic import will not move module into another chunk"))
           return

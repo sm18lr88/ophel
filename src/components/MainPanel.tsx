@@ -79,21 +79,21 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   const currentSettings = settings || DEFAULT_SETTINGS
   const tabOrder = currentSettings.features?.order || DEFAULT_SETTINGS.features.order
 
-  // 拖拽功能（高性能版本：直接 DOM 操作，不触发 React 渲染）
+  //  DOM  React 
   const { panelRef, headerRef } = useDraggable({
     edgeSnapHide: currentSettings.panel?.edgeSnap,
-    edgeSnapState, // 传递当前吸附状态
+    edgeSnapState, // 
     snapThreshold: currentSettings.panel?.edgeSnapThreshold ?? 30,
     onEdgeSnap,
     onUnsnap,
   })
 
-  // 计算默认位置样式
+  // 
   const defaultPosition = currentSettings.panel?.defaultPosition ?? "right"
   const defaultEdgeDistance = currentSettings.panel?.defaultEdgeDistance ?? 40
 
-  // 获取排序后的首个 tab
-  // tabOrder 是 string[]，数组顺序就是显示顺序
+  //  tab
+  // tabOrder  string[]
   const getFirstTab = (order: string[]): string => {
     if (order && order.length > 0) {
       return order[0]
@@ -101,11 +101,11 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     return TAB_IDS.PROMPTS
   }
 
-  // 初始化 activeTab（先用默认值，等 settings 加载后更新）
+  //  activeTab settings 
   const [activeTab, setActiveTab] = useState<string>(TAB_IDS.PROMPTS)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // settings 加载完成后，设置为用户设置的首个 tab
+  // settings  tab
   useEffect(() => {
     if (settings && !isInitialized) {
       setActiveTab(getFirstTab(settings.features?.order))
@@ -113,7 +113,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [settings, isInitialized])
 
-  // 当 tabOrder 变化时，如果当前 activeTab 不在列表中，则切换到首个 tab
+  //  tabOrder  activeTab  tab
   useEffect(() => {
     if (isInitialized && tabOrder && tabOrder.length > 0) {
       if (!tabOrder.includes(activeTab)) {
@@ -122,7 +122,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [tabOrder, isInitialized, activeTab])
 
-  // 监听快捷键触发的 tab 切换事件
+  //  tab 
   useEffect(() => {
     const handleSwitchToOutline = () => {
       setActiveTab(TAB_IDS.OUTLINE)
@@ -151,8 +151,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [tabOrder])
 
-  // 防止 Grok 和 Claude 在 keydown 时抢占焦点
-  // 只在 Grok 和 Claude 站点生效
+  //  Grok  Claude  keydown 
+  //  Grok  Claude 
   useEffect(() => {
     const siteId = adapter?.getSiteId()
 
@@ -173,13 +173,13 @@ export const MainPanel: React.FC<MainPanelProps> = ({
 
         if (!isInputElement) return
 
-        // 阻止事件传播到 Grok 的监听器
+        //  Grok 
         e.stopPropagation()
         e.stopImmediatePropagation()
       }
 
-      // 直接在面板元素上监听，而不是 document
-      // 这样可以在 Shadow DOM 内部捕获事件
+      //  document
+      //  Shadow DOM 
       panel.addEventListener("keydown", handleKeyDown, true)
       panel.addEventListener("keypress", handleKeyDown, true)
 
@@ -190,22 +190,22 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [isOpen, adapter, panelRef])
 
-  // === 锚点状态（使用全局存储） ===
+  // ===  ===
   const anchorPosition = useSyncExternalStore(anchorStore.subscribe, anchorStore.getSnapshot)
   const hasAnchor = anchorPosition !== null
 
-  // === 加载状态（遮罩） ===
+  // ===  ===
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [loadingText, setLoadingText] = useState("")
   const abortLoadingRef = useRef(false)
 
-  // 滚动到顶部（自动记录当前位置为锚点，使用 HistoryLoader 加载全部历史）
+  //  HistoryLoader 
   const scrollToTop = useCallback(async () => {
-    // 遮罩延迟显示
+    // 
     const OVERLAY_DELAY_MS = 1600
     abortLoadingRef.current = false
 
-    // 创建 AbortController 用于中断
+    //  AbortController 
     const abortController = new AbortController()
     const checkAbort = () => {
       if (abortLoadingRef.current) {
@@ -214,7 +214,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
     const abortCheckInterval = setInterval(checkAbort, 100)
 
-    // 延迟显示遮罩的定时器
+    // 
     let overlayTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
       if (!abortLoadingRef.current) {
         setIsLoadingHistory(true)
@@ -227,14 +227,14 @@ export const MainPanel: React.FC<MainPanelProps> = ({
         adapter: adapter || null,
         loadAll: true,
         signal: abortController.signal,
-        allowShortCircuit: true, // 用户主动点击，启用短对话短路
+        allowShortCircuit: true, // 
         onProgress: (msg) => {
           setLoadingText(`${t("loadingHistory")} ${msg}`)
         },
       })
       anchorStore.set(result.previousScrollTop)
 
-      // 清理遮罩
+      // 
       if (overlayTimer) {
         clearTimeout(overlayTimer)
         overlayTimer = null
@@ -242,7 +242,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
       setIsLoadingHistory(false)
       setLoadingText("")
 
-      // 显示完成提示（静默模式不显示）
+      // 
       if (result.success && !result.silent) {
         showToast(t("historyLoaded"), 2000)
       }
@@ -254,34 +254,34 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [adapter])
 
-  // 停止加载
+  // 
   const stopLoading = useCallback(() => {
     abortLoadingRef.current = true
   }, [])
 
-  // 滚动到底部（自动记录当前位置为锚点）
+  // 
   const scrollToBottom = useCallback(async () => {
     const { previousScrollTop } = await smartScrollToBottom(adapter || null)
     anchorStore.set(previousScrollTop)
   }, [adapter])
 
-  // 跳转到锚点（实现位置交换，支持来回跳转）
+  // 
   const goToAnchor = useCallback(async () => {
     const savedAnchor = anchorStore.get()
     if (savedAnchor === null) return
 
-    // 获取当前位置
+    // 
     const scrollInfo = await getScrollInfo(adapter || null)
     const currentPos = scrollInfo.scrollTop
 
-    // 跳转到锚点
+    // 
     await smartScrollTo(adapter || null, savedAnchor)
 
-    // 交换位置
+    // 
     anchorStore.set(currentPos)
   }, [adapter])
 
-  // 记录锚点位置（每次跳转大纲时调用）
+  // 
   const saveAnchor = useCallback(async () => {
     const scrollInfo = await getScrollInfo(adapter || null)
     anchorStore.set(scrollInfo.scrollTop)
@@ -289,10 +289,10 @@ export const MainPanel: React.FC<MainPanelProps> = ({
 
   if (!isOpen) return null
 
-  // 过滤出启用的 Tab（设置页通过 header 按钮进入，不在 tab 栏显示）
+  //  Tab header  tab 
   const visibleTabs = tabOrder.filter((tabId) => {
-    if (tabId === TAB_IDS.SETTINGS) return false // 设置在 header 中
-    // 检查每个 Tab 的 enabled 状态
+    if (tabId === TAB_IDS.SETTINGS) return false //  header 
+    //  Tab  enabled 
     if (tabId === TAB_IDS.PROMPTS && currentSettings.features?.prompts?.enabled === false)
       return false
     if (
@@ -305,19 +305,19 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     return true
   })
 
-  // 获取主题图标
+  // 
   const getThemeIcon = () => {
     if (themeMode === "dark") {
-      // 深色模式时显示太阳图标（点击切换到浅色）
+      // 
       return <ThemeLightIcon size={14} />
     }
-    // 浅色模式时显示月亮图标（点击切换到深色）
+    // 
     return <ThemeDarkIcon size={14} />
   }
 
   return (
     <>
-      {/* 加载历史遮罩 */}
+      {/*  */}
       <LoadingOverlay isVisible={isLoadingHistory} text={loadingText} onStop={stopLoading} />
       <div
         ref={panelRef}
@@ -327,14 +327,14 @@ export const MainPanel: React.FC<MainPanelProps> = ({
         style={{
           position: "fixed",
           top: "50%",
-          // 根据默认位置设置 left 或 right
+          //  left  right
           ...(defaultPosition === "left"
             ? { left: `${defaultEdgeDistance}px`, right: "auto" }
             : { right: `${defaultEdgeDistance}px`, left: "auto" }),
           transform: "translateY(-50%)",
           width: `${currentSettings.panel?.width ?? 320}px`,
           height: `${currentSettings.panel?.height ?? 85}vh`,
-          // @ts-expect-error - 注入 CSS 变量供吸附计算使用
+          // @ts-expect-error -  CSS 
           "--panel-width": `${currentSettings.panel?.width ?? 320}px`,
           minHeight: "500px",
           backgroundColor: "var(--gh-bg, #ffffff)",
@@ -349,9 +349,9 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           border: "1px solid var(--gh-border, #e5e7eb)",
           zIndex: 9999,
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-          // 位置现在由 useDraggable 通过直接 DOM 操作控制，不再通过 React state
+          //  useDraggable  DOM  React state
         }}>
-        {/* 自定义 CSS 注入：根据当前站点的样式 ID 查找自定义样式 */}
+        {/*  CSS  ID  */}
         {(() => {
           const siteId = adapter?.getSiteId() || "_default"
           const siteTheme =
@@ -361,7 +361,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           const styleId =
             resolvedMode === "light" ? siteTheme?.lightStyleId : siteTheme?.darkStyleId
 
-          // 在自定义样式中查找（确保 customStyles 是数组）
+          //  customStyles 
           const customStyles = settings.theme?.customStyles
           if (Array.isArray(customStyles)) {
             const customStyle = customStyles.find((s) => s.id === styleId)
@@ -372,7 +372,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           return null
         })()}
 
-        {/* Header - 拖拽区域 */}
+        {/* Header -  */}
         <div
           ref={headerRef}
           className="gh-panel-header"
@@ -382,15 +382,15 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            // cursor 由 CSS (.gh-panel-header) 统一控制为 pointer
+            // cursor  CSS (.gh-panel-header)  pointer
             userSelect: "none",
           }}>
-          {/* 左侧：图标 + 标题（双击切换隐私模式） */}
+          {/*  +  */}
           <Tooltip content={t("aboutPageDesc")}>
             <div
               style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
               onDoubleClick={() => {
-                // 发送隐私模式切换事件给 TabManager
+                //  TabManager
                 window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, window.location.origin)
               }}>
               <span style={{ fontSize: "16px" }}>✨</span>
@@ -398,11 +398,11 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             </div>
           </Tooltip>
 
-          {/* 右侧：按钮组 - 需要 gh-panel-controls 以排除拖拽 */}
+          {/*  -  gh-panel-controls  */}
           <div
             className="gh-panel-controls"
             style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-            {/* 主题切换按钮 */}
+            {/*  */}
             {onThemeToggle && (
               <Tooltip content={t("toggleTheme")}>
                 <button
@@ -426,8 +426,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               </Tooltip>
             )}
 
-            {/* 新标签页按钮 */}
-            <Tooltip content={t("newTabTooltip") || "新标签页打开"}>
+            {/*  */}
+            <Tooltip content={t("newTabTooltip") || ""}>
               <button
                 onClick={() => window.open(window.location.origin, "_blank")}
                 style={{
@@ -448,7 +448,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               </button>
             </Tooltip>
 
-            {/* 设置按钮 - 打开设置模态框 */}
+            {/*  -  */}
             <Tooltip content={t("tabSettings")}>
               <button
                 onClick={() => {
@@ -472,7 +472,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               </button>
             </Tooltip>
 
-            {/* 刷新按钮 - 根据当前 Tab 智能刷新 */}
+            {/*  -  Tab  */}
             <Tooltip
               content={
                 activeTab === TAB_IDS.OUTLINE
@@ -485,18 +485,18 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               }>
               <button
                 onClick={() => {
-                  // 根据当前 Tab 执行对应的刷新逻辑
+                  //  Tab 
                   if (activeTab === TAB_IDS.OUTLINE) {
                     outlineManager?.refresh()
                   } else if (activeTab === TAB_IDS.PROMPTS) {
-                    // 提示词由 Zustand store 管理，自动响应数据变化，无需手动刷新
-                    // 触发 UI 重新获取数据
+                    //  Zustand store 
+                    //  UI 
                     promptManager?.init()
                   } else if (activeTab === TAB_IDS.CONVERSATIONS) {
-                    // 触发数据变更通知，刷新 UI
+                    //  UI
                     conversationManager?.notifyDataChange()
                   }
-                  // settings 不需要刷新
+                  // settings 
                 }}
                 style={{
                   background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
@@ -516,7 +516,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               </button>
             </Tooltip>
 
-            {/* 折叠按钮（收起面板） */}
+            {/*  */}
             <Tooltip content={t("collapse")}>
               <button
                 onClick={onClose}
@@ -541,7 +541,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           </div>
         </div>
 
-        {/* Tabs - 标签栏 */}
+        {/* Tabs -  */}
         <div
           className="gh-panel-tabs"
           style={{
@@ -592,7 +592,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           })}
         </div>
 
-        {/* Content - 内容区 */}
+        {/* Content -  */}
         <div
           className="gh-panel-content"
           style={{
@@ -620,7 +620,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           )}
         </div>
 
-        {/* Footer - 底部固定按钮 */}
+        {/* Footer -  */}
         <div
           className="gh-panel-footer"
           style={{
@@ -631,7 +631,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             borderTop: "1px solid var(--gh-border, #e5e7eb)",
             background: "var(--gh-bg-secondary, #f9fafb)",
           }}>
-          {/* 顶部按钮 */}
+          {/*  */}
           <Tooltip content={t("scrollTop")} triggerStyle={{ flex: 1, maxWidth: "120px" }}>
             <button
               className="gh-interactive scroll-nav-btn"
@@ -665,9 +665,9 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             </button>
           </Tooltip>
 
-          {/* 锚点按钮（返回之前位置，双向跳转） */}
+          {/*  */}
           <Tooltip
-            content={hasAnchor ? t("jumpToAnchor") : "暂无锚点"}
+            content={hasAnchor ? t("jumpToAnchor") : ""}
             triggerStyle={{ flex: "0 0 32px" }}>
             <button
               className="gh-interactive scroll-nav-btn anchor-btn"
@@ -694,7 +694,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 if (hasAnchor) {
                   e.currentTarget.style.transform = "scale(1.1)"
                   e.currentTarget.style.boxShadow = "var(--gh-btn-shadow-hover)"
-                  // 旋转特效
+                  // 
                   const div = e.currentTarget.querySelector("div")
                   if (div) div.style.transform = "rotate(360deg)"
                 }
@@ -702,7 +702,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)"
                 e.currentTarget.style.boxShadow = hasAnchor ? "var(--gh-btn-shadow)" : "none"
-                // 恢复旋转
+                // 
                 const div = e.currentTarget.querySelector("div")
                 if (div) div.style.transform = "rotate(0deg)"
               }}>
@@ -718,7 +718,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
             </button>
           </Tooltip>
 
-          {/* 底部按钮 */}
+          {/*  */}
           <Tooltip content={t("scrollBottom")} triggerStyle={{ flex: 1, maxWidth: "120px" }}>
             <button
               className="gh-interactive scroll-nav-btn"

@@ -1,6 +1,6 @@
 /**
- * 显示 Toast 提示
- * 从用户脚本迁移的轻量级提示组件
+ *  Toast 
+ * 
  */
 type ToastOptions = {
   className?: string
@@ -10,13 +10,13 @@ type ToastOptions = {
 const toastCooldowns = new Map<string, number>()
 
 export function showToast(message: string, duration = 2000, options: ToastOptions = {}) {
-  // 移除现有的 toast
+  //  toast
   const existing = document.getElementById("gh-toast")
   if (existing) {
     existing.remove()
   }
 
-  // 确保样式已注入
+  // 
   if (!document.getElementById("gh-toast-style")) {
     const style = document.createElement("style")
     style.id = "gh-toast-style"
@@ -66,7 +66,7 @@ export function showToast(message: string, duration = 2000, options: ToastOption
 
   document.body.appendChild(toast)
 
-  // 触发重绘以应用过渡效果
+  // 
   requestAnimationFrame(() => {
     toast.classList.add("show")
   })

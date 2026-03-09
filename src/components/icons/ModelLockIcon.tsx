@@ -5,8 +5,8 @@ interface IconProps {
 }
 
 /**
- * Model Lock Icon - 锁 + AI 元素（锁上有齿轮表示模型）
- * 与 ScrollLockIcon 区分开
+ * Model Lock Icon -  + AI 
+ *  ScrollLockIcon 
  */
 export const ModelLockIcon: React.FC<IconProps> = ({
   size = 18,

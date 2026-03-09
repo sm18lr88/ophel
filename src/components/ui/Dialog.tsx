@@ -3,7 +3,7 @@ import { createPortal } from "react-dom"
 
 import { t } from "~utils/i18n"
 
-// ==================== 对话框样式 ====================
+// ====================  ====================
 
 const DIALOG_STYLES = `
   .gh-dialog-overlay {
@@ -85,7 +85,7 @@ const DIALOG_STYLES = `
   }
 `
 
-// 样式注入状态
+// 
 let dialogStyleInjected = false
 
 const injectDialogStyles = () => {
@@ -108,7 +108,7 @@ export interface DialogOverlayProps {
 }
 
 /**
- * 对话框覆盖层 - 使用 Portal 渲染到 document.body
+ *  -  Portal  document.body
  */
 export const DialogOverlay: React.FC<DialogOverlayProps> = ({
   children,
@@ -154,7 +154,7 @@ export interface ConfirmDialogProps {
   closeOnOverlayClick?: boolean
   onConfirm: () => void
   onCancel: () => void
-  /** 额外的操作链接，显示在按钮左侧 */
+  /**  */
   extraAction?: {
     text: string
     onClick: () => void
@@ -162,7 +162,7 @@ export interface ConfirmDialogProps {
 }
 
 /**
- * 确认对话框
+ * 
  */
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   title,
@@ -197,12 +197,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         )}
         <div style={{ display: "flex", gap: "8px" }}>
           <button className="gh-dialog-btn gh-dialog-btn-secondary" onClick={onCancel}>
-            {cancelText || t("cancel") || "取消"}
+            {cancelText || t("cancel") || ""}
           </button>
           <button
             className={`gh-dialog-btn ${danger ? "gh-dialog-btn-danger" : "gh-dialog-btn-primary"}`}
             onClick={onConfirm}>
-            {confirmText || t("confirm") || "确定"}
+            {confirmText || t("confirm") || ""}
           </button>
         </div>
       </div>
@@ -224,7 +224,7 @@ export interface InputDialogProps {
 }
 
 /**
- * 输入对话框
+ * 
  */
 export const InputDialog: React.FC<InputDialogProps> = ({
   title,
@@ -262,10 +262,10 @@ export const InputDialog: React.FC<InputDialogProps> = ({
       />
       <div className="gh-dialog-buttons">
         <button className="gh-dialog-btn gh-dialog-btn-secondary" onClick={onCancel}>
-          {cancelText || t("cancel") || "取消"}
+          {cancelText || t("cancel") || ""}
         </button>
         <button className="gh-dialog-btn gh-dialog-btn-primary" onClick={handleConfirm}>
-          {confirmText || t("confirm") || "确定"}
+          {confirmText || t("confirm") || ""}
         </button>
       </div>
     </DialogOverlay>

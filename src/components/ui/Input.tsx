@@ -1,16 +1,16 @@
 /**
- * Input 输入框组件
- * 统一输入框样式，支持主题变量
+ * Input 
+ * 
  */
 import React from "react"
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  /** 变体: default=白底, filled=灰底 */
+  /** : default=, filled= */
   variant?: "default" | "filled"
 }
 
 /**
- * 通用输入框组件
+ * 
  */
 export const Input: React.FC<InputProps> = ({ variant = "default", style, ...props }) => {
   return (

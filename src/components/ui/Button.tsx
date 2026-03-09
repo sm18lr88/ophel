@@ -1,18 +1,18 @@
 /**
- * Button 按钮组件
- * 统一按钮样式，支持多种变体
+ * Button 
+ * 
  */
 import React from "react"
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /** 变体: primary=渐变, secondary=边框, danger=红色, ghost=透明 */
+  /** : primary=, secondary=, danger=, ghost= */
   variant?: "primary" | "secondary" | "danger" | "ghost"
-  /** 尺寸: sm=小, md=中 */
+  /** : sm=, md= */
   size?: "sm" | "md"
 }
 
 /**
- * 通用按钮组件
+ * 
  */
 export const Button: React.FC<ButtonProps> = ({
   variant = "secondary",
@@ -21,13 +21,13 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  // 尺寸配置
+  // 
   const sizeStyles =
     size === "sm"
       ? { padding: "4px 8px", fontSize: "12px" }
       : { padding: "8px 16px", fontSize: "14px" }
 
-  // 变体样式
+  // 
   const variantStyles: Record<string, React.CSSProperties> = {
     primary: {
       background: "var(--gh-brand-gradient, linear-gradient(135deg, #4285f4 0%, #34a853 100%))",

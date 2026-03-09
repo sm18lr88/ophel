@@ -145,8 +145,8 @@ const buildVisibilityMaps = (
   return { parentMap, visibleMap }
 }
 
-// 递归渲染大纲树节点
-// 使用 outline-hidden 类而非条件渲染
+// 
+//  outline-hidden 
 const OutlineNodeView: React.FC<{
   node: OutlineNode
   onToggle: (node: OutlineNode) => void
@@ -175,13 +175,13 @@ const OutlineNodeView: React.FC<{
   const isActive = node.index === activeIndex
   const isVisibleHighlight = node.index === visibleHighlightIndex
   const hasChildren = node.children && node.children.length > 0
-  // Legacy: isExpanded 直接看 hasChildren 和 collapsed，不考虑搜索
-  // 箭头始终显示（只要有子节点），因为用户可能想手动展开查看不匹配的子节点
+  // Legacy: isExpanded  hasChildren  collapsed
+  // 
   const isExpanded = hasChildren && !node.collapsed
 
   const shouldShow = visibleMap[node.index] ?? true
 
-  // ===== CSS 类名 (Legacy exact) =====
+  // ===== CSS  (Legacy exact) =====
   const itemClassName = [
     "outline-item",
     `outline-level-${node.relativeLevel}`,
@@ -194,7 +194,7 @@ const OutlineNodeView: React.FC<{
     .filter(Boolean)
     .join(" ")
 
-  // ===== 搜索高亮处理 (Legacy: regex split) =====
+  // =====  (Legacy: regex split) =====
   const renderTextWithHighlight = () => {
     if (searchQuery && node.isMatch) {
       try {
@@ -228,37 +228,37 @@ const OutlineNodeView: React.FC<{
     return node.text
   }
 
-  // ===== 复制处理 (阻止冒泡) =====
+  // =====  () =====
   const [copySuccess, setCopySuccess] = useState(false)
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
 
-    // 智能获取文本
+    // 
     let textToCopy = node.text
 
-    // 尝试从 DOM 获取完整文本
+    //  DOM 
     if (node.element && node.element.isConnected) {
       if (node.isUserQuery && extractUserQueryText) {
-        // 用户提问：使用专门提取逻辑 (处理 <br> 等)
+        //  ( <br> )
         const fullText = extractUserQueryText(node.element)
         if (fullText) textToCopy = fullText
       } else {
-        // 普通标题：直接取 textContent
+        //  textContent
         const fullText = node.element.textContent
         if (fullText) textToCopy = fullText.trim()
       }
     }
 
     try {
-      // 优先使用 Clipboard API
+      //  Clipboard API
       await navigator.clipboard.writeText(textToCopy)
       setCopySuccess(true)
       setTimeout(() => setCopySuccess(false), 1500)
     } catch (err) {
       console.error("[DEBUG] Clipboard API failed, trying fallback:", err)
-      // 备用方案：使用 execCommand
+      //  execCommand
       try {
         const textArea = document.createElement("textarea")
         textArea.value = textToCopy
@@ -276,7 +276,7 @@ const OutlineNodeView: React.FC<{
     }
   }
 
-  // ===== 状态控制：鼠标悬停在操作按钮时不显示主 Tooltip =====
+  // =====  Tooltip =====
   const [isHoveringAction, setIsHoveringAction] = useState(false)
 
   return (
@@ -304,7 +304,7 @@ const OutlineNodeView: React.FC<{
           data-level={node.relativeLevel}
           ref={(el) => setItemRef(node.index, el)}
           onClick={() => onClick(node)}>
-          {/* 折叠箭头 (Legacy: ▸) - 使用 hasChildren 显示箭头，允许手动展开 */}
+          {/*  (Legacy: ▸) -  hasChildren  */}
           <span
             className={`outline-item-toggle ${hasChildren ? (isExpanded ? "expanded" : "") : "invisible"}`}
             onClick={(e) => {
@@ -316,7 +316,7 @@ const OutlineNodeView: React.FC<{
             <ChevronDownIcon size={16} style={{ transform: "rotate(-90deg)" }} />
           </span>
 
-          {/* 用户提问: 徽章 (图标+角标数字) */}
+          {/* :  (+) */}
           {node.isUserQuery && (
             <span className="user-query-badge">
               <span className="user-query-badge-icon">💬</span>
@@ -324,7 +324,7 @@ const OutlineNodeView: React.FC<{
             </span>
           )}
 
-          {/* 文字 (带搜索高亮) */}
+          {/*  () */}
           <span className={`outline-item-text ${node.isGhost ? "ghost-text" : ""}`}>
             {renderTextWithHighlight()}
           </span>
@@ -351,19 +351,19 @@ const OutlineNodeView: React.FC<{
             </Tooltip>
           </span>
 
-          {/* 复制按钮 (所有节点显示) */}
+          {/*  () */}
           {true && (
-            <Tooltip content={t("copy") || "复制"}>
+            <Tooltip content={t("copy") || ""}>
               <span
                 className="outline-item-copy-btn"
                 onClick={handleCopy}
                 onMouseEnter={() => setIsHoveringAction(true)}
                 onMouseLeave={() => setIsHoveringAction(false)}>
                 {copySuccess ? (
-                  // 成功对号图标
+                  // 
                   <CheckIcon size={14} color="#10b981" />
                 ) : (
-                  // 复制图标
+                  // 
                   <CopyIcon size={14} />
                 )}
               </span>
@@ -372,7 +372,7 @@ const OutlineNodeView: React.FC<{
         </div>
       </Tooltip>
 
-      {/* 子节点 (始终渲染) */}
+      {/*  () */}
       {hasChildren &&
         node.children.map((child, idx) => (
           <OutlineNodeView
@@ -395,7 +395,7 @@ const OutlineNodeView: React.FC<{
 }
 
 export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore }) => {
-  // 获取设置 - 使用 Zustand Store
+  //  -  Zustand Store
   const { settings } = useSettingsStore()
 
   // Initialize state from manager to prevent flicker
@@ -421,8 +421,8 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
 
   const listRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const prevTreeLengthRef = useRef<number>(0) // 用 ref 追踪上一次树长度
-  const shouldScrollToBottomRef = useRef<boolean>(false) // 标记是否需要滚动
+  const prevTreeLengthRef = useRef<number>(0) //  ref 
+  const shouldScrollToBottomRef = useRef<boolean>(false) // 
   const activeIndexRef = useRef<number | null>(null)
   const visibleHighlightRef = useRef<number | null>(null)
   const itemRefMap = useRef<Map<number, HTMLElement>>(new Map())
@@ -432,7 +432,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     hasData: boolean
   }>({ parentMap: {}, visibleMap: {}, hasData: false })
 
-  // Tab 激活状态管理：挂载时激活，卸载时取消
+  // Tab 
   useEffect(() => {
     manager.setActive(true)
     return () => {
@@ -440,7 +440,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     }
   }, [manager])
 
-  // 监听并执行搜索聚焦
+  // 
   useEffect(() => {
     const outlineWindow = window as OutlineWindowFlags
 
@@ -453,10 +453,10 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
 
     window.addEventListener("ophel:searchOutline", handleSearchOutline)
 
-    // 检查是否有待处理的搜索请求
+    // 
     if (outlineWindow.__ophelPendingSearchOutline) {
       delete outlineWindow.__ophelPendingSearchOutline
-      // 延迟确保渲染完成
+      // 
       setTimeout(handleSearchOutline, 100)
     }
 
@@ -465,21 +465,21 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     }
   }, [])
 
-  // 订阅 Manager 更新
+  //  Manager 
   useEffect(() => {
     const update = () => {
-      // 智能滚动：检测用户是否已在底部附近（更新前）
+      // 
       /*
       let wasAtBottom = false
       if (listRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = listRef.current
-        wasAtBottom = scrollTop + clientHeight >= scrollHeight - 50 // 50px 容差
+        wasAtBottom = scrollTop + clientHeight >= scrollHeight - 50 // 50px 
       }
       */
 
       const state = manager.getState()
 
-      // 递归计算所有节点数量（包括子节点）
+      // 
       const countNodes = (nodes: OutlineNode[]): number => {
         let count = 0
         for (const node of nodes) {
@@ -494,13 +494,13 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
       const newTotalNodes = countNodes(state.tree)
       const prevTotalNodes = prevTreeLengthRef.current
 
-      // 根据 followMode 决定是否自动滚动
-      // followMode === 'latest'：自动滚动到最新消息
-      // followMode === 'current' 或 'manual'：不自动滚动
+      //  followMode 
+      // followMode === 'latest'
+      // followMode === 'current'  'manual'
       const followMode = settings?.features?.outline?.followMode || "current"
 
       if (followMode === "latest" && newTotalNodes > prevTotalNodes) {
-        // 跟随最新消息模式：有新节点就滚动
+        // 
         shouldScrollToBottomRef.current = true
       }
 
@@ -518,24 +518,24 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
       setMatchCount(state.matchCount)
       setBookmarkMode(state.bookmarkMode)
 
-      // 更新 ref 以供下次比较（现在是总节点数）
+      //  ref 
       prevTreeLengthRef.current = newTotalNodes
     }
-    update() // 初始加载
+    update() // 
     return manager.subscribe(update)
-  }, [manager, settings?.features?.outline?.followMode]) // 添加 followMode 依赖
+  }, [manager, settings?.features?.outline?.followMode]) //  followMode 
 
-  // 智能滚动：在 tree 渲染完成后执行滚动
+  //  tree 
   useEffect(() => {
     if (shouldScrollToBottomRef.current && listRef.current) {
       const listEl = listRef.current
-      // 使用 requestAnimationFrame 确保 DOM 完全渲染
+      //  requestAnimationFrame  DOM 
       requestAnimationFrame(() => {
         listEl.scrollTo({ top: listEl.scrollHeight, behavior: "smooth" })
       })
       shouldScrollToBottomRef.current = false
     }
-  }, [tree]) // 依赖 tree，当 tree 变化（渲染完成）后执行
+  }, [tree]) //  tree tree 
 
   const updateActiveIndex = useCallback((idx: number | null) => {
     if (activeIndexRef.current !== idx) {
@@ -794,7 +794,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     updateVisibleHighlightIndex,
   ])
 
-  // 大纲列表滚动监听 (Dynamic Scroll Button state)
+  //  (Dynamic Scroll Button state)
   useEffect(() => {
     const el = listRef.current
     if (!el) return
@@ -819,18 +819,18 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     async (node: OutlineNode) => {
       let targetElement = node.element
 
-      // 元素失效时重新查找
+      // 
       if (!targetElement || !targetElement.isConnected) {
-        // 用户提问节点（level=0）需要使用专门的查找逻辑
+        // level=0
         if (node.isUserQuery && node.level === 0) {
-          // 按 queryIndex 和文本查找用户提问元素
+          //  queryIndex 
           const found = manager.findUserQueryElement(node.queryIndex!, node.text)
           if (found) {
             targetElement = found as HTMLElement
             node.element = targetElement
           }
         } else {
-          // 普通标题使用 findElementByHeading
+          //  findElementByHeading
           const found = manager.findElementByHeading(node.level, node.text)
           if (found) {
             targetElement = found as HTMLElement
@@ -840,29 +840,29 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
       }
 
       if (targetElement && targetElement.isConnected) {
-        // 等待锚点保存完成后再跳转（instant 模式必须）
+        // instant 
         if (onJumpBefore) {
           await onJumpBefore()
         }
-        // 传入 __bypassLock: true 以绕过 ScrollLockManager 的拦截
+        //  __bypassLock: true  ScrollLockManager 
         const scrollOptions: BypassScrollIntoViewOptions = {
           behavior: "instant",
           block: "start",
           __bypassLock: true,
         }
         targetElement.scrollIntoView(scrollOptions)
-        // 高亮效果
+        // 
         targetElement.classList.add("outline-highlight")
         setTimeout(() => targetElement?.classList.remove("outline-highlight"), 2000)
       } else if (node.isGhost && node.scrollTop !== undefined) {
-        // Ghost 节点（收藏对应内容不存在）：使用保存的 scrollTop 回退
+        // Ghost  scrollTop 
         const scrollContainer = manager.getScrollContainer()
         if (scrollContainer) {
           scrollContainer.scrollTo({ top: node.scrollTop, behavior: "smooth" })
-          showToast(t("bookmarkContentMissing") || "收藏内容不存在，已跳转到保存位置", 3000)
+          showToast(t("bookmarkContentMissing") || "", 3000)
         }
       } else {
-        showToast(t("bookmarkContentMissing") || "收藏内容已被删除或折叠", 2000)
+        showToast(t("bookmarkContentMissing") || "", 2000)
       }
     },
     [manager, onJumpBefore],
@@ -874,7 +874,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     navigator.clipboard.writeText(text)
   }, [])
 
-  // 用于提取完整用户提问文本（当显示被截断时）
+  // 
   const extractUserQueryText = useCallback(
     (element: Element): string => manager.extractUserQueryText(element),
     [manager],
@@ -925,19 +925,19 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     }
   }, [scrollState])
 
-  // Legacy: locateCurrentPosition 完全复刻
+  // Legacy: locateCurrentPosition 
   const handleLocateCurrent = useCallback(() => {
     const scrollContainer = manager.getScrollContainer()
     if (!scrollContainer) return
 
-    // 0. 如果在搜索模式，先清除搜索
+    // 0. 
     if (searchQuery) {
       manager.setSearchQuery("")
-      // 同步 UI 状态
+      //  UI 
       setSearchQuery("")
     }
 
-    // 1. 收集所有大纲项（展平树结构）
+    // 1. 
     const flattenTree = (items: typeof tree): typeof tree => {
       const result: typeof tree = []
       items.forEach((item) => {
@@ -950,7 +950,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     }
     const allItems = flattenTree(tree)
 
-    // 2. 找到当前可视区域中的第一个大纲元素
+    // 2. 
     const containerRect = scrollContainer.getBoundingClientRect()
     const viewportTop = containerRect.top
     const viewportBottom = containerRect.bottom
@@ -971,7 +971,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     }
 
     if (!currentItem) {
-      // 找最接近视口顶部的元素
+      // 
       let minDistance = Infinity
       for (const item of allItems) {
         if (!item.element || !item.element.isConnected) continue
@@ -986,10 +986,10 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
 
     if (!currentItem) return
 
-    // 3. 展开目标项的所有父级节点
+    // 3. 
     manager.revealNode(currentItem.index)
 
-    // 4. 延迟滚动和高亮（等待 DOM 更新）
+    // 4.  DOM 
     const currentIndex = currentItem.index
     setTimeout(() => {
       const listContainer = listRef.current
@@ -998,10 +998,10 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
       const outlineItem = listContainer.querySelector(`.outline-item[data-index="${currentIndex}"]`)
       if (!outlineItem) return
 
-      // 滚动大纲面板到该项（居中显示）
+      // 
       outlineItem.scrollIntoView({ behavior: "instant", block: "center" })
 
-      // 高亮该大纲项（3秒后消失并清除 forceVisible）
+      // 3 forceVisible
       outlineItem.classList.add("highlight")
       setTimeout(() => {
         outlineItem.classList.remove("highlight")
@@ -1017,19 +1017,19 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
     [manager],
   )
 
-  // 监听快捷键触发的定位事件
+  // 
   useEffect(() => {
     const outlineWindow = window as OutlineWindowFlags
 
     const handleLocateEvent = () => {
-      // 清除全局标记
+      // 
       outlineWindow.__ophelPendingLocateOutline = false
       handleLocateCurrent()
     }
 
-    // 检查挂载时是否有待处理的定位请求
+    // 
     if (outlineWindow.__ophelPendingLocateOutline) {
-      // 延迟执行，确保组件完全渲染
+      // 
       setTimeout(() => {
         handleLocateEvent()
       }, 100)
@@ -1067,8 +1067,8 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
             <Tooltip
               content={
                 showUserQueries
-                  ? t("outlineOnlyUserQueries") || "仅显示提问"
-                  : t("outlineShowUserQueries") || "显示所有"
+                  ? t("outlineOnlyUserQueries") || ""
+                  : t("outlineShowUserQueries") || ""
               }>
               <button
                 onClick={handleGroupModeToggle}
@@ -1078,7 +1078,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
             </Tooltip>
 
             {/* Bookmark Mode Toggle */}
-            <Tooltip content={t("bookmarkMode") || "收藏"}>
+            <Tooltip content={t("bookmarkMode") || ""}>
               <button
                 onClick={handleToggleBookmarkMode}
                 className={`outline-toolbar-btn ${bookmarkMode ? "active-subtle" : ""}`}>
@@ -1090,7 +1090,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
             <Tooltip
               content={
                 bookmarkMode
-                  ? t("bookmarkModeDisabled") || "收藏模式下不可用"
+                  ? t("bookmarkModeDisabled") || ""
                   : isAllExpanded
                     ? t("outlineCollapseAll")
                     : t("outlineExpandAll")
@@ -1119,7 +1119,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
             </Tooltip>
 
             {/* Locate Current */}
-            <Tooltip content={t("outlineLocateCurrent") || "定位到当前位置"}>
+            <Tooltip content={t("outlineLocateCurrent") || ""}>
               <button
                 onClick={handleLocateCurrent}
                 style={{
@@ -1143,8 +1143,8 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
             <Tooltip
               content={
                 scrollState === "bottom"
-                  ? t("outlineScrollBottom") || "滚动到底部"
-                  : t("outlineScrollTop") || "回到顶部"
+                  ? t("outlineScrollBottom") || ""
+                  : t("outlineScrollTop") || ""
               }>
               <button
                 onClick={handleDynamicScroll}
@@ -1184,7 +1184,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
               ref={inputRef}
               type="text"
               className="outline-search-input"
-              placeholder={t("outlineSearch") || "搜索..."}
+              placeholder={t("outlineSearch") || "..."}
               value={searchQuery}
               onChange={handleSearchChange}
               style={{
@@ -1271,11 +1271,11 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
               // Tooltip Text
               let title = ""
               if (bookmarkMode) {
-                title = t("bookmarkModeDisabled") || "收藏模式下不可用"
+                title = t("bookmarkModeDisabled") || ""
               } else if (lvl === 0) {
                 title = showUserQueries
-                  ? t("outlineOnlyUserQueries") || "仅显示提问"
-                  : t("outlineCollapseAll") || "折叠全部"
+                  ? t("outlineOnlyUserQueries") || ""
+                  : t("outlineCollapseAll") || ""
               } else {
                 title = `H${lvl}: ${levelCounts[lvl] || 0}`
               }
@@ -1317,35 +1317,35 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
         </div>
       </div>
 
-      {/* 搜索结果条 (Sticky) */}
+      {/*  (Sticky) */}
       {searchQuery && (
         <div
           className="outline-result-bar"
           style={{
             textAlign: "center",
-            padding: "6px 8px", //稍微增加横向padding
-            margin: "0 8px 0 8px", // 去除底部外边距，由下方容器 padding 控制
+            padding: "6px 8px", //padding
+            margin: "0 8px 0 8px", //  padding 
             color: "var(--gh-border-active)",
             fontSize: "13px",
             background: matchCount > 0 ? "var(--gh-folder-bg-default)" : "transparent",
             borderRadius: "4px",
             border: matchCount === 0 ? "1px dashed var(--gh-border, #e5e7eb)" : "none",
-            flexShrink: 0, // 防止被压缩
+            flexShrink: 0, // 
           }}>
-          {matchCount} {t("outlineSearchResult") || "个结果"}
+          {matchCount} {t("outlineSearchResult") || ""}
         </div>
       )}
 
-      {/* 大纲树 */}
+      {/*  */}
       <div
         ref={listRef}
         className={`gh-outline-tree-container gh-panel-bookmark-mode-${settings?.features?.outline?.panelBookmarkMode || "always"}`}
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: searchQuery ? "0 8px 8px 8px" : "8px", // 搜索时顶部 padding 为 0 (依赖 ResultBar 的视觉分隔或紧凑布局)
+          padding: searchQuery ? "0 8px 8px 8px" : "8px", //  padding  0 ( ResultBar )
         }}>
-        {/* 搜索结果条 */}
+        {/*  */}
 
         {(() => {
           // Helper: recursively check if node has bookmark
@@ -1365,7 +1365,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
                 "Only user queries are shown. Send a message to build the outline."
               : t("outlineEmptyDescDefault") ||
                 "Outline items will appear as the conversation grows."
-          const zhCommaIndex = emptyDescription.indexOf("，")
+          const zhCommaIndex = emptyDescription.indexOf("")
           const enCommaIndex = emptyDescription.indexOf(",")
           let splitIndex = -1
           if (zhCommaIndex >= 0 && enCommaIndex >= 0) {
@@ -1407,10 +1407,10 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
                 </div>
                 <div
                   style={{ fontSize: "14px", fontWeight: 500, color: "var(--gh-text, #374151)" }}>
-                  {t("outlineNoBookmarks") || "暂无收藏"}
+                  {t("outlineNoBookmarks") || ""}
                 </div>
                 <div style={{ fontSize: "12px", opacity: 0.7 }}>
-                  {t("outlineAddBookmarkHint") || "点击条目旁的星号添加收藏"}
+                  {t("outlineAddBookmarkHint") || ""}
                 </div>
               </div>
             )
@@ -1423,7 +1423,7 @@ export const OutlineTab: React.FC<OutlineTabProps> = ({ manager, onJumpBefore })
                   <OutlineIcon size={18} color="currentColor" />
                 </div>
                 <div className="outline-empty-state-title">
-                  {t("outlineEmpty") || "暂无大纲内容"}
+                  {t("outlineEmpty") || ""}
                 </div>
                 <div className="outline-empty-state-desc">
                   <span className="outline-empty-state-desc-line">{emptyDescriptionFirstLine}</span>

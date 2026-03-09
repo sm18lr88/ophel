@@ -5,7 +5,7 @@ import { CopyIcon, PageContentIcon } from "~components/icons"
 import type { Conversation, Folder } from "~core/conversation-manager"
 import { t } from "~utils/i18n"
 
-// ==================== 菜单样式  ====================
+// ====================   ====================
 
 const MENU_STYLES = `
   .conversations-folder-menu {
@@ -35,7 +35,7 @@ const MENU_STYLES = `
   }
 `
 
-// 样式注入状态
+// 
 let menuStyleInjected = false
 
 const injectMenuStyles = () => {
@@ -47,7 +47,7 @@ const injectMenuStyles = () => {
   menuStyleInjected = true
 }
 
-// ==================== 通用菜单容器 ====================
+// ====================  ====================
 
 interface MenuProps {
   anchorEl: HTMLElement | null
@@ -55,21 +55,21 @@ interface MenuProps {
   children: React.ReactNode
 }
 /**
- * 上下文菜单 - 使用 Portal 渲染到 document.body
- * 这样避免被 MainPanel 的 transform 影响 fixed 定位
+ *  -  Portal  document.body
+ *  MainPanel  transform  fixed 
  */
 export const ContextMenu: React.FC<MenuProps> = ({ anchorEl, onClose, children }) => {
   const menuRef = useRef<HTMLDivElement>(null)
   const [menuPosition, setMenuPosition] = useState<{ left: number; top: number } | null>(null)
 
   useEffect(() => {
-    // 注入菜单样式
+    // 
     injectMenuStyles()
 
     if (!anchorEl) return
 
     const handleClickOutside = (e: MouseEvent) => {
-      // 使用 composedPath 获取完整的事件路径（穿透 Shadow DOM）
+      //  composedPath  Shadow DOM
       const path = e.composedPath()
       const clickedInMenu = menuRef.current && path.includes(menuRef.current)
       const clickedOnAnchor = path.includes(anchorEl)
@@ -79,9 +79,9 @@ export const ContextMenu: React.FC<MenuProps> = ({ anchorEl, onClose, children }
       }
     }
 
-    // 延迟添加监听，避免立即触发
+    // 
     const timer = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside, true) // 使用捕获阶段
+      document.addEventListener("click", handleClickOutside, true) // 
     }, 0)
 
     return () => {
@@ -90,7 +90,7 @@ export const ContextMenu: React.FC<MenuProps> = ({ anchorEl, onClose, children }
     }
   }, [anchorEl, onClose])
 
-  // 计算菜单位置，确保不超出屏幕边界
+  // 
   useEffect(() => {
     if (!anchorEl || !menuRef.current) return
 
@@ -98,28 +98,28 @@ export const ContextMenu: React.FC<MenuProps> = ({ anchorEl, onClose, children }
     const menuRect = menuRef.current.getBoundingClientRect()
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
-    const menuWidth = menuRect.width || 150 // 默认菜单宽度
-    const menuHeight = menuRect.height || 200 // 默认菜单高度
+    const menuWidth = menuRect.width || 150 // 
+    const menuHeight = menuRect.height || 200 // 
 
     let left = rect.left
     let top = rect.bottom + 4
 
-    // 检测是否超出右边界，如果超出则向左展开
+    // 
     if (left + menuWidth > viewportWidth - 10) {
       left = rect.right - menuWidth
     }
 
-    // 检测是否超出左边界
+    // 
     if (left < 10) {
       left = 10
     }
 
-    // 检测是否超出下边界，如果超出则向上展开
+    // 
     if (top + menuHeight > viewportHeight - 10) {
       top = rect.top - menuHeight - 4
     }
 
-    // 检测是否超出上边界
+    // 
     if (top < 10) {
       top = 10
     }
@@ -129,7 +129,7 @@ export const ContextMenu: React.FC<MenuProps> = ({ anchorEl, onClose, children }
 
   if (!anchorEl) return null
 
-  // 使用 Portal 渲染到 document.body，避免 transform 影响 fixed 定位
+  //  Portal  document.body transform  fixed 
   const menuContent = (
     <div
       ref={menuRef}
@@ -138,7 +138,7 @@ export const ContextMenu: React.FC<MenuProps> = ({ anchorEl, onClose, children }
         position: "fixed",
         top: menuPosition ? `${menuPosition.top}px` : "-9999px",
         left: menuPosition ? `${menuPosition.left}px` : "-9999px",
-        zIndex: 2147483647, // 最大 z-index 值
+        zIndex: 2147483647, //  z-index 
         pointerEvents: "auto",
       }}>
       {children}
@@ -148,7 +148,7 @@ export const ContextMenu: React.FC<MenuProps> = ({ anchorEl, onClose, children }
   return createPortal(menuContent, document.body)
 }
 
-// ==================== 菜单按钮 ====================
+// ====================  ====================
 
 interface MenuButtonProps {
   onClick: () => void
@@ -164,7 +164,7 @@ export const MenuButton: React.FC<MenuButtonProps> = ({ onClick, danger, childre
   </button>
 )
 
-// ==================== 文件夹菜单 ====================
+// ====================  ====================
 
 interface FolderMenuProps {
   folder: Folder
@@ -188,7 +188,7 @@ export const FolderMenu: React.FC<FolderMenuProps> = ({
           onClose()
           onRename()
         }}>
-        {t("conversationsRename") || "重命名"}
+        {t("conversationsRename") || ""}
       </MenuButton>
       <MenuButton
         danger
@@ -196,13 +196,13 @@ export const FolderMenu: React.FC<FolderMenuProps> = ({
           onClose()
           onDelete()
         }}>
-        {t("conversationsDelete") || "删除"}
+        {t("conversationsDelete") || ""}
       </MenuButton>
     </ContextMenu>
   )
 }
 
-// ==================== 会话菜单 ====================
+// ====================  ====================
 
 interface ConversationMenuProps {
   conversation: Conversation
@@ -232,7 +232,7 @@ export const ConversationMenu: React.FC<ConversationMenuProps> = ({
           onClose()
           onRename()
         }}>
-        {t("conversationsRename") || "重命名"}
+        {t("conversationsRename") || ""}
       </MenuButton>
       <MenuButton
         onClick={() => {
@@ -240,22 +240,22 @@ export const ConversationMenu: React.FC<ConversationMenuProps> = ({
           onTogglePin()
         }}>
         {conversation.pinned
-          ? t("conversationsUnpin") || "取消置顶"
-          : t("conversationsPin") || "置顶"}
+          ? t("conversationsUnpin") || ""
+          : t("conversationsPin") || ""}
       </MenuButton>
       <MenuButton
         onClick={() => {
           onClose()
           onSetTags()
         }}>
-        {t("conversationsSetTags") || "设置标签"}
+        {t("conversationsSetTags") || ""}
       </MenuButton>
       <MenuButton
         onClick={() => {
           onClose()
           onMoveTo()
         }}>
-        {t("conversationsMoveTo") || "移动到..."}
+        {t("conversationsMoveTo") || "..."}
       </MenuButton>
       <MenuButton
         danger
@@ -263,13 +263,13 @@ export const ConversationMenu: React.FC<ConversationMenuProps> = ({
           onClose()
           onDelete()
         }}>
-        {t("conversationsDelete") || "删除"}
+        {t("conversationsDelete") || ""}
       </MenuButton>
     </ContextMenu>
   )
 }
 
-// ==================== 导出菜单 ====================
+// ====================  ====================
 
 interface ExportMenuProps {
   anchorEl: HTMLElement | null

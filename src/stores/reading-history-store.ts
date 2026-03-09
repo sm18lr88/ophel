@@ -1,15 +1,7 @@
-/**
- * Reading History Store - Zustand 状态管理
- *
- * 管理阅读历史（滚动位置记录）
- */
-
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 
 import { chromeStorageAdapter } from "./chrome-adapter"
-
-// ==================== 类型定义 ====================
 
 export interface ReadingPosition {
   top: number
@@ -19,13 +11,10 @@ export interface ReadingPosition {
   textSignature?: string
   index?: number
   offset?: number
-  scrollHeight?: number // 保存时的容器高度
+  scrollHeight?: number
 }
 
-// ==================== Store 类型定义 ====================
-
 interface ReadingHistoryState {
-  // 状态
   history: Record<string, ReadingPosition>
   lastCleanupRun: number
   _hasHydrated: boolean
@@ -36,8 +25,6 @@ interface ReadingHistoryState {
   cleanup: (days: number) => void
   setHasHydrated: (state: boolean) => void
 }
-
-// ==================== Store 创建 ====================
 
 export const useReadingHistoryStore = create<ReadingHistoryState>()(
   persist(
@@ -56,12 +43,11 @@ export const useReadingHistoryStore = create<ReadingHistoryState>()(
       },
 
       cleanup: (days) => {
-        if (days === -1) return // 禁用清理
+        if (days === -1) return
 
         const now = Date.now()
         const state = get()
 
-        // 每天最多清理一次
         if (now - state.lastCleanupRun < 24 * 60 * 60 * 1000) return
 
         const expireTime = days * 24 * 60 * 60 * 1000
@@ -99,10 +85,6 @@ export const useReadingHistoryStore = create<ReadingHistoryState>()(
   ),
 )
 
-// ==================== 便捷 Hooks ====================
-
 export const useReadingHistoryHydrated = () => useReadingHistoryStore((state) => state._hasHydrated)
-
-// ==================== 非 React 环境使用 ====================
 
 export const getReadingHistoryStore = () => useReadingHistoryStore.getState()

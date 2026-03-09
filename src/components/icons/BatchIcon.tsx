@@ -1,5 +1,5 @@
 /**
- * SVG 图标组件 - 批量/多选 (实心风格/Checkbox)
+ * SVG  - / (/Checkbox)
  */
 import React from "react"
 

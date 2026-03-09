@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 云 (Cloud)
- * 风格：Outline (stroke-based)
+ * SVG  -  (Cloud)
+ * Outline (stroke-based)
  */
 import React from "react"
 

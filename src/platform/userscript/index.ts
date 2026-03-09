@@ -1,9 +1,3 @@
-/**
- * Platform Implementation - Userscript (Tampermonkey/Violentmonkey)
- *
- * 油猴脚本平台实现，使用 GM_* API
- */
-
 import { t } from "~utils/i18n"
 import { sanitizeErrorMessage, validateLlmProviderUrl } from "~utils/network-security"
 import type { ClaudeSessionKey, ClaudeSessionKeysState } from "~utils/storage"
@@ -17,7 +11,6 @@ import type {
   PlatformStorage,
 } from "../types"
 
-// GM API 类型声明
 declare function GM_getValue<T>(key: string, defaultValue?: T): T
 declare function GM_setValue(key: string, value: unknown): void
 declare function GM_deleteValue(key: string): void
@@ -48,16 +41,12 @@ declare function GM_notification(details: {
   onclick?: () => void
 }): void
 
-/**
- * 油猴版存储实现
- */
 const userscriptStorage: PlatformStorage = {
   async get<T>(key: string): Promise<T | undefined> {
     const value = GM_getValue(key)
     if (value === undefined || value === null) {
       return undefined
     }
-    // GM_getValue 已经处理了 JSON 反序列化
     return value as T
   },
 
@@ -85,9 +74,6 @@ interface ClaudeSessionKeysPersistedData {
   version?: number
 }
 
-/**
- * 油猴脚本平台实现
- */
 export const platform: Platform = {
   type: "userscript",
 
@@ -115,7 +101,6 @@ export const platform: Platform = {
               return JSON.parse(response.responseText) as T
             },
             async blob() {
-              // 对于二进制数据，需要重新请求
               return new Promise((res, rej) => {
                 GM_xmlhttpRequest({
                   url: targetUrl,
@@ -164,7 +149,6 @@ export const platform: Platform = {
   },
 
   hasCapability(cap: PlatformCapability): boolean {
-    // 油猴版不支持这些能力
     const unsupported: PlatformCapability[] = [
       "cookies",
       "permissions",
@@ -176,12 +160,10 @@ export const platform: Platform = {
   },
 
   async getClaudeSessionKey() {
-    // 检查是否在 claude.ai 域名
     if (!location.hostname.endsWith("claude.ai")) {
       return { success: false, error: t("claudeNotOnSiteHint") }
     }
 
-    // 从 document.cookie 解析 sessionKey
     const match = document.cookie.match(/sessionKey=([^;]+)/)
     if (match && match[1]) {
       return { success: true, sessionKey: decodeURIComponent(match[1]) }
@@ -218,7 +200,6 @@ export const platform: Platform = {
               return
             }
 
-            // 识别账号类型
             const org = orgs[0]
             const tier = org?.rate_limit_tier
             const capabilities = org?.capabilities || []
@@ -232,7 +213,7 @@ export const platform: Platform = {
             } else if (tier === "default_claude_ai") {
               accountType = "Free"
             } else if (tier === "auto_api_evaluation") {
-              accountType = apiDisabledReason === "out_of_credits" ? "API(无额度)" : "API"
+              accountType = apiDisabledReason === "out_of_credits" ? "API(No credits)" : "API"
             } else if (capabilities.includes("claude_max")) {
               accountType = "Max"
             } else if (capabilities.includes("api")) {
@@ -254,30 +235,24 @@ export const platform: Platform = {
   },
 
   async setClaudeSessionKey(sessionKey: string) {
-    // 检查是否在 claude.ai 域名
     if (!location.hostname.endsWith("claude.ai")) {
       return { success: false, error: t("claudeNotOnSiteHint") }
     }
 
-    // 设置 cookie
     const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString()
     document.cookie = `sessionKey=${encodeURIComponent(sessionKey)}; domain=.claude.ai; path=/; expires=${expires}; secure; samesite=lax`
 
-    // 刷新页面
     location.href = "https://claude.ai/"
 
     return { success: true }
   },
 
   async switchNextClaudeKey() {
-    // 检查是否在 claude.ai 域名
     if (!location.hostname.endsWith("claude.ai")) {
       return { success: false, error: t("claudeNotOnSiteHint") }
     }
 
     try {
-      // 1. 从 GM 存储读取 claudeSessionKeys
-      // Zustand persist 存储结构: { state: { keys: [], currentKeyId: "" }, version: 0 }
       const storageData = GM_getValue<ClaudeSessionKeysPersistedData | undefined>(
         "claudeSessionKeys",
       )
@@ -289,15 +264,12 @@ export const platform: Platform = {
 
       const currentId = storageData?.state?.currentKeyId
 
-      // 2. 筛选可用 Keys 并排序 (Pro 优先)
       let availableKeys = rawKeys.filter((k) => k.isValid !== false)
 
-      // 如果没有可用 Key，尝试使用所有 Key
       if (availableKeys.length === 0) {
         availableKeys = [...rawKeys]
       }
 
-      // 排序: Pro 优先，然后是名称
       availableKeys.sort((a, b) => {
         const isAPro = a.accountType?.toLowerCase()?.includes("pro")
         const isBPro = b.accountType?.toLowerCase()?.includes("pro")
@@ -306,10 +278,8 @@ export const platform: Platform = {
         return a.name.localeCompare(b.name)
       })
 
-      // 3. 找到下一个 Key
       const currentIndex = availableKeys.findIndex((k) => k.id === currentId)
 
-      // 如果只有一个 Key 且当前正在使用它，则不执行切换
       if (availableKeys.length === 1 && currentIndex !== -1) {
         return { success: false, error: "claudeOnlyOneKey" }
       }
@@ -324,19 +294,16 @@ export const platform: Platform = {
         return { success: false, error: "nextKeyNotFound" }
       }
 
-      // 4. 设置 Cookie
       if (nextKey.key) {
         const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString()
         document.cookie = `sessionKey=${encodeURIComponent(nextKey.key)}; domain=.claude.ai; path=/; expires=${expires}; secure; samesite=lax`
       }
 
-      // 5. 更新存储中的当前 Key ID
       if (storageData?.state) {
         storageData.state.currentKeyId = nextKey.id
         GM_setValue("claudeSessionKeys", storageData)
       }
 
-      // 6. 跳转到首页
       location.href = "https://claude.ai/"
 
       return { success: true, keyName: nextKey.name }

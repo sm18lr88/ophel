@@ -1,5 +1,4 @@
 /**
- * Gemini Enterprise 适配器 (business.gemini.google)
  */
 import { SITE_IDS } from "~constants"
 import { DOMToolkit } from "~utils/dom-toolkit"
@@ -25,21 +24,21 @@ const GEMINI_ENTERPRISE_DELETE_REASON = {
 const GEMINI_ENTERPRISE_DELETE_KEYWORDS = [
   "delete",
   "remove",
-  "删除",
-  "删掉",
-  "移除",
+  "delete",
+  "delete",
+  "remove",
   "supprimer",
   "eliminar",
   "löschen",
   "삭제",
-  "削除",
+  "delete",
   "hapus",
   "удал",
 ]
 
 const GEMINI_ENTERPRISE_CANCEL_KEYWORDS = [
   "cancel",
-  "取消",
+  "cancel",
   "annuler",
   "abbrechen",
   "취소",
@@ -49,7 +48,6 @@ const GEMINI_ENTERPRISE_CANCEL_KEYWORDS = [
 ]
 
 export class GeminiEnterpriseAdapter extends SiteAdapter {
-  // 存储 clearOnInit 配置
   private clearOnInit = false
 
   match(): boolean {
@@ -76,9 +74,7 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     return !window.location.pathname.includes("/session/")
   }
 
-  /** 检测是否为分享页面 - Gemini Enterprise 特殊路径 */
   isSharePage(): boolean {
-    // Gemini Enterprise 分享链接格式：/home/cid/{cid}/r/share/{id}
     return window.location.pathname.includes("/r/share/")
   }
 
@@ -86,14 +82,11 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     return true
   }
 
-  /** 获取当前的团队 CID */
   getCurrentCid(): string {
     const currentPath = window.location.pathname
     const cidMatch = currentPath.match(/\/home\/cid\/([^/]+)/)
     return cidMatch ? cidMatch[1] : ""
   }
-
-  // ==================== 会话管理 ====================
 
   getSessionName(): string | null {
     const conversations = DOMToolkit.query(".conversation", {
@@ -151,16 +144,12 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         const button = el.querySelector("button.list-item") || el.querySelector("button")
         if (!button) return null
 
-        // 从操作菜单按钮 ID 提取 Session ID
-        // 会话格式: menu-8823153884416423953 (纯数字)
-        // 智能体格式: menu-deep_research (包含字母/下划线)
         const menuBtn = button.querySelector(".conversation-action-menu-button")
         let id = ""
         if (menuBtn && menuBtn.id && menuBtn.id.startsWith("menu-")) {
           id = menuBtn.id.replace("menu-", "")
         }
 
-        // 关键过滤：真正的会话 ID 是纯数字，智能体 ID 包含字母
         if (!id || !/^\d+$/.test(id)) return null
 
         const titleEl = button.querySelector(".conversation-title")
@@ -171,7 +160,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
           button.classList.contains("active") ||
           button.getAttribute("aria-selected") === "true"
 
-        // 构建完整 URL
         let url = `https://business.gemini.google/session/${id}`
         if (cid) {
           url = `https://business.gemini.google/home/cid/${cid}/r/session/${id}`
@@ -189,29 +177,22 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   getLatestReplyText(): string | null {
-    // 1. 找到 ucs-conversation 元素
     const ucsConversation = DOMToolkit.query("ucs-conversation", { shadow: true }) as Element | null
     if (!ucsConversation || !ucsConversation.shadowRoot) return null
 
-    // 2. 在 Shadow Root 中查找 .main
     const main = ucsConversation.shadowRoot.querySelector(".main")
     if (!main) return null
 
-    // 3. 查找所有轮次
     const turns = main.querySelectorAll(".turn")
     if (turns.length === 0) return null
 
-    // 4. 获取最后一个轮次
     const lastTurn = turns[turns.length - 1]
 
-    // 5. 查找 AI 回复容器 (ucs-summary)
     const ucsSummary = lastTurn.querySelector("ucs-summary")
     if (!ucsSummary) return null
 
-    // 6. 提取 Markdown 文档元素
     const markdownDoc = this.extractSummaryContent(ucsSummary)
     if (!markdownDoc) {
-      // 降级：直接提取文本
       return this.extractTextWithLineBreaks(ucsSummary)
     }
 
@@ -233,12 +214,11 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         const button = el.querySelector("button.list-item") || el.querySelector("button")
         if (!button) return null
 
-        // 从操作菜单按钮 ID 提取 Session ID（与 getConversationList 保持一致）
         const menuBtn = button.querySelector(".conversation-action-menu-button")
         if (!menuBtn || !menuBtn.id?.startsWith("menu-")) return null
 
         const id = menuBtn.id.replace("menu-", "")
-        if (!/^\d+$/.test(id)) return null // 排除智能体（ID 包含字母）
+        if (!/^\d+$/.test(id)) return null
 
         const titleEl = button.querySelector(".conversation-title")
         const title = titleEl?.textContent?.trim() || ""
@@ -259,7 +239,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   navigateToConversation(id: string, url?: string): boolean {
-    // 通过菜单按钮 ID 查找侧边栏会话元素
     const conversations = DOMToolkit.query(".conversation", {
       all: true,
       shadow: true,
@@ -278,7 +257,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         }
       }
     }
-    // 降级：页面刷新
     return super.navigateToConversation(id, url)
   }
 
@@ -469,7 +447,7 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
       'button[aria-haspopup="menu"]',
       'button[aria-label*="More"]',
       'button[aria-label*="more"]',
-      'button[aria-label*="更多"]',
+      'button[aria-label*="More"]',
       'button[title*="More"]',
       'button[title*="more"]',
       "button",
@@ -745,17 +723,14 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     return [
       ".chat-button.list-item",
       'button[aria-label="New chat"]',
-      'button[aria-label="新对话"]',
+      'button[aria-label="New chat"]',
     ]
   }
 
-  // ==================== 页面宽度控制 ====================
-
   getWidthSelectors() {
-    // 辅助函数：生成带 scoped globalSelector 的配置
     const config = (selector: string, value?: string, extraCss?: string, noCenter = false) => ({
       selector,
-      globalSelector: `mat-sidenav-content ${selector}`, // 全局样式只针对主内容区
+      globalSelector: `mat-sidenav-content ${selector}`,
       property: "max-width",
       value,
       extraCss,
@@ -763,27 +738,22 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     })
 
     return [
-      // 容器强制 100%，不需要居中（它们应该填充可用空间）
       config("mat-sidenav-content", "100%", undefined, true),
       config(".main.chat-mode", "100%", undefined, true),
 
-      // 内容区域跟随配置（需要居中）
       config("ucs-summary"),
       config("ucs-conversation"),
       config("ucs-search-bar"),
       config(".summary-container.expanded"),
       config(".conversation-container"),
 
-      // 输入框容器：不居中，使用 left/right 定位
       config(".input-area-container", undefined, "left: 0 !important; right: 0 !important;", true),
     ]
   }
 
-  /** 用户问题宽度选择器（Shadow DOM 内部，需要高优先级覆盖 :host([spk2])）*/
   getUserQueryWidthSelectors() {
     return [
       {
-        // 使用与原始样式相同的 :host([spk2]) 模式以获得相同优先级
         selector: ".question-block .question-wrapper",
         property: "max-width",
         noCenter: true,
@@ -794,8 +764,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   getZenModeSelectors() {
     return [{ selector: ".disclaimer", action: "hide" as const }]
   }
-
-  // ==================== 输入框操作 ====================
 
   getTextareaSelectors(): string[] {
     return [
@@ -810,8 +778,8 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   getSubmitButtonSelectors(): string[] {
     return [
       'button[aria-label*="Submit"]',
-      'button[aria-label*="提交"]',
-      'button[aria-label*="发送"]',
+      'button[aria-label*="Submit"]',
+      'button[aria-label*="Send"]',
       'button[aria-label*="Send"]',
       ".send-button",
       '[data-testid*="send"]',
@@ -819,16 +787,13 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   isValidTextarea(element: HTMLElement): boolean {
-    // 排除搜索框
     if ((element as HTMLInputElement).type === "search") return false
     if (element.classList.contains("main-input")) return false
-    if (element.getAttribute("aria-label")?.includes("搜索")) return false
-    if ((element as HTMLInputElement).placeholder?.includes("搜索")) return false
-    // 排除脚本自己的 UI
+    if (element.getAttribute("aria-label")?.includes("Search")) return false
+    if ((element as HTMLInputElement).placeholder?.includes("Search")) return false
     if (element.classList.contains("prompt-search-input")) return false
     if (element.id === "prompt-search") return false
     if (element.closest(".gh-main-panel")) return false
-    // 排除队列 overlay 及其他扩展 UI 的输入框
     if (element.closest(".gh-queue-panel")) return false
     if (
       Array.from(element.classList).some(
@@ -837,14 +802,12 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     )
       return false
 
-    // 必须是 contenteditable 或者 ProseMirror
     const isVisible = element.offsetParent !== null
     const isContentEditable = element.getAttribute("contenteditable") === "true"
     const isProseMirror = element.classList.contains("ProseMirror")
     return isVisible && (isContentEditable || isProseMirror || element.tagName === "TEXTAREA")
   }
 
-  /** 覆盖基类：使用 DOMToolkit 在 Shadow DOM 中查找输入框 */
   findTextarea(): HTMLElement | null {
     const element = DOMToolkit.query(this.getTextareaSelectors(), {
       shadow: true,
@@ -858,7 +821,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     return super.findTextarea()
   }
 
-  /** 覆盖基类：清空输入框（插入零宽字符修复中文输入首字母问题）*/
   clearTextarea(): void {
     if (!this.textarea) return
     if (!this.textarea.isConnected) {
@@ -867,14 +829,11 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     }
 
     this.textarea.focus()
-    // Shadow DOM 场景：不做严格的焦点检查
 
     document.execCommand("selectAll", false, undefined)
-    // 插入零宽空格替换旧内容（修复中文输入首字母问题）
     document.execCommand("insertText", false, "\u200B")
   }
 
-  /** 普通清空（不插入零宽字符）*/
   clearTextareaNormal(): void {
     if (!this.textarea) return
     if (!this.textarea.isConnected) {
@@ -887,9 +846,7 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     document.execCommand("delete", false, undefined)
   }
 
-  /** 覆盖基类：向输入框插入内容 */
   insertPrompt(content: string): boolean {
-    // 重新获取一下，以防切页面后元素失效
     const editor = this.textarea || this.findTextarea()
 
     if (!editor) {
@@ -906,13 +863,11 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     editor.click()
     editor.focus()
 
-    // 辅助：检查编辑器是否包含目标内容（排除零宽字符等）
     const hasContent = () => {
       const text = editor.textContent?.replace(/[\u200B\u200C\u200D\uFEFF]/g, "") || ""
       return text.includes(content)
     }
 
-    // 第 1 步：尝试通过原生的 Paste 事件，这是欺骗复杂编辑器（ProseMirror、Draft.js）的绝佳途径
     try {
       const dataTransfer = new DataTransfer()
       dataTransfer.setData("text/plain", content)
@@ -933,11 +888,8 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         editor.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, key: " ", code: "Space" }))
         return true
       }
-    } catch {
-      // 忽略 Paste 失败
-    }
+    } catch {}
 
-    // 第 2 步：常规的 DOM execCommand 降级
     try {
       document.execCommand("selectAll", false, undefined)
       const success = document.execCommand("insertText", false, content)
@@ -946,11 +898,8 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         editor.dispatchEvent(new Event("change", { bubbles: true }))
         return true
       }
-    } catch {
-      // execCommand 失败
-    }
+    } catch {}
 
-    // 第 3 步：beforeinput 事件（现代 ProseMirror 支持）
     try {
       editor.focus()
       const sel = editor.ownerDocument.getSelection()
@@ -978,11 +927,8 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
       if (hasContent()) {
         return true
       }
-    } catch {
-      // beforeinput 失败
-    }
+    } catch {}
 
-    // 第 4 步：直接操作 DOM（最后手段，ProseMirror 可能不认）
     try {
       let p = editor.querySelector("p")
       let isNewP = false
@@ -999,7 +945,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         editor.dispatchEvent(new Event("change", { bubbles: true }))
       }
 
-      // 事件轰炸收尾
       editor.dispatchEvent(
         new InputEvent("input", {
           bubbles: true,
@@ -1015,26 +960,19 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
       if (hasContent()) {
         return true
       }
-    } catch {
-      // DOM 操作失败
-    }
+    } catch {}
 
-    // 所有策略都失败了
     console.warn("[GeminiEnterpriseAdapter] All insert strategies failed for content insertion.")
     return false
   }
 
-  // ==================== 滚动容器 ====================
-
   getScrollContainer(): HTMLElement | null {
-    // 使用 .chat-mode-scroller 精确选择器，排除侧边栏
     const container = DOMToolkit.query(".chat-mode-scroller", { shadow: true }) as HTMLElement
 
     if (container && container.scrollHeight > container.clientHeight) {
       return container
     }
 
-    // 回退到基类
     return super.getScrollContainer()
   }
 
@@ -1047,30 +985,23 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
       ".model-response-container",
       ".message-content",
       "[data-message-id]",
-      "ucs-conversation-message", // 企业版特定
+      "ucs-conversation-message",
       ".conversation-message",
     ]
   }
 
-  // ==================== 大纲提取 ====================
-
-  /** Gemini Enterprise: .question-block 是用户提问的容器 */
   getUserQuerySelector(): string {
     return ".question-block"
   }
 
   /**
-   * 从用户提问元素中提取文本
-   * Gemini Enterprise: 文本在 ucs-fast-markdown 的 Shadow DOM 中
    */
   extractUserQueryText(element: Element): string {
-    // 查找 ucs-fast-markdown 元素
     const markdown = element.querySelector("ucs-fast-markdown")
     if (!markdown || !markdown.shadowRoot) {
       return this.extractTextWithLineBreaks(element)
     }
 
-    // 在 Shadow DOM 中查找完整文本
     const markdownDoc = markdown.shadowRoot.querySelector(".markdown-document")
     if (markdownDoc) {
       return this.extractTextWithLineBreaks(markdownDoc)
@@ -1080,9 +1011,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   /**
-   * 从用户提问元素中提取原始 Markdown 文本
-   * Gemini Enterprise：.markdown-document 内部每行是一个 <p> 标签
-   * 需要按段落提取并用换行符连接还原原始 Markdown
    */
   extractUserQueryMarkdown(element: Element): string {
     const markdown = element.querySelector("ucs-fast-markdown")
@@ -1095,7 +1023,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
       return element.textContent?.trimEnd() || ""
     }
 
-    // 按段落（p 标签）提取，用换行符连接
     const paragraphs = markdownDoc.querySelectorAll("p")
     if (paragraphs.length === 0) {
       return markdownDoc.textContent?.trimEnd() || ""
@@ -1106,8 +1033,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   /**
-   * 将渲染后的 HTML 替换到用户提问元素中
-   * Gemini Enterprise：在 Shadow DOM 中隐藏原内容并插入渲染容器
    */
   replaceUserQueryContent(element: Element, html: string): boolean {
     const markdown = element.querySelector("ucs-fast-markdown")
@@ -1116,15 +1041,12 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     const markdownDoc = markdown.shadowRoot.querySelector(".markdown-document")
     if (!markdownDoc) return false
 
-    // 检查是否已经处理过
     if (markdownDoc.nextElementSibling?.classList.contains("gh-user-query-markdown")) {
       return false
     }
 
-    // 隐藏原内容
     ;(markdownDoc as HTMLElement).style.display = "none"
 
-    // 创建渲染容器并插入到 Shadow DOM 中
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
     setSafeHTML(rendered, html)
@@ -1134,31 +1056,25 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   /**
-   * Gemini Enterprise 使用 Shadow DOM 渲染用户提问
    */
   usesShadowDOM(): boolean {
     return true
   }
 
   /**
-   * 从 ucs-summary 元素中提取可用于 htmlToMarkdown 的 DOM 元素
-   * Gemini Enterprise 使用多层 Shadow DOM，需要递归查找
    */
   extractSummaryContent(ucsSummary: Element): Element | null {
     const findMarkdownDocument = (root: Element | ShadowRoot, depth = 0): Element | null => {
       if (depth > 10 || !root) return null
 
-      // 如果 root 本身有 shadowRoot，先进入它
       const shadowRoot = (root as Element).shadowRoot || (root.nodeType === 11 ? root : null)
       const searchRoot = shadowRoot || root
 
-      // 在当前层级查找 .markdown-document
       if ("querySelector" in searchRoot) {
         const markdownDoc = searchRoot.querySelector(".markdown-document")
         if (markdownDoc) return markdownDoc
       }
 
-      // 递归搜索子元素的 Shadow DOM
       const elements = "querySelectorAll" in searchRoot ? searchRoot.querySelectorAll("*") : []
       for (const el of Array.from(elements)) {
         if (el.shadowRoot) {
@@ -1173,7 +1089,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     return findMarkdownDocument(ucsSummary)
   }
 
-  /** 在 Shadow DOM 中递归查找标题 */
   private findHeadingsInShadowDOM(
     root: Element | Document | ShadowRoot,
     outline: OutlineItem[],
@@ -1184,7 +1099,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   ): void {
     if (depth > 15) return
 
-    // 如果传入的是一个有 shadowRoot 的元素，先进入其 Shadow Root
     if ("shadowRoot" in root && (root as Element).shadowRoot) {
       this.findHeadingsInShadowDOM(
         (root as Element).shadowRoot!,
@@ -1197,16 +1111,13 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
       return
     }
 
-    // 在当前层级查找标题（h1-h6）
     if (root !== document && "querySelectorAll" in root) {
       const headingSelector = Array.from({ length: maxLevel }, (_, i) => `h${i + 1}`).join(", ")
       try {
         const headings = root.querySelectorAll(headingSelector)
         headings.forEach((heading) => {
-          // 排除用户提问渲染容器内的标题
           if (this.isInRenderedMarkdownContainer(heading)) return
 
-          // 只匹配包含 data-markdown-start-index 的标题（排除 logo 等非 AI 回复内容）
           const spans = heading.querySelectorAll("span[data-markdown-start-index]")
           if (spans.length > 0) {
             const level = parseInt(heading.tagName[1], 10)
@@ -1216,11 +1127,8 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
             if (text) {
               const item: OutlineItem = { level, text, element: heading }
 
-              // 如果有 Turn ID，生成稳定 ID
               if (turnId) {
                 const tagName = heading.tagName.toLowerCase()
-                // ID 格式: TurnID::tagName-text-count
-                // e.g. 7038_5593::h3-标题内容-0
                 const key = `${tagName}-${text}`
                 const count = messageHeaderCounts[key] || 0
                 messageHeaderCounts[key] = count + 1
@@ -1231,12 +1139,9 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
             }
           }
         })
-      } catch {
-        // 忽略选择器错误
-      }
+      } catch {}
     }
 
-    // 递归查找 Shadow DOM
     if ("querySelectorAll" in root) {
       const allElements = root.querySelectorAll("*")
       for (const el of Array.from(allElements)) {
@@ -1255,12 +1160,10 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   /**
-   * 从页面提取大纲（使用递归 Shadow DOM 搜索）
    */
   extractOutline(maxLevel = 6, includeUserQueries = false, showWordCount = false): OutlineItem[] {
     const outline: OutlineItem[] = []
 
-    // 辅助函数：从 ucs-summary 元素中提取文本字数（穿透 Shadow DOM）
     const extractSummaryWordCount = (ucsSummary: Element): number => {
       const markdownDoc = this.extractSummaryContent(ucsSummary)
       if (markdownDoc) {
@@ -1270,18 +1173,14 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     }
 
     if (!includeUserQueries) {
-      // 原有逻辑：只提取标题（使用递归 Shadow DOM 搜索）
       this.findHeadingsInShadowDOM(document, outline, maxLevel, 0)
 
-      // 如果需要字数统计，遍历 outline 并为每个标题计算字数
       if (showWordCount) {
         outline.forEach((item, index) => {
           if (!item.element) return
 
-          // 找到标题所在的 .markdown-document 容器
           const markdownDoc = item.element.closest(".markdown-document")
           if (markdownDoc) {
-            // 找到下一个同级或更高级别的标题作为边界
             let nextBoundaryEl: Element | null = null
             for (let i = index + 1; i < outline.length; i++) {
               if (outline[i].level <= item.level) {
@@ -1297,19 +1196,12 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
       return outline
     }
 
-    // 开启用户提问分组模式
-    // 策略：按轮次遍历。结构为 ucs-conversation -> shadowRoot -> .main -> .turn
-    // 每个 .turn 包含 .question-block（用户提问）和 ucs-summary（AI 回复）
-
-    // 1. 找到 ucs-conversation 元素
     const ucsConversation = DOMToolkit.query("ucs-conversation", { shadow: true }) as Element | null
     if (!ucsConversation || !ucsConversation.shadowRoot) {
-      // 回退：如果找不到 ucs-conversation，使用原有逻辑
       this.findHeadingsInShadowDOM(document, outline, maxLevel, 0)
       return outline
     }
 
-    // 2. 在 ucs-conversation 的 Shadow Root 中查找 .main 下的所有 .turn
     const main = ucsConversation.shadowRoot.querySelector(".main")
     if (!main) {
       this.findHeadingsInShadowDOM(document, outline, maxLevel, 0)
@@ -1318,17 +1210,12 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
 
     const turnContainers = main.querySelectorAll(".turn")
 
-    // 3. 遍历每个轮次
     turnContainers.forEach((turn) => {
-      // 3.0 提取轮次 ID (Turn ID)
       // jslog="257629;track:impressionasVeMetadata:[null,null,null,&quot;7038012297388346599_5593580960293487735&quot;];"
       const jslog = turn.getAttribute("jslog") || ""
-      // 提取 ID: 匹配连续的 digits_digits 格式
-      // 简化正则以兼容 HTML 实体编码 (&quot;) 和普通引号
       const idMatch = jslog.match(/(\d+_\d+)/)
       const turnId = idMatch ? idMatch[1] : undefined
 
-      // 3.1 在轮次中查找用户提问 (.question-block)
       const questionBlock = turn.querySelector(".question-block")
       const ucsSummary = turn.querySelector("ucs-summary")
 
@@ -1349,7 +1236,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
           id: turnId, // Assign Turn ID to User Query
         }
 
-        // 计算字数：统计此轮次的 AI 回复
         if (showWordCount && ucsSummary) {
           item.wordCount = extractSummaryWordCount(ucsSummary)
         }
@@ -1357,19 +1243,16 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         outline.push(item)
       }
 
-      // 3.2 在轮次的 ucs-summary 中查找标题（递归进入 Shadow DOM）
       if (ucsSummary) {
         const turnHeadings: OutlineItem[] = []
         // Pass Turn ID as context for generating heading IDs
         this.findHeadingsInShadowDOM(ucsSummary, turnHeadings, maxLevel, 0, turnId)
 
-        // 为标题计算字数
         if (showWordCount) {
           const markdownDoc = this.extractSummaryContent(ucsSummary)
           turnHeadings.forEach((h, index) => {
             if (!h.element) return
 
-            // 找到下一个边界
             let nextBoundaryEl: Element | null = null
             for (let i = index + 1; i < turnHeadings.length; i++) {
               if (turnHeadings[i].level <= h.level) {
@@ -1394,10 +1277,8 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
   }
 
   /**
-   * 覆盖基类方法：使用 DOMToolkit 穿透 Shadow DOM 查找标题元素
    */
   findElementByHeading(level: number, text: string): Element | null {
-    // 使用 DOMToolkit 穿透 Shadow DOM 查找所有匹配的 h{level} 元素
     const headings = DOMToolkit.query(`h${level}`, {
       all: true,
       shadow: true,
@@ -1420,16 +1301,12 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 生成状态检测 ====================
-
-  /** 检测 AI 是否正在生成响应（递归 Shadow DOM 搜索）*/
   isGenerating(): boolean {
     const findInShadow = (root: Document | ShadowRoot, depth = 0): boolean => {
       if (depth > 10) return false
 
-      // 检查当前层级
       const stopButton = root.querySelector(
-        'button[aria-label*="Stop"], button[aria-label*="停止"], ' +
+        'button[aria-label*="Stop"], button[aria-label*="Stop"], ' +
           '[data-test-id="stop-button"], .stop-button, md-icon-button[aria-label*="Stop"]',
       )
       if (stopButton && (stopButton as HTMLElement).offsetParent !== null) {
@@ -1444,7 +1321,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         return true
       }
 
-      // 递归搜索 Shadow DOM
       const elements = root.querySelectorAll("*")
       for (const el of Array.from(elements)) {
         if (el.shadowRoot) {
@@ -1459,12 +1335,10 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     return findInShadow(document)
   }
 
-  /** 获取当前使用的模型名称（递归 Shadow DOM 搜索）*/
   getModelName(): string | null {
     const findInShadow = (root: Document | ShadowRoot, depth = 0): string | null => {
       if (depth > 10) return null
 
-      // 检查模型选择器
       const modelSelectors = [
         "#model-selector-menu-anchor",
         ".action-model-selector",
@@ -1477,8 +1351,7 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         const el = root.querySelector(selector)
         if (el && el.textContent) {
           const text = el.textContent.trim()
-          // 提取模型关键字
-          const modelMatch = text.match(/(\d+\.?\d*\s*)?(Pro|Flash|Ultra|Nano|Gemini|auto|自动)/i)
+          const modelMatch = text.match(/(\d+\.?\d*\s*)?(Pro|Flash|Ultra|Nano|Gemini|auto)/i)
           if (modelMatch) {
             return modelMatch[0].trim()
           }
@@ -1488,7 +1361,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         }
       }
 
-      // 递归搜索 Shadow DOM
       const elements = root.querySelectorAll("*")
       for (const el of Array.from(elements)) {
         if (el.shadowRoot) {
@@ -1509,33 +1381,25 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 生命周期 ====================
-
-  /** 覆盖基类：页面加载完成后执行 */
   afterPropertiesSet(
     options: {
       modelLockConfig?: { enabled: boolean; keyword: string }
       clearOnInit?: boolean
     } = {},
   ): void {
-    // 保存配置状态供其他方法使用
     this.clearOnInit = options.clearOnInit || false
 
-    // 调用基类通用逻辑（处理模型锁定）
     super.afterPropertiesSet(options)
 
-    // 处理企业版特有的初始化清除
     if (this.clearOnInit) {
       this.clearTextarea()
     }
   }
 
-  /** 覆盖基类：处理锁定后的清理（已废弃的清空逻辑已移除）*/
   lockModel(keyword: string, onSuccess: (() => void) | null = null): void {
     super.lockModel(keyword, onSuccess ?? undefined)
   }
 
-  /** 排除侧边栏中的 Shadow DOM 样式注入 */
   shouldInjectIntoShadow(host: Element): boolean {
     return !(
       host.closest("mat-sidenav") ||
@@ -1544,37 +1408,29 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     )
   }
 
-  /** 覆盖基类：通过点击“展开”按钮加载更多会话 */
   async loadAllConversations(): Promise<void> {
-    const maxIterations = 20 // 防止无限循环
+    const maxIterations = 20
 
     for (let i = 0; i < maxIterations; i++) {
-      // 查找所有按钮（穿透 Shadow DOM）
       const allBtns =
         (DOMToolkit.query("button.show-more", { all: true, shadow: true }) as Element[]) || []
 
-      // 过滤出未展开的按钮（icon 没有 more-visible class）
       const expandBtns = allBtns.filter((btn) => {
         const icon = btn.querySelector(".show-more-icon")
-        // 已展开的按钮 icon 有 more-visible class
         return icon && !icon.classList.contains("more-visible")
       })
 
       if (expandBtns.length === 0) {
-        break // 没有更多需要展开的按钮
+        break
       }
 
-      // 点击所有展开按钮
       for (const btn of expandBtns) {
         ;(btn as HTMLElement).click()
       }
 
-      // 等待会话加载
       await new Promise((r) => setTimeout(r, 300))
     }
   }
-
-  // ==================== 模型锁定 ====================
 
   getDefaultLockSettings(): { enabled: boolean; keyword: string } {
     return { enabled: true, keyword: "3 Pro" }
@@ -1591,20 +1447,13 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 主题切换 ====================
-
   /**
-   * 模拟点击原生设置切换主题 (针对 Gemini Enterprise)
-   * @param targetMode 目标主题模式
    */
   async toggleTheme(targetMode: "light" | "dark" | "system"): Promise<boolean> {
-    // 1. 启动暴力隐身模式 (JS 每一帧强制隐藏)
-    // CSS 注入可能因优先级或 Shadow DOM 隔离失效，JS 强制修改内联样式是最稳妥的
     let stopSuppression = false
     const suppressMenu = () => {
       if (stopSuppression) return
 
-      // 查找所有可能的菜单容器
       try {
         const menus = DOMToolkit.query(
           '.menu[popover], md-menu-surface, .mat-menu-panel, [role="menu"]',
@@ -1615,7 +1464,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         ) as Element[]
         menus.forEach((el) => {
           const htmlEl = el as HTMLElement
-          // 强制隐藏，不留余地
           if (htmlEl.style.opacity !== "0") {
             htmlEl.style.setProperty("opacity", "0", "important")
             htmlEl.style.setProperty("visibility", "hidden", "important")
@@ -1630,11 +1478,9 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
     }
     suppressMenu()
 
-    // 全局也加一个保险
     document.body.classList.add("gh-stealth-mode")
 
     try {
-      // 2. 找到并点击设置按钮
       let settingsBtn = DOMToolkit.query(".settings-button", { shadow: true }) as HTMLElement
 
       if (!settingsBtn) {
@@ -1654,7 +1500,6 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         }
       }
 
-      // 3. 等待菜单弹出并点击目标
       let attempts = 0
       const findAndClickOption = (): boolean => {
         const targetIcon =
@@ -1695,9 +1540,7 @@ export class GeminiEnterpriseAdapter extends SiteAdapter {
         }, 100)
       })
     } finally {
-      // 停止暴力抑制
       stopSuppression = true
-      // 延迟移除隐身模式
       setTimeout(() => {
         document.body.classList.remove("gh-stealth-mode")
       }, 200)

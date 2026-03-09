@@ -1,5 +1,4 @@
 /**
- * ChatGPT 适配器 (chatgpt.com)
  */
 import { SITE_IDS } from "~constants"
 import { setSafeHTML } from "~utils/trusted-types"
@@ -22,12 +21,12 @@ const DEFAULT_TITLE = "ChatGPT"
 const DELETE_CONFIRM_KEYWORDS = [
   "delete",
   "remove",
-  "删除",
-  "刪除",
+  "delete",
+  "delete",
   "supprimer",
   "eliminar",
   "löschen",
-  "削除",
+  "delete",
   "삭제",
   "удалить",
   "excluir",
@@ -71,44 +70,33 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   /**
-   * 获取当前账户标识（用于会话隔离）
-   * ChatGPT 通过 localStorage._account 区分不同账户/团队
-   * 值可能为 "personal" 或团队 UUID
    */
   getCurrentCid(): string | null {
     try {
       const account = localStorage.getItem("_account")
       if (account) {
-        // localStorage 存储的值带双引号（如 "personal"），需要 JSON.parse
         return JSON.parse(account)
       }
-    } catch {
-      // 静默处理解析错误
-    }
+    } catch {}
     return null
   }
 
-  // ==================== 会话管理 ====================
-
   getConversationList(): ConversationInfo[] {
-    // 侧边栏会话列表：#history 内的 a[data-sidebar-item]
     const items = document.querySelectorAll('#history a[data-sidebar-item="true"]') || []
     const cid = this.getCurrentCid() || undefined
 
     return Array.from(items)
       .map((el) => {
         const href = el.getAttribute("href") || ""
-        // href 格式: /c/695df822-1e68-8331-9efb-bf1cc0e8820d
         const idMatch = href.match(/\/c\/([a-f0-9-]+)/)
         const id = idMatch ? idMatch[1] : ""
         const titleEl = el.querySelector("span")
         const title = titleEl?.textContent?.trim() || ""
         const isActive = el.hasAttribute("data-active")
 
-        // 检测置顶：置顶的会话在 trailing 区域有额外的图标
         const trailingPair = el.querySelector(".trailing-pair")
         const trailingIcons = trailingPair?.querySelectorAll(".trailing svg") || []
-        const isPinned = trailingIcons.length > 1 // 置顶会话有多个图标
+        const isPinned = trailingIcons.length > 1
 
         return {
           id,
@@ -123,7 +111,6 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   getSidebarScrollContainer(): Element | null {
-    // 侧边栏滚动容器 - 通过 #history 向上查找最近的 nav 元素
     const history = document.querySelector("#history")
     if (history) {
       const nav = history.closest("nav")
@@ -145,7 +132,6 @@ export class ChatGPTAdapter extends SiteAdapter {
         const title = titleEl?.textContent?.trim() || ""
         const isActive = el.hasAttribute("data-active")
         const cid = this.getCurrentCid() || undefined
-        // 检测置顶
         const trailingPair = el.querySelector(".trailing-pair")
         const trailingIcons = trailingPair?.querySelectorAll(".trailing svg") || []
         const isPinned = trailingIcons.length > 1
@@ -163,7 +149,6 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   navigateToConversation(id: string, url?: string): boolean {
-    // 通过 href 属性查找侧边栏链接
     const sidebarLink = document.querySelector(
       `#history a[href="/c/${id}"], a[data-sidebar-item][href="/c/${id}"]`,
     ) as HTMLElement | null
@@ -172,7 +157,6 @@ export class ChatGPTAdapter extends SiteAdapter {
       sidebarLink.click()
       return true
     }
-    // 降级：页面刷新
     return super.navigateToConversation(id, url)
   }
 
@@ -516,7 +500,7 @@ export class ChatGPTAdapter extends SiteAdapter {
       'button[aria-haspopup="menu"]',
       'button[aria-label*="More"]',
       'button[aria-label*="more"]',
-      'button[aria-label*="更多"]',
+      'button[aria-label*="More"]',
       'button[data-testid*="menu"]',
       ".trailing button",
     ].join(", ")
@@ -726,7 +710,6 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   getSessionName(): string | null {
-    // 尝试从页面标题获取
     const title = document.title
     if (title && title !== DEFAULT_TITLE) {
       return title.replace(` | ${DEFAULT_TITLE}`, "").replace(` - ${DEFAULT_TITLE}`, "").trim()
@@ -735,7 +718,6 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   getConversationTitle(): string | null {
-    // 从侧边栏获取当前选中项
     const selected = document.querySelector("#history a[data-active] span")
     if (selected) return selected.textContent?.trim() || null
     return null
@@ -746,16 +728,14 @@ export class ChatGPTAdapter extends SiteAdapter {
       '[data-testid="create-new-chat-button"]',
       'a[href="/"]',
       'button[aria-label="New chat"]',
-      'button[aria-label="新对话"]',
+      'button[aria-label="New chat"]',
     ]
   }
 
   getLatestReplyText(): string | null {
-    // TODO: 需要分析 ChatGPT 的回复结构
     const container = document.querySelector(this.getResponseContainerSelector())
     if (!container) return null
 
-    // ChatGPT 的回复通常在 [data-message-author-role="assistant"] 中
     const responses = container.querySelectorAll('[data-message-author-role="assistant"]')
     if (responses.length === 0) return null
 
@@ -763,11 +743,7 @@ export class ChatGPTAdapter extends SiteAdapter {
     return this.extractTextWithLineBreaks(lastResponse)
   }
 
-  // ==================== 页面宽度控制 ====================
-
   getWidthSelectors() {
-    // ChatGPT 使用 CSS 变量 --thread-content-max-width 控制内容宽度
-    // 选择器匹配带有该变量的容器
     return [
       { selector: '[class*="thread-content-max-width"]', property: "max-width" },
       { selector: '[style*="--thread-content-max-width"]', property: "max-width" },
@@ -775,8 +751,6 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   getUserQueryWidthSelectors() {
-    // ChatGPT 用户消息气泡使用 CSS 变量 --user-chat-width 控制宽度
-    // 需要在 :root 级别设置变量，然后会自动应用到 .user-message-bubble-color
     return [
       {
         selector: ":root",
@@ -797,24 +771,19 @@ export class ChatGPTAdapter extends SiteAdapter {
       shouldSkip: (element) => {
         if (!this.isGenerating()) return false
 
-        // 查找当前元素所属的消息容器
         const messageContainer = element.closest('[data-message-author-role="assistant"]')
         if (!messageContainer) return false
 
-        // 查找页面上最后一个 AI 消息容器（即正在生成的那个）
         const allMessages = document.querySelectorAll(
           this.getChatContentSelectors().find((s) => s.includes("assistant")) ||
             '[data-message-author-role="assistant"]',
         )
         const lastMessage = allMessages[allMessages.length - 1]
 
-        // 如果当前元素位于正在生成的消息中，强制跳过（等待生成结束后通过重试机制修复）
         return messageContainer === lastMessage
       },
     }
   }
-
-  // ==================== 输入框操作 ====================
 
   getTextareaSelectors(): string[] {
     return ["#prompt-textarea", 'textarea[data-id="root"]', '[contenteditable="true"]']
@@ -824,7 +793,7 @@ export class ChatGPTAdapter extends SiteAdapter {
     return [
       '[data-testid="send-button"]',
       'button[aria-label="Send prompt"]',
-      'button[aria-label="发送"]',
+      'button[aria-label="Send"]',
     ]
   }
 
@@ -835,7 +804,6 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   insertPrompt(content: string): boolean {
-    // ChatGPT 使用 contenteditable div 作为输入框
     const editor = this.textarea
     if (!editor) return false
 
@@ -851,12 +819,10 @@ export class ChatGPTAdapter extends SiteAdapter {
     }
 
     try {
-      // 尝试使用 execCommand
       document.execCommand("selectAll", false, undefined)
       const success = document.execCommand("insertText", false, content)
       if (!success) throw new Error("execCommand returned false")
     } catch {
-      // 回退：直接设置内容
       if (editor.tagName === "TEXTAREA") {
         ;(editor as HTMLTextAreaElement).value = content
       } else {
@@ -884,11 +850,7 @@ export class ChatGPTAdapter extends SiteAdapter {
     this.textarea.dispatchEvent(new Event("input", { bubbles: true }))
   }
 
-  // ==================== 滚动容器 ====================
-
   getScrollContainer(): HTMLElement | null {
-    // ChatGPT 聊天内容的滚动容器
-    // 查找具有 scrollbar-gutter 样式的 div，或父元素带有 @container/main 的子元素
     const container = document.querySelector(
       '[class*="scrollbar-gutter"], [class*="@container/main"] > div',
     ) as HTMLElement
@@ -896,7 +858,6 @@ export class ChatGPTAdapter extends SiteAdapter {
       return container
     }
 
-    // 回退：查找 scrollHeight 最大的可滚动 div
     const allDivs = document.querySelectorAll("div")
     let bestContainer: HTMLElement | null = null
     let maxScrollHeight = 0
@@ -907,7 +868,6 @@ export class ChatGPTAdapter extends SiteAdapter {
         div.scrollHeight > div.clientHeight &&
         div.scrollHeight > maxScrollHeight
       ) {
-        // 排除侧边栏（nav）
         if (!div.closest("nav")) {
           maxScrollHeight = div.scrollHeight
           bestContainer = div as HTMLElement
@@ -918,7 +878,6 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   getResponseContainerSelector(): string {
-    // ChatGPT 聊天内容区域 - #thread 或 main
     return "#thread, main#main"
   }
 
@@ -930,8 +889,6 @@ export class ChatGPTAdapter extends SiteAdapter {
     ]
   }
 
-  // ==================== 大纲提取 ====================
-
   getUserQuerySelector(): string {
     return '[data-message-author-role="user"]'
   }
@@ -941,20 +898,16 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   extractUserQueryMarkdown(element: Element): string {
-    // ChatGPT 用户消息通常是纯文本
     return element.textContent?.trim() || ""
   }
 
   /**
-   * 检查元素是否应跳过（屏幕阅读器专用元素）
-   * ChatGPT 使用 .sr-only 类标记屏幕阅读器辅助文本
    */
   private shouldSkipElement(element: Element): boolean {
     return element.classList.contains("sr-only")
   }
 
   /**
-   * 覆盖基类：提取文本时过滤掉 .sr-only 元素
    */
   protected extractTextWithLineBreaks(element: Element): string {
     const result: string[] = []
@@ -983,21 +936,17 @@ export class ChatGPTAdapter extends SiteAdapter {
         const el = node as Element
         const tag = el.tagName.toLowerCase()
 
-        // 跳过 .sr-only 元素
         if (this.shouldSkipElement(el)) return
 
-        // <br> 直接换行
         if (tag === "br") {
           result.push("\n")
           return
         }
 
-        // 遍历子节点
         for (const child of el.childNodes) {
           walk(child)
         }
 
-        // 块级元素结束后加换行
         if (blockTags.has(tag) && result.length > 0) {
           const lastChar = result[result.length - 1]
           if (!lastChar.endsWith("\n")) {
@@ -1015,25 +964,19 @@ export class ChatGPTAdapter extends SiteAdapter {
   }
 
   replaceUserQueryContent(element: Element, html: string): boolean {
-    // ChatGPT 用户消息结构：
-    // .user-message-bubble-color > .whitespace-pre-wrap (原文本)
     const textContainer = element.querySelector(".whitespace-pre-wrap")
     if (!textContainer) return false
 
-    // 检查是否已经处理过
     if (textContainer.nextElementSibling?.classList.contains("gh-user-query-markdown")) {
       return false
     }
 
-    // 隐藏原内容
     ;(textContainer as HTMLElement).style.display = "none"
 
-    // 创建渲染容器
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
     setSafeHTML(rendered, html)
 
-    // 插入到原容器后面
     textContainer.after(rendered)
     return true
   }
@@ -1052,7 +995,6 @@ export class ChatGPTAdapter extends SiteAdapter {
     const container = document.querySelector(this.getResponseContainerSelector())
     if (!container) return outline
 
-    // 辅助函数：查找最近的消息容器并获取 message-id
     const getMessageId = (el: Element): string | null => {
       const msgContainer = el.closest("[data-message-id]")
       if (msgContainer) {
@@ -1061,9 +1003,6 @@ export class ChatGPTAdapter extends SiteAdapter {
       return null
     }
 
-    // 辅助函数：生成标题的稳定 ID
-    // 格式: msgId::h2-标题文本-0
-    // 需要在遍历过程中维护计数器
     const messageHeaderCounts: Record<string, Record<string, number>> = {}
     const generateHeaderId = (msgId: string, tagName: string, text: string): string => {
       if (!messageHeaderCounts[msgId]) {
@@ -1076,8 +1015,6 @@ export class ChatGPTAdapter extends SiteAdapter {
       return `${msgId}::${key}::${count}`
     }
 
-    // container 参数用于处理最后一个元素（没有 nextEl 时）
-    // isUserQuery 参数用于用户提问的特殊处理（直接获取 AI 回复内容，跳过标签）
     const calculateWordCount = (
       startEl: Element,
       nextEl: Element | null,
@@ -1085,35 +1022,27 @@ export class ChatGPTAdapter extends SiteAdapter {
     ): number => {
       if (!startEl) return 0
       try {
-        // 对于用户提问，直接获取后续 AI 回复的 markdown 内容
-        // 这样可以跳过 "ChatGPT 说：" 等标签
         if (isUserQueryItem) {
-          // 查找 startEl 与 nextEl 之间的所有 AI 回复内容容器
           const allAssistants = container.querySelectorAll('[data-message-author-role="assistant"]')
           let totalText = ""
 
           for (const assistant of Array.from(allAssistants)) {
-            // 检查这个 AI 回复是否在 startEl 之后
             const positionToStart = startEl.compareDocumentPosition(assistant)
             const isAfterStart = positionToStart & Node.DOCUMENT_POSITION_FOLLOWING
 
             if (!isAfterStart) continue
 
-            // 检查是否在 nextEl 之前（如果有 nextEl）
             if (nextEl) {
               const positionToEnd = nextEl.compareDocumentPosition(assistant)
               const isBeforeEnd = positionToEnd & Node.DOCUMENT_POSITION_PRECEDING
               if (!isBeforeEnd) continue
             }
 
-            // 获取 markdown 内容容器
             const markdownContent = assistant.querySelector(".markdown, .prose, [class*='prose']")
             if (markdownContent) {
               totalText += markdownContent.textContent || ""
             } else {
-              // 回退：获取整个 assistant 的文本，但排除可能的标题
               const clone = assistant.cloneNode(true) as Element
-              // 移除可能的发言人标签
               const srOnly = clone.querySelectorAll(".sr-only, [class*='sr-only']")
               srOnly.forEach((el) => el.remove())
               totalText += clone.textContent || ""
@@ -1124,14 +1053,10 @@ export class ChatGPTAdapter extends SiteAdapter {
           return text.length
         }
 
-        // 对于标题（Heading），使用 Range 方式
-        // 当 nextEl 存在时，直接使用基类方法
         if (nextEl) {
           return this.calculateRangeWordCount(startEl, nextEl, container)
         }
 
-        // 如果没有下一个边界元素，需要找到正确的终点
-        // 策略：从 startEl 在 DOM 中向后遍历，找到下一个用户提问元素
         const allUserQueries = container.querySelectorAll(userQuerySelector)
         let foundCurrent = false
         let nextUserQuery: Element | null = null
@@ -1147,11 +1072,9 @@ export class ChatGPTAdapter extends SiteAdapter {
         }
 
         if (nextUserQuery) {
-          // 找到了下一个用户提问，使用它作为边界
           return this.calculateRangeWordCount(startEl, nextUserQuery, container)
         }
 
-        // 真正的最后一个用户提问，找对应的 AI 回复容器末尾
         const allAssistants = container.querySelectorAll('[data-message-author-role="assistant"]')
         if (allAssistants.length > 0) {
           const lastAssistant = allAssistants[allAssistants.length - 1]
@@ -1163,7 +1086,6 @@ export class ChatGPTAdapter extends SiteAdapter {
       }
     }
 
-    // 统一处理逻辑：按照文档顺序收集所有相关元素（UserQuery 和 Headings）
     const userQuerySelector = this.getUserQuerySelector()
     const headingSelectors: string[] = []
     for (let i = 1; i <= maxLevel; i++) {
@@ -1171,7 +1093,6 @@ export class ChatGPTAdapter extends SiteAdapter {
     }
 
     const combinedSelector = `${userQuerySelector}, ${headingSelectors.join(", ")}`
-    // 获取所有潜在的节点（按文档顺序）
     const allElements = Array.from(container.querySelectorAll(combinedSelector))
 
     allElements.forEach((element, index) => {
@@ -1179,11 +1100,9 @@ export class ChatGPTAdapter extends SiteAdapter {
       const isUserQuery = element.matches(userQuerySelector)
       const isHeading = /^h[1-6]$/.test(tagName)
 
-      // 决定是否收集到大纲中
       let shouldCollect = false
       if (includeUserQueries && isUserQuery) shouldCollect = true
       if (isHeading) {
-        // 过滤不可见/无效 heading
         if (!this.shouldSkipElement(element) && !this.isInRenderedMarkdownContainer(element)) {
           const level = parseInt(tagName.charAt(1), 10)
           if (level <= maxLevel) shouldCollect = true
@@ -1218,7 +1137,6 @@ export class ChatGPTAdapter extends SiteAdapter {
           }
         }
 
-        // 添加 ID
         const msgId = getMessageId(element)
         if (msgId) {
           if (isUserQuery) {
@@ -1228,18 +1146,14 @@ export class ChatGPTAdapter extends SiteAdapter {
           }
         }
 
-        // --- 字数统计逻辑 ---
         if (showWordCount) {
-          // 重新寻找结束节点 (End Node)
           let nextBoundaryEl: Element | null = null
 
-          // 从当前位置向后找
           for (let i = index + 1; i < allElements.length; i++) {
             const candidate = allElements[i]
             const candidateIsUserQuery = candidate.matches(userQuerySelector)
 
             if (candidateIsUserQuery) {
-              // 遇到用户提问，绝对边界（对话结束）
               nextBoundaryEl = candidate
               break
             }
@@ -1247,7 +1161,6 @@ export class ChatGPTAdapter extends SiteAdapter {
             const candidateTagName = candidate.tagName.toLowerCase()
             if (/^h[1-6]$/.test(candidateTagName)) {
               const candidateLevel = parseInt(candidateTagName.charAt(1), 10)
-              // 如果是同级或更高级 (Level 数值更小或相等)，则是边界
               if (candidateLevel <= item.level) {
                 nextBoundaryEl = candidate
                 break
@@ -1255,7 +1168,6 @@ export class ChatGPTAdapter extends SiteAdapter {
             }
           }
 
-          // 计算
           item.wordCount = calculateWordCount(element, nextBoundaryEl, isUserQuery)
         }
 
@@ -1266,30 +1178,23 @@ export class ChatGPTAdapter extends SiteAdapter {
     return outline
   }
 
-  // ==================== 生成状态检测 ====================
-
   isGenerating(): boolean {
-    // ChatGPT 生成时会显示 stop 按钮
     const stopBtn = document.querySelector('[data-testid="stop-button"]')
     return stopBtn !== null && (stopBtn as HTMLElement).offsetParent !== null
   }
 
   getModelName(): string | null {
-    // 从模型选择器按钮获取
     const modelBtn = document.querySelector('[data-testid="model-switcher-dropdown-button"]')
     if (modelBtn) {
-      // 优先从 aria-label 提取（格式："模型选择器，当前模型为 5.2"）
       const ariaLabel = modelBtn.getAttribute("aria-label")
       if (ariaLabel) {
-        const match = ariaLabel.match(/(?:模型为|model is)\s*(.+)/i)
+        const match = ariaLabel.match(/(?:model is)\s*(.+)/i)
         if (match) return match[1].trim()
       }
-      // 回退：获取内部文本
       const versionSpan = modelBtn.querySelector(".text-token-text-tertiary")
       if (versionSpan) return versionSpan.textContent?.trim() || null
       return modelBtn.textContent?.trim() || null
     }
-    // 回退：从最新消息的 data-message-model-slug 获取
     const lastMsg = document.querySelector("[data-message-model-slug]")
     if (lastMsg) {
       return lastMsg.getAttribute("data-message-model-slug")
@@ -1304,8 +1209,6 @@ export class ChatGPTAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 模型锁定 ====================
-
   getDefaultLockSettings(): { enabled: boolean; keyword: string } {
     return { enabled: false, keyword: "" }
   }
@@ -1315,25 +1218,20 @@ export class ChatGPTAdapter extends SiteAdapter {
       targetModelKeyword: keyword,
       selectorButtonSelectors: [
         '[data-testid="model-switcher-dropdown-button"]',
-        '[aria-haspopup="menu"][aria-label*="模型"]',
+        '[aria-haspopup="menu"][aria-label*="Model"]',
         '[aria-haspopup="menu"][aria-label*="model"]',
       ],
-      // ChatGPT 使用 Radix UI，菜单项带有 data-radix-collection-item 属性
       menuItemSelector:
         '[data-radix-collection-item][role="menuitem"], [role="menuitem"], [role="option"]',
       checkInterval: 1000,
       maxAttempts: 15,
-      menuRenderDelay: 500, // ChatGPT 菜单渲染较慢，增加延迟
-      // 语言无关：通过 aria-haspopup 检测子菜单触发器
+      menuRenderDelay: 500,
       subMenuSelector: '[aria-haspopup="menu"]',
-      // 文字备选（多语言）
-      subMenuTriggers: ["传统", "legacy", "more"],
+      subMenuTriggers: ["traditional", "legacy", "more"],
     }
   }
 
   /**
-   * 覆盖点击模拟方法
-   * ChatGPT 使用 Radix UI，需要完整的 PointerEvent 序列才能触发菜单
    */
   protected simulateClick(element: HTMLElement): void {
     const eventTypes = ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]
@@ -1349,24 +1247,14 @@ export class ChatGPTAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 主题切换 ====================
-
   /**
-   * 切换 ChatGPT 主题
-   * 直接修改 localStorage.theme + html.className 实现即时无感切换
-   * @param targetMode 目标主题模式
    */
   async toggleTheme(targetMode: "light" | "dark"): Promise<boolean> {
     try {
-      // 1. 修改 localStorage 持久化主题设置
-      // ChatGPT 使用 "theme" 键存储主题，值为 "dark" / "light" / "system"
       localStorage.setItem("theme", targetMode)
 
-      // 2. 直接修改 html.className 实现即时视觉变化
-      // ChatGPT 通过 html 元素的 class 控制主题：class="dark" 或 class="light"
       document.documentElement.className = targetMode
 
-      // 3. 触发 storage 事件，通知其他可能监听的组件
       window.dispatchEvent(
         new StorageEvent("storage", {
           key: "theme",

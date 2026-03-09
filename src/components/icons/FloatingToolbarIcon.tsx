@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 浮动工具栏
- * 风格：Outline (stroke-based)
+ * SVG  - 
+ * Outline (stroke-based)
  */
 import React from "react"
 

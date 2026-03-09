@@ -2,7 +2,6 @@ import type { SiteAdapter } from "~adapters/base"
 import { DOMToolkit } from "~utils/dom-toolkit"
 import type { PageWidthConfig } from "~utils/storage"
 
-// ==================== 样式 ID 常量 ====================
 const STYLE_IDS = {
   PAGE_WIDTH: "gh-page-width-styles",
   PAGE_WIDTH_SHADOW: "gh-page-width-shadow",
@@ -13,8 +12,6 @@ const STYLE_IDS = {
 } as const
 
 /**
- * 页面布局管理器
- * 负责动态注入页面宽度和用户问题宽度样式，支持 Shadow DOM
  */
 export class LayoutManager {
   private siteAdapter: SiteAdapter
@@ -34,7 +31,6 @@ export class LayoutManager {
     this.pageWidthConfig = pageWidthConfig
   }
 
-  // ==================== 页面宽度 ====================
 
   updateConfig(config: PageWidthConfig) {
     this.pageWidthConfig = config
@@ -55,7 +51,6 @@ export class LayoutManager {
     this.refreshShadowInjection()
   }
 
-  // ==================== 用户问题宽度 ====================
 
   updateUserQueryConfig(config: PageWidthConfig) {
     this.userQueryWidthConfig = config
@@ -99,7 +94,6 @@ export class LayoutManager {
     this.refreshShadowInjection()
   }
 
-  // ==================== CSS 生成 ====================
 
   private generatePageWidthCSS(): string {
     const width = `${this.pageWidthConfig.value}${this.pageWidthConfig.unit}`
@@ -109,7 +103,6 @@ export class LayoutManager {
 
   private generateUserQueryWidthCSS(): string {
     if (!this.userQueryWidthConfig) return ""
-    // 添加默认值防止 undefined（默认 600px）
     const value = this.userQueryWidthConfig.value || "600"
     const unit = this.userQueryWidthConfig.unit || "px"
     const width = `${value}${unit}`
@@ -152,7 +145,6 @@ export class LayoutManager {
       .join("\n")
   }
 
-  // ==================== 工具方法 ====================
 
   private injectStyle(id: string, css: string): HTMLStyleElement {
     const style = document.createElement("style")
@@ -166,7 +158,6 @@ export class LayoutManager {
     if (style) style.remove()
   }
 
-  // ==================== Shadow DOM 支持 ====================
 
   private refreshShadowInjection() {
     const hasAnyEnabled =
@@ -182,10 +173,8 @@ export class LayoutManager {
   }
 
   private startShadowInjection() {
-    // 立即执行一次
     this.injectToAllShadows()
 
-    // 定期检查新增的 Shadow DOM
     if (!this.shadowCheckInterval) {
       this.shadowCheckInterval = setInterval(() => this.injectToAllShadows(), 1000)
     }
@@ -206,7 +195,6 @@ export class LayoutManager {
     DOMToolkit.walkShadowRoots((shadowRoot, host) => {
       if (host && !siteAdapter.shouldInjectIntoShadow(host)) return
 
-      // 页面宽度
       if (this.pageWidthConfig?.enabled) {
         const css = this.buildCSSFromSelectors(
           siteAdapter.getWidthSelectors(),
@@ -218,7 +206,6 @@ export class LayoutManager {
         this.removeStyleFromShadow(shadowRoot, STYLE_IDS.PAGE_WIDTH_SHADOW)
       }
 
-      // 用户问题宽度
       if (this.userQueryWidthConfig?.enabled) {
         const value = this.userQueryWidthConfig.value || "600"
         const unit = this.userQueryWidthConfig.unit || "px"

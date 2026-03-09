@@ -1,7 +1,7 @@
 /**
- * 站点适配器工厂
+ * Site adapter factory
  *
- * 根据当前页面 URL 自动选择合适的适配器
+ * Automatically selects the appropriate adapter based on the current page URL
  */
 
 import { AIStudioAdapter } from "./aistudio"
@@ -12,7 +12,7 @@ import { GeminiAdapter } from "./gemini"
 import { GeminiEnterpriseAdapter } from "./gemini-enterprise"
 import { GrokAdapter } from "./grok"
 
-// 所有可用的适配器
+// All available adapters
 const adapters: SiteAdapter[] = [
   new GeminiEnterpriseAdapter(),
   new GeminiAdapter(),
@@ -23,7 +23,7 @@ const adapters: SiteAdapter[] = [
 ]
 
 /**
- * 获取当前页面匹配的适配器
+ * Get the adapter matching the current page
  */
 export function getAdapter(): SiteAdapter | null {
   for (const adapter of adapters) {
@@ -35,13 +35,13 @@ export function getAdapter(): SiteAdapter | null {
 }
 
 /**
- * 获取所有已注册的适配器
+ * Get all registered adapters
  */
 export function getAllAdapters(): SiteAdapter[] {
   return [...adapters]
 }
 
-// 导出类型和基类
+// Export types and base class
 export { SiteAdapter } from "./base"
 export type {
   OutlineItem,

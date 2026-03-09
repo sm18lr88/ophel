@@ -3,8 +3,8 @@ import type { ThemePreset } from "../types"
 export const lightPresets: ThemePreset[] = [
   {
     id: "google-gradient",
-    name: "Google 渐变",
-    description: "默认主题，蓝绿渐变 Header",
+    name: "Google ",
+    description: " Header",
     variables: {
       "--gh-bg": "#ffffff",
       "--gh-bg-secondary": "#f9fafb",
@@ -77,8 +77,8 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "purple",
-    name: "紫罗兰",
-    description: "优雅紫色主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#ffffff",
       "--gh-bg-secondary": "#faf5ff",
@@ -151,8 +151,8 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "ocean",
-    name: "海洋蓝",
-    description: "清新海洋主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#ffffff",
       "--gh-bg-secondary": "#f0f9ff",
@@ -225,8 +225,8 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "sakura",
-    name: "樱花物语",
-    description: "柔美粉色主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#fff5f7",
       "--gh-bg-secondary": "#fff0f3",
@@ -299,8 +299,8 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "mint",
-    name: "清新薄荷",
-    description: "活力青绿主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#f0fdf9",
       "--gh-bg-secondary": "#e6fffa",
@@ -373,8 +373,8 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "nordic",
-    name: "北欧霜雪",
-    description: "极简冷淡主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#f8fafc",
       "--gh-bg-secondary": "#f1f5f9",
@@ -447,8 +447,8 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "lemon-soda",
-    name: "柠檬苏打",
-    description: "明亮活力主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#fefce8",
       "--gh-bg-secondary": "#fef9c3",
@@ -521,8 +521,8 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "ancient-scroll",
-    name: "羊皮卷",
-    description: "复古纸张主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#fffbeb",
       "--gh-bg-secondary": "#fef3c7",
@@ -591,14 +591,14 @@ export const lightPresets: ThemePreset[] = [
       "--gh-highlight-pulse": "rgba(217, 119, 6, 0.3)",
       "--gh-slider-dot-bg": "#d6d3d1",
       "--gh-code-bg": "rgba(217, 119, 6, 0.08)",
-      // 羊皮纸噪点纹理
+      // 
       "--gh-bg-image": `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.12'/%3E%3C/svg%3E")`,
     },
   },
   {
     id: "mono-pro",
-    name: "极致黑白",
-    description: "纯粹单色主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#ffffff",
       "--gh-bg-secondary": "#f4f4f5",
@@ -671,14 +671,14 @@ export const lightPresets: ThemePreset[] = [
   },
   {
     id: "porcelain",
-    name: "青花瓷",
-    description: "东方古典主题",
+    name: "",
+    description: "",
     variables: {
-      "--gh-bg": "#f9fbff", // 釉白
+      "--gh-bg": "#f9fbff", // 
       "--gh-bg-secondary": "#eff6ff",
       "--gh-bg-tertiary": "#e0e7ff",
-      "--gh-text": "#1e4e79", // 霁青 (浅版 #1e4e79)
-      "--gh-text-secondary": "#4e7ca1", // 苏麻离青 (辅助色)
+      "--gh-text": "#1e4e79", //  ( #1e4e79)
+      "--gh-text-secondary": "#4e7ca1", //  ()
       "--gh-text-tertiary": "#64748b",
       "--gh-text-on-primary": "#ffffff",
       "--gh-footer-text": "var(--gh-text-on-primary)",
@@ -690,7 +690,7 @@ export const lightPresets: ThemePreset[] = [
       "--gh-input-border": "#bfdbfe",
       "--gh-input-focus-border": "#1e4e79",
       "--gh-input-focus-shadow": "0 0 0 2px rgba(30, 78, 121, 0.1)",
-      // 模拟釉面光泽的蓝调阴影
+      // 
       "--gh-shadow":
         "0 10px 40px -10px rgba(30, 78, 121, 0.15), 0 4px 12px -4px rgba(30, 78, 121, 0.1)",
       "--gh-shadow-sm": "0 2px 6px rgba(30, 78, 121, 0.08)",
@@ -699,7 +699,7 @@ export const lightPresets: ThemePreset[] = [
       "--gh-primary": "#1e4e79",
       "--gh-secondary": "#4e7ca1",
       "--gh-danger": "#dc2626",
-      "--gh-header-bg": "linear-gradient(135deg, #1e4e79 0%, #2c3e50 100%)", // 钴蓝 -> 铁锈斑
+      "--gh-header-bg": "linear-gradient(135deg, #1e4e79 0%, #2c3e50 100%)", //  -> 
       "--gh-tag-active-bg": "#1e4e79",
       "--gh-checkbox-bg": "#1e4e79",
       "--gh-badge-text": "#1e4e79",
@@ -743,14 +743,14 @@ export const lightPresets: ThemePreset[] = [
       "--gh-highlight-pulse": "rgba(30, 78, 121, 0.2)",
       "--gh-slider-dot-bg": "#94a3b8",
       "--gh-code-bg": "rgba(30, 78, 121, 0.06)",
-      // 冰裂纹/釉面纹理
+      // /
       "--gh-bg-image": `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E")`,
     },
   },
   {
     id: "shortbread",
-    name: "奶油脆饼",
-    description: "莫兰迪治愈主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#f5f5f4",
       "--gh-bg-secondary": "#e7e5e4",
@@ -820,14 +820,14 @@ export const lightPresets: ThemePreset[] = [
       "--gh-highlight-pulse": "rgba(120, 113, 108, 0.3)",
       "--gh-slider-dot-bg": "#d6d3d1",
       "--gh-code-bg": "rgba(120, 113, 108, 0.08)",
-      // 饼干颗粒纹理
+      // 
       "--gh-bg-image": `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E")`,
     },
   },
   {
     id: "unicorn-dream",
-    name: "独角兽",
-    description: "梦幻童话主题",
+    name: "",
+    description: "",
     variables: {
       "--gh-bg": "#faf5ff",
       "--gh-bg-secondary": "#f3e8ff",
@@ -896,7 +896,7 @@ export const lightPresets: ThemePreset[] = [
       "--gh-highlight-pulse": "rgba(244, 114, 182, 0.3)",
       "--gh-slider-dot-bg": "#e2e8f0",
       "--gh-code-bg": "rgba(167, 139, 250, 0.1)",
-      // 梦幻云雾纹理
+      // 
       "--gh-bg-image": `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E")`,
       "--gh-bg-animation": "gh-mist-drift 20s linear infinite alternate",
     },

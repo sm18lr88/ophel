@@ -1,8 +1,6 @@
 /**
  * Prompt Manager
  *
- * 提供 DOM 相关操作（插入提示词到输入框）
- * 数据存储已迁移到 prompts-store.ts
  */
 
 import type { SiteAdapter } from "~adapters/base"
@@ -27,10 +25,8 @@ export class PromptManager {
   }
 
   /**
-   * 初始化 - 等待 Zustand hydration 完成
    */
   async init() {
-    // 等待 hydration 完成
     if (!usePromptsStore.getState()._hasHydrated) {
       await new Promise<void>((resolve) => {
         const unsubscribe = usePromptsStore.subscribe((state) => {
@@ -42,8 +38,6 @@ export class PromptManager {
       })
     }
   }
-
-  // ==================== 数据访问（委托给 store）====================
 
   getPrompts(): Prompt[] {
     return getPromptsStore().prompts
@@ -69,7 +63,7 @@ export class PromptManager {
     getPromptsStore().renameCategory(oldName, newName)
   }
 
-  deleteCategory(name: string, defaultCategoryName: string = "未分类") {
+  deleteCategory(name: string, defaultCategoryName: string = "Uncategorized") {
     getPromptsStore().deleteCategory(name, defaultCategoryName)
   }
 
@@ -81,23 +75,19 @@ export class PromptManager {
     return filterPrompts(filter, category)
   }
 
-  // 切换置顶状态
   togglePin(id: string) {
     getPromptsStore().togglePin(id)
   }
 
-  // 更新最近使用时间
   updateLastUsed(id: string) {
     getPromptsStore().updateLastUsed(id)
   }
 
-  // 批量设置提示词（用于导入）
   setPrompts(prompts: Prompt[]) {
     getPromptsStore().setPrompts(prompts)
   }
 
   /**
-   * 插入提示词到输入框
    */
   async insertPrompt(content: string): Promise<boolean> {
     const retryDelays = [0, 80, 120, 180, 240]
@@ -293,7 +283,6 @@ export class PromptManager {
         return true
       }
 
-      // 初始内容不再存在于编辑器中（可能被占位文字替换，如 Gemini Enterprise 的"接着提问"）
       if (hadContent && !currentContent.includes(initialContent.trim())) {
         return true
       }
@@ -322,7 +311,6 @@ export class PromptManager {
     const editor = this.adapter.getTextareaElement() || this.adapter.findTextarea()
     const initialContent = this.getEditorContent(editor)
 
-    // 安全检查：如果编辑器为空，不执行提交（防止误触语音按钮等非发送控件）
     const trimmedContent = initialContent.replace(/[\u200B\u200C\u200D\uFEFF]/g, "").trim()
     if (!trimmedContent) {
       return false
@@ -339,7 +327,6 @@ export class PromptManager {
 
       let submitButton = initialButton
       if (initialButtonWasDisabled) {
-        // 如果按钮完全不存在（null），使用更长超时等待 UI 切换（如语音→发送）
         const waitTimeout = initialButton === null ? 2000 : 500
         const enabledButton = await this.waitForEnabledSubmitButton(
           submitSelectors,

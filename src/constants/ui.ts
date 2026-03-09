@@ -1,5 +1,5 @@
 /**
- * UI 相关常量
+ * UI 
  */
 import type React from "react"
 
@@ -16,8 +16,8 @@ import {
 } from "~components/icons"
 import { SHORTCUT_META } from "~constants/shortcuts"
 
-// ==================== Tab ID 常量 ====================
-// 用于 Tab 切换判断，避免字符串字面量拼写错误
+// ==================== Tab ID  ====================
+//  Tab 
 export const TAB_IDS = {
   PROMPTS: "prompts",
   OUTLINE: "outline",
@@ -61,7 +61,7 @@ export const APPEARANCE_TAB_IDS = {
 export const SITE_SETTINGS_TAB_IDS = {
   LAYOUT: "layout",
   MODEL_LOCK: "modelLock",
-  // 站点专属 Tab ID 直接使用 SITE_IDS
+  //  Tab ID  SITE_IDS
 } as const
 
 // ==================== Settings Deep Link ====================
@@ -263,16 +263,16 @@ export const resolveSettingsNavigateDetail = (
 const SHORTCUT_SETTINGS_SEARCH_ITEMS: SettingsSearchItem[] = Object.entries(SHORTCUT_META).map(
   ([actionId, meta]) => ({
     settingId: `shortcut-binding-${actionId}`,
-    title: `快捷键：${meta.label}`,
+    title: `${meta.label}`,
     keywords: [
       "shortcut",
       "shortcuts",
       "keybinding",
       "hotkey",
       "keyboard",
-      "快捷键",
-      "键位",
-      "按键",
+      "",
+      "",
+      "",
       meta.label,
       meta.labelKey,
       actionId,
@@ -284,393 +284,393 @@ const SHORTCUT_SETTINGS_SEARCH_ITEMS: SettingsSearchItem[] = Object.entries(SHOR
 export const SETTINGS_SEARCH_ITEMS: SettingsSearchItem[] = [
   {
     settingId: "panel-default-open",
-    title: "默认显示面板",
-    keywords: ["panel", "default open", "默认打开"],
+    title: "",
+    keywords: ["panel", "default open", ""],
   },
   {
     settingId: "panel-default-position",
-    title: "默认位置",
-    keywords: ["panel", "left", "right", "默认侧边"],
+    title: "",
+    keywords: ["panel", "left", "right", ""],
   },
   {
     settingId: "panel-edge-distance",
-    title: "默认边距",
+    title: "",
     keywords: ["panel", "edge distance", "margin"],
   },
   {
     settingId: "panel-width",
-    title: "面板宽度",
-    keywords: ["panel width", "宽度"],
+    title: "",
+    keywords: ["panel width", ""],
   },
   {
     settingId: "panel-height",
-    title: "面板高度",
-    keywords: ["panel height", "高度"],
+    title: "",
+    keywords: ["panel height", ""],
   },
   {
     settingId: "panel-edge-snap",
-    title: "边缘自动吸附",
-    keywords: ["snap", "edge", "吸附"],
+    title: "",
+    keywords: ["snap", "edge", ""],
   },
   {
     settingId: "panel-edge-snap-threshold",
-    title: "边缘吸附阈值",
-    keywords: ["snap threshold", "edge snap", "吸附阈值"],
+    title: "",
+    keywords: ["snap threshold", "edge snap", ""],
   },
   {
     settingId: "panel-auto-hide",
-    title: "自动隐藏面板",
+    title: "",
     keywords: ["auto hide", "panel"],
   },
   {
     settingId: "quick-buttons-opacity",
-    title: "快捷按钮透明度",
-    keywords: ["quick buttons", "opacity", "透明度"],
+    title: "",
+    keywords: ["quick buttons", "opacity", ""],
   },
   {
     settingId: "tools-menu-export",
-    title: "工具箱：显示导出按钮",
-    keywords: ["tools menu", "export", "工具箱", "导出"],
+    title: "",
+    keywords: ["tools menu", "export", "", ""],
   },
   {
     settingId: "tools-menu-copyMarkdown",
-    title: "工具箱：显示复制 Markdown",
-    keywords: ["tools menu", "copy", "markdown", "工具箱"],
+    title: " Markdown",
+    keywords: ["tools menu", "copy", "markdown", ""],
   },
   {
     settingId: "tools-menu-move",
-    title: "工具箱：显示移动按钮",
-    keywords: ["tools menu", "move", "folder", "工具箱"],
+    title: "",
+    keywords: ["tools menu", "move", "folder", ""],
   },
   {
     settingId: "tools-menu-setTag",
-    title: "工具箱：显示标签按钮",
-    keywords: ["tools menu", "tag", "标签", "工具箱"],
+    title: "",
+    keywords: ["tools menu", "tag", "", ""],
   },
   {
     settingId: "tools-menu-scrollLock",
-    title: "工具箱：显示滚动锁定",
-    keywords: ["tools menu", "scroll lock", "锁定滚动", "工具箱"],
+    title: "",
+    keywords: ["tools menu", "scroll lock", "", ""],
   },
   {
     settingId: "tools-menu-modelLock",
-    title: "工具箱：显示模型锁定",
-    keywords: ["tools menu", "model lock", "模型锁定", "工具箱"],
+    title: "",
+    keywords: ["tools menu", "model lock", "", ""],
   },
   {
     settingId: "tools-menu-cleanup",
-    title: "工具箱：显示清理按钮",
-    keywords: ["tools menu", "cleanup", "清理", "工具箱"],
+    title: "",
+    keywords: ["tools menu", "cleanup", "", ""],
   },
   {
     settingId: "tools-menu-settings",
-    title: "工具箱：显示设置按钮",
-    keywords: ["tools menu", "settings", "设置", "工具箱"],
+    title: "",
+    keywords: ["tools menu", "settings", "", ""],
   },
   {
     settingId: "tab-open-new",
-    title: "新会话打开方式",
-    keywords: ["tab", "new conversation", "open in new tab", "新标签页"],
+    title: "",
+    keywords: ["tab", "new conversation", "open in new tab", ""],
   },
   {
     settingId: "tab-auto-rename",
-    title: "自动重命名标签页",
-    keywords: ["tab", "auto rename", "自动命名"],
+    title: "",
+    keywords: ["tab", "auto rename", ""],
   },
   {
     settingId: "tab-rename-interval",
-    title: "标签页重命名间隔",
-    keywords: ["tab", "rename interval", "重命名间隔"],
+    title: "",
+    keywords: ["tab", "rename interval", ""],
   },
   {
     settingId: "tab-title-format",
-    title: "标签页标题格式",
-    keywords: ["tab", "title format", "标题模板"],
+    title: "",
+    keywords: ["tab", "title format", ""],
   },
   {
     settingId: "tab-show-status",
-    title: "显示状态图标",
-    keywords: ["tab", "status", "状态图标"],
+    title: "",
+    keywords: ["tab", "status", ""],
   },
   {
     settingId: "tab-show-notification",
-    title: "启用新消息通知",
-    keywords: ["tab", "notification", "消息提醒"],
+    title: "",
+    keywords: ["tab", "notification", ""],
   },
   {
     settingId: "tab-notification-sound",
-    title: "通知音效",
-    keywords: ["tab", "notification sound", "声音提醒"],
+    title: "",
+    keywords: ["tab", "notification sound", ""],
   },
   {
     settingId: "tab-notification-volume",
-    title: "通知音量",
-    keywords: ["tab", "notification volume", "音量"],
+    title: "",
+    keywords: ["tab", "notification volume", ""],
   },
   {
     settingId: "tab-notify-when-focused",
-    title: "标签页聚焦时也提醒",
-    keywords: ["tab", "focused", "notify", "聚焦提醒"],
+    title: "",
+    keywords: ["tab", "focused", "notify", ""],
   },
   {
     settingId: "tab-auto-focus",
-    title: "自动聚焦到对话页",
-    keywords: ["tab", "auto focus", "自动聚焦"],
+    title: "",
+    keywords: ["tab", "auto focus", ""],
   },
   {
     settingId: "tab-privacy-mode",
-    title: "隐私模式",
-    keywords: ["tab", "privacy", "隐私"],
+    title: "",
+    keywords: ["tab", "privacy", ""],
   },
   {
     settingId: "tab-privacy-title",
-    title: "隐私模式标题",
-    keywords: ["tab", "privacy title", "隐私标题"],
+    title: "",
+    keywords: ["tab", "privacy title", ""],
   },
   {
     settingId: "outline-auto-update",
-    title: "自动更新大纲",
-    keywords: ["outline", "auto update", "自动刷新"],
+    title: "",
+    keywords: ["outline", "auto update", ""],
   },
   {
     settingId: "outline-update-interval",
-    title: "大纲更新间隔",
-    keywords: ["outline", "interval", "刷新频率"],
+    title: "",
+    keywords: ["outline", "interval", ""],
   },
   {
     settingId: "outline-follow-mode",
-    title: "自动跟随浏览位置",
-    keywords: ["outline", "follow", "自动跟随"],
+    title: "",
+    keywords: ["outline", "follow", ""],
   },
   {
     settingId: "outline-show-word-count",
-    title: "显示字数统计",
-    keywords: ["outline", "word count", "字数"],
+    title: "",
+    keywords: ["outline", "word count", ""],
   },
   {
     settingId: "outline-inline-bookmark-mode",
-    title: "内联收藏模式",
-    keywords: ["outline", "bookmark", "收藏", "inline"],
+    title: "",
+    keywords: ["outline", "bookmark", "", "inline"],
   },
   {
     settingId: "outline-panel-bookmark-mode",
-    title: "面板收藏模式",
-    keywords: ["outline", "bookmark", "收藏", "panel"],
+    title: "",
+    keywords: ["outline", "bookmark", "", "panel"],
   },
   {
     settingId: "outline-prevent-auto-scroll",
-    title: "阻止自动滚动页面",
-    keywords: ["outline", "auto scroll", "禁止滚动"],
+    title: "",
+    keywords: ["outline", "auto scroll", ""],
   },
   {
     settingId: "conversation-folder-rainbow",
-    title: "会话文件夹彩虹色",
-    keywords: ["conversation", "folder", "rainbow", "文件夹颜色"],
+    title: "",
+    keywords: ["conversation", "folder", "rainbow", ""],
   },
   {
     settingId: "conversation-sync-unpin",
-    title: "同步时自动取消置顶",
-    keywords: ["conversation", "sync", "unpin", "置顶"],
+    title: "",
+    keywords: ["conversation", "sync", "unpin", ""],
   },
   {
     settingId: "conversation-sync-delete",
-    title: "删除时同步删除云端",
-    keywords: ["conversation", "sync", "delete", "cloud", "删除", "云端"],
+    title: "",
+    keywords: ["conversation", "sync", "delete", "cloud", "", ""],
   },
   {
     settingId: "export-custom-user-name",
-    title: "导出：自定义用户名称",
-    keywords: ["export", "user name", "导出用户名"],
+    title: "",
+    keywords: ["export", "user name", ""],
   },
   {
     settingId: "export-custom-model-name",
-    title: "导出：自定义模型名称",
-    keywords: ["export", "model name", "导出模型名"],
+    title: "",
+    keywords: ["export", "model name", ""],
   },
   {
     settingId: "export-filename-timestamp",
-    title: "导出文件名包含时间戳",
-    keywords: ["export", "filename", "timestamp", "时间戳"],
+    title: "",
+    keywords: ["export", "filename", "timestamp", ""],
   },
   {
     settingId: "export-include-thoughts",
-    title: "导出包含思维链",
-    keywords: ["export", "thoughts", "reasoning", "thinking", "思维链", "思路", "推理"],
+    title: "",
+    keywords: ["export", "thoughts", "reasoning", "thinking", "", "", ""],
   },
   {
     settingId: "export-images-base64",
-    title: "导出时将图片转 Base64",
-    keywords: ["export", "image", "base64", "图片"],
+    title: " Base64",
+    keywords: ["export", "image", "base64", ""],
   },
   {
     settingId: "prompt-double-click-send",
-    title: "提示词双击发送",
-    keywords: ["prompt", "double click", "send", "双击发送"],
+    title: "",
+    keywords: ["prompt", "double click", "send", ""],
   },
   {
     settingId: "prompt-queue",
-    title: "提示词队列",
-    keywords: ["prompt", "queue", "提示词队列", "连续提问"],
+    title: "",
+    keywords: ["prompt", "queue", "", ""],
   },
   {
     settingId: "reading-history-persistence",
-    title: "阅读记录持久化",
-    keywords: ["reading history", "persistence", "持久化"],
+    title: "",
+    keywords: ["reading history", "persistence", ""],
   },
   {
     settingId: "reading-history-auto-restore",
-    title: "自动恢复阅读位置",
-    keywords: ["reading history", "restore", "恢复位置"],
+    title: "",
+    keywords: ["reading history", "restore", ""],
   },
   {
     settingId: "reading-history-cleanup-days",
-    title: "阅读记录清理天数",
-    keywords: ["reading history", "cleanup", "days", "清理周期"],
+    title: "",
+    keywords: ["reading history", "cleanup", "days", ""],
   },
   {
     settingId: "content-user-query-markdown",
-    title: "用户问题复制为 Markdown",
-    keywords: ["content", "markdown", "user query", "用户问题"],
+    title: " Markdown",
+    keywords: ["content", "markdown", "user query", ""],
   },
   {
     settingId: "content-formula-copy",
-    title: "公式复制增强",
-    keywords: ["content", "formula", "copy", "数学公式"],
+    title: "",
+    keywords: ["content", "formula", "copy", ""],
   },
   {
     settingId: "content-formula-delimiter",
-    title: "公式分隔符",
-    keywords: ["content", "formula delimiter", "分隔符"],
+    title: "",
+    keywords: ["content", "formula delimiter", ""],
   },
   {
     settingId: "content-table-copy",
-    title: "表格复制增强",
-    keywords: ["content", "table copy", "复制表格"],
+    title: "",
+    keywords: ["content", "table copy", ""],
   },
   {
     settingId: "layout-page-width-enabled",
-    title: "页面宽度覆盖",
-    keywords: ["layout", "page width", "页面宽度"],
+    title: "",
+    keywords: ["layout", "page width", ""],
   },
   {
     settingId: "layout-page-width-value",
-    title: "页面宽度值",
-    keywords: ["layout", "page width value", "页面宽度值"],
+    title: "",
+    keywords: ["layout", "page width value", ""],
   },
   {
     settingId: "layout-user-query-width-enabled",
-    title: "用户问题宽度覆盖",
-    keywords: ["layout", "user query width", "提问宽度"],
+    title: "",
+    keywords: ["layout", "user query width", ""],
   },
   {
     settingId: "layout-user-query-width-value",
-    title: "用户问题宽度值",
-    keywords: ["layout", "user query width value", "提问宽度值"],
+    title: "",
+    keywords: ["layout", "user query width value", ""],
   },
   {
     settingId: "layout-zen-mode-enabled",
-    title: "布局：启用禅模式 (Zen Mode)",
-    keywords: ["layout", "zen mode", "禅模式", "disclaimer", "免责声明", "隐藏"],
+    title: " (Zen Mode)",
+    keywords: ["layout", "zen mode", "", "disclaimer", "", ""],
   },
   {
     settingId: "model-lock-gemini",
-    title: "模型锁定：Gemini",
-    keywords: ["model lock", "gemini", "模型锁定"],
+    title: "Gemini",
+    keywords: ["model lock", "gemini", ""],
   },
   {
     settingId: "model-lock-gemini-enterprise",
-    title: "模型锁定：Gemini Enterprise",
-    keywords: ["model lock", "gemini enterprise", "模型锁定"],
+    title: "Gemini Enterprise",
+    keywords: ["model lock", "gemini enterprise", ""],
   },
   {
     settingId: "model-lock-aistudio",
-    title: "模型锁定：AI Studio",
-    keywords: ["model lock", "aistudio", "模型锁定"],
+    title: "AI Studio",
+    keywords: ["model lock", "aistudio", ""],
   },
   {
     settingId: "model-lock-chatgpt",
-    title: "模型锁定：ChatGPT",
-    keywords: ["model lock", "chatgpt", "模型锁定"],
+    title: "ChatGPT",
+    keywords: ["model lock", "chatgpt", ""],
   },
   {
     settingId: "model-lock-claude",
-    title: "模型锁定：Claude",
-    keywords: ["model lock", "claude", "模型锁定"],
+    title: "Claude",
+    keywords: ["model lock", "claude", ""],
   },
   {
     settingId: "model-lock-grok",
-    title: "模型锁定：Grok",
-    keywords: ["model lock", "grok", "模型锁定"],
+    title: "Grok",
+    keywords: ["model lock", "grok", ""],
   },
   {
     settingId: "gemini-markdown-fix",
-    title: "Gemini：Markdown 修复",
-    keywords: ["gemini", "markdown", "fix", "修复"],
+    title: "GeminiMarkdown ",
+    keywords: ["gemini", "markdown", "fix", ""],
   },
   {
     settingId: "gemini-watermark-removal",
-    title: "Gemini：去水印",
-    keywords: ["gemini", "watermark", "去水印"],
+    title: "Gemini",
+    keywords: ["gemini", "watermark", ""],
   },
   {
     settingId: "gemini-policy-retry",
-    title: "Gemini：策略重试",
-    keywords: ["gemini", "policy retry", "策略重试"],
+    title: "Gemini",
+    keywords: ["gemini", "policy retry", ""],
   },
   {
     settingId: "gemini-policy-max-retries",
-    title: "Gemini：最大重试次数",
-    keywords: ["gemini", "max retries", "最大重试"],
+    title: "Gemini",
+    keywords: ["gemini", "max retries", ""],
   },
   {
     settingId: "aistudio-collapse-navbar",
-    title: "AI Studio：折叠左侧导航",
-    keywords: ["aistudio", "collapse navbar", "折叠导航"],
+    title: "AI Studio",
+    keywords: ["aistudio", "collapse navbar", ""],
   },
   {
     settingId: "aistudio-collapse-run-settings",
-    title: "AI Studio：折叠 Run settings",
-    keywords: ["aistudio", "run settings", "折叠运行设置"],
+    title: "AI Studio Run settings",
+    keywords: ["aistudio", "run settings", ""],
   },
   {
     settingId: "aistudio-collapse-tools",
-    title: "AI Studio：折叠 Tools",
-    keywords: ["aistudio", "tools", "折叠工具"],
+    title: "AI Studio Tools",
+    keywords: ["aistudio", "tools", ""],
   },
   {
     settingId: "aistudio-collapse-advanced",
-    title: "AI Studio：折叠 Advanced",
-    keywords: ["aistudio", "advanced", "折叠高级选项"],
+    title: "AI Studio Advanced",
+    keywords: ["aistudio", "advanced", ""],
   },
   {
     settingId: "aistudio-enable-search",
-    title: "AI Studio：启用搜索",
-    keywords: ["aistudio", "search", "启用搜索"],
+    title: "AI Studio",
+    keywords: ["aistudio", "search", ""],
   },
   {
     settingId: "aistudio-remove-watermark",
-    title: "AI Studio：去水印",
-    keywords: ["aistudio", "watermark", "去水印"],
+    title: "AI Studio",
+    keywords: ["aistudio", "watermark", ""],
   },
   {
     settingId: "aistudio-markdown-fix",
-    title: "AI Studio：Markdown 修复",
-    keywords: ["aistudio", "markdown", "fix", "修复"],
+    title: "AI StudioMarkdown ",
+    keywords: ["aistudio", "markdown", "fix", ""],
   },
   {
     settingId: "chatgpt-markdown-fix",
-    title: "ChatGPT：Markdown 修复",
-    keywords: ["chatgpt", "markdown", "fix", "修复"],
+    title: "ChatGPTMarkdown ",
+    keywords: ["chatgpt", "markdown", "fix", ""],
   },
   {
     settingId: "claude-session-keys",
-    title: "Claude：Session Keys",
-    keywords: ["claude", "session key", "token", "密钥"],
+    title: "ClaudeSession Keys",
+    keywords: ["claude", "session key", "token", ""],
   },
   {
     settingId: "global-search-prompt-enter-behavior",
-    title: "全局搜索：提示词回车行为",
-    keywords: ["global search", "prompt", "enter", "全局搜索", "提示词", "回车"],
+    title: "",
+    keywords: ["global search", "prompt", "enter", "", "", ""],
   },
   {
     settingId: "global-search-fuzzy-search",
@@ -679,48 +679,48 @@ export const SETTINGS_SEARCH_ITEMS: SettingsSearchItem[] = [
   },
   {
     settingId: "global-search-double-shift",
-    title: "全局搜索：双击 Shift 触发",
-    keywords: ["global search", "double shift", "shortcut", "全局搜索", "双击 shift", "快捷键"],
+    title: " Shift ",
+    keywords: ["global search", "double shift", "shortcut", "", " shift", ""],
   },
   {
     settingId: "global-search-shortcut-setting-link",
-    title: "全局搜索：快捷键设置入口",
-    keywords: ["global search", "shortcut", "keybinding", "全局搜索", "快捷键", "键位设置"],
+    title: "",
+    keywords: ["global search", "shortcut", "keybinding", "", "", ""],
   },
   {
     settingId: "shortcuts-enabled",
-    title: "启用自定义快捷键",
-    keywords: ["shortcuts", "enable", "快捷键", "自定义", "总开关"],
+    title: "",
+    keywords: ["shortcuts", "enable", "", "", ""],
   },
   {
     settingId: "shortcuts-global-url",
-    title: "全局快捷键 URL",
-    keywords: ["shortcuts", "global url", "alt+g", "快捷键", "url"],
+    title: " URL",
+    keywords: ["shortcuts", "global url", "alt+g", "", "url"],
   },
   {
     settingId: "shortcuts-browser-shortcuts",
-    title: "浏览器快捷键设置入口",
-    keywords: ["shortcuts", "browser shortcuts", "chrome://extensions/shortcuts", "快捷键"],
+    title: "",
+    keywords: ["shortcuts", "browser shortcuts", "chrome://extensions/shortcuts", ""],
   },
   {
     settingId: "shortcuts-prompt-submit-shortcut",
-    title: "发送快捷键",
-    keywords: ["shortcuts", "submit", "enter", "ctrl+enter", "发送", "快捷键"],
+    title: "",
+    keywords: ["shortcuts", "submit", "enter", "ctrl+enter", "", ""],
   },
   {
     settingId: "appearance-preset-light",
-    title: "浅色主题预设",
-    keywords: ["appearance", "theme", "light", "浅色"],
+    title: "",
+    keywords: ["appearance", "theme", "light", ""],
   },
   {
     settingId: "appearance-preset-dark",
-    title: "深色主题预设",
-    keywords: ["appearance", "theme", "dark", "深色"],
+    title: "",
+    keywords: ["appearance", "theme", "dark", ""],
   },
   {
     settingId: "appearance-custom-styles",
-    title: "自定义主题样式",
-    keywords: ["appearance", "custom style", "主题样式", "css"],
+    title: "",
+    keywords: ["appearance", "custom style", "", "css"],
   },
   ...SHORTCUT_SETTINGS_SEARCH_ITEMS,
 ]
@@ -799,8 +799,8 @@ export const searchSettingsItems = (query: string, limit?: number): SettingsSear
   return items
 }
 
-// ==================== Tab 定义 ====================
-// Tab 标签的显示配置
+// ==================== Tab  ====================
+// Tab 
 export const TAB_DEFINITIONS: Record<
   string,
   {
@@ -819,9 +819,9 @@ export const TAB_DEFINITIONS: Record<
   [TAB_IDS.SETTINGS]: { label: "tabSettings", icon: "⚙️" },
 }
 
-// ==================== 折叠面板按钮定义 ====================
-// isPanelOnly: true 表示仅在面板折叠时显示，false 表示常显
-// IconComponent: React 组件形式的图标（优先于 icon）
+// ====================  ====================
+// isPanelOnly: true false 
+// IconComponent: React  icon
 export const COLLAPSED_BUTTON_DEFS: Record<
   string,
   {
@@ -890,10 +890,10 @@ export const COLLAPSED_BUTTON_DEFS: Record<
   },
 }
 
-// ==================== Emoji 预设 ====================
-// 扩充的预设 Emoji 库 (64个)
+// ==================== Emoji  ====================
+//  Emoji  (64)
 export const PRESET_EMOJIS = [
-  // 📂 基础文件夹
+  // 📂 
   "📁",
   "📂",
   "📥",
@@ -902,7 +902,7 @@ export const PRESET_EMOJIS = [
   "📈",
   "📉",
   "📋",
-  // 💼 办公/工作
+  // 💼 /
   "💼",
   "📅",
   "📌",
@@ -911,7 +911,7 @@ export const PRESET_EMOJIS = [
   "✒️",
   "🔍",
   "💡",
-  // 💻 编程/技术
+  // 💻 /
   "💻",
   "⌨️",
   "🖥️",
@@ -920,7 +920,7 @@ export const PRESET_EMOJIS = [
   "🔧",
   "🔨",
   "⚙️",
-  // 🤖 AI/机器人
+  // 🤖 AI/
   "🤖",
   "👾",
   "🧠",
@@ -929,7 +929,7 @@ export const PRESET_EMOJIS = [
   "✨",
   "🎓",
   "📚",
-  // 🎨 创意/艺术
+  // 🎨 /
   "🎨",
   "🎭",
   "🎬",
@@ -938,7 +938,7 @@ export const PRESET_EMOJIS = [
   "📷",
   "🖌️",
   "🖍️",
-  // 🏠 生活/日常
+  // 🏠 /
   "🏠",
   "🛒",
   "✈️",
@@ -947,7 +947,7 @@ export const PRESET_EMOJIS = [
   "🍔",
   "☕",
   "❤️",
-  // 🌈 颜色/标记
+  // 🌈 /
   "🔴",
   "🟠",
   "🟡",
@@ -956,7 +956,7 @@ export const PRESET_EMOJIS = [
   "🟣",
   "⚫",
   "⚪",
-  // 其他
+  // 
   "⭐",
   "🌟",
   "🎉",
@@ -967,38 +967,38 @@ export const PRESET_EMOJIS = [
   "❓",
 ]
 
-// ==================== 标签颜色预设 ====================
-// 30 色预设网格
+// ====================  ====================
+// 30 
 export const TAG_COLORS = [
-  // 第一行
+  // 
   "#FF461F",
   "#FF6B6B",
   "#FA8072",
   "#DC143C",
   "#CD5C5C",
   "#FF4500",
-  // 第二行
+  // 
   "#FFA500",
   "#FFB347",
   "#F0E68C",
   "#DAA520",
   "#FFD700",
   "#9ACD32",
-  // 第三行
+  // 
   "#32CD32",
   "#3CB371",
   "#20B2AA",
   "#00CED1",
   "#5F9EA0",
   "#4682B4",
-  // 第四行
+  // 
   "#6495ED",
   "#4169E1",
   "#0000CD",
   "#8A2BE2",
   "#9370DB",
   "#BA55D3",
-  // 第五行
+  // 
   "#DB7093",
   "#C71585",
   "#8B4513",
@@ -1007,14 +1007,14 @@ export const TAG_COLORS = [
   "#2F4F4F",
 ]
 
-// ==================== Toast 显示时长 ====================
+// ==================== Toast  ====================
 export const TOAST_DURATION = {
   SHORT: 1500,
   MEDIUM: 2000,
   LONG: 3000,
 } as const
 
-// ==================== 状态颜色 ====================
+// ====================  ====================
 export const STATUS_COLORS = {
   SUCCESS: "#10b981", // green-500
   ERROR: "#ef4444", // red-500

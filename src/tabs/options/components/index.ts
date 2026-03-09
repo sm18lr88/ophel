@@ -1,5 +1,5 @@
 /**
- * Options Page 通用组件导出
+ * Options Page 
  */
 export { SettingCard, type SettingCardProps } from "./SettingCard"
 export { SettingRow, ToggleRow, type SettingRowProps, type ToggleRowProps } from "./SettingRow"

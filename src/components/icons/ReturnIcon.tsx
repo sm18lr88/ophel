@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 返回/撤销
- * 风格：Outline (stroke-based)
+ * SVG  - /
+ * Outline (stroke-based)
  */
 import React from "react"
 
@@ -26,7 +26,7 @@ export const ReturnIcon: React.FC<IconProps> = ({
     strokeLinejoin="round"
     className={className}
     style={{ display: "block" }}>
-    {/* 向左弯曲的返回箭头 */}
+    {/*  */}
     <polyline points="9 14 4 9 9 4" />
     <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
   </svg>

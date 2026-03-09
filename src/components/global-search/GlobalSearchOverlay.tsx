@@ -192,14 +192,14 @@ export const GlobalSearchOverlay = <TItem, TCategoryId extends string>(
 
   const containerRef = React.useRef<HTMLDivElement>(null)
 
-  // 防止 Grok/Claude 等站点在 keydown 时抢占焦点或拦截快捷键
+  //  Grok/Claude  keydown 
   React.useEffect(() => {
     if (!isOpen) return
 
     const container = containerRef.current
     if (!container) return
 
-    // 在捕获阶段拦截，优先级最高
+    // 
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
 
@@ -211,7 +211,7 @@ export const GlobalSearchOverlay = <TItem, TCategoryId extends string>(
 
       if (!isInputElement) return
 
-      // 阻止事件继续传播到站点的监听器
+      // 
       e.stopPropagation()
       e.stopImmediatePropagation()
     }

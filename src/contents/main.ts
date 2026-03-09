@@ -1,8 +1,5 @@
 /**
- * Ophel - Content Script 入口
  *
- * 多站点 AI 对话增强工具
- * 核心模块初始化入口
  */
 
 import type { PlasmoCSConfig } from "plasmo"
@@ -46,7 +43,6 @@ const resetAllStores = () => {
   useReadingHistoryStore.setState({ history: {}, lastCleanupRun: 0 })
 }
 
-// Content Script 配置 - 匹配所有支持的站点
 export const config: PlasmoCSConfig = {
   matches: [
     "https://gemini.google.com/*",
@@ -60,7 +56,6 @@ export const config: PlasmoCSConfig = {
   run_at: "document_idle",
 }
 
-// 防止重复初始化
 if (!window.ophelInitialized) {
   window.ophelInitialized = true
 
@@ -69,12 +64,8 @@ if (!window.ophelInitialized) {
   if (adapter) {
     console.warn(`[Ophel] Loaded ${adapter.getName()} adapter on:`, window.location.hostname)
 
-    // 初始化适配器
     adapter.afterPropertiesSet({})
-
-    // 异步初始化所有功能模块
     ;(async () => {
-      // 等待 Zustand hydration 完成
       await new Promise<void>((resolve) => {
         if (useSettingsStore.getState()._hasHydrated) {
           resolve()
@@ -88,23 +79,17 @@ if (!window.ophelInitialized) {
         })
       })
 
-      // 获取用户设置
       const settings = getSettingsState()
       const siteId = adapter.getSiteId()
 
-      // 创建模块上下文
       const ctx: ModulesContext = { adapter, settings, siteId }
 
-      // 初始化所有核心模块
       await initCoreModules(ctx)
 
-      // 订阅设置变化
       subscribeModuleUpdates(ctx)
 
-      // 初始化 URL 变化监听
       initUrlChangeObserver(ctx)
 
-      // 监听来自 background 的消息（用于跨页面检测生成状态）
       chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         if (message.type === MSG_CLEAR_ALL_DATA) {
           handleClearAllData()
@@ -114,22 +99,18 @@ if (!window.ophelInitialized) {
         }
 
         if (message.type === MSG_RESTORE_DATA) {
-          // 收到恢复数据的广播时，刷新页面使得数据从 Storage 重新读取并保证 Zustand hydration 最新的内容
           window.location.reload()
           sendResponse({ success: true })
           return true
         }
 
         if (message.type === "CHECK_IS_GENERATING") {
-          // 使用 adapter 的 isGenerating 方法检测当前页面是否正在生成
           const isGenerating = adapter.isGenerating?.() ?? false
           sendResponse({ isGenerating })
-          return true // 保持消息通道打开
+          return true
         }
 
-        // AI Studio 获取模型列表
         if (message.type === "GET_MODEL_LIST") {
-          // 检查是否是 AI Studio 适配器且有 getModelList 方法
           if (siteId === SITE_IDS.AISTUDIO && hasAIStudioModelList(adapter)) {
             ;(async () => {
               try {
@@ -140,7 +121,7 @@ if (!window.ophelInitialized) {
                 sendResponse({ success: false, error: (err as Error).message })
               }
             })()
-            return true // 保持消息通道打开
+            return true
           } else {
             sendResponse({ success: false, error: "NOT_AISTUDIO" })
             return true

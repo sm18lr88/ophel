@@ -1,133 +1,133 @@
 /**
- * Ophel - 存储抽象层
+ * Ophel - 
  *
- * 使用 local 存储
+ *  local 
  */
 
 import { Storage } from "@plasmohq/storage"
 
 import { DEFAULT_SHORTCUTS_SETTINGS, type ShortcutsSettings } from "~constants/shortcuts"
 
-// 构建时注入的平台标识
+// 
 declare const __PLATFORM__: "extension" | "userscript" | undefined
 
-// 油猴脚本环境标识（用于设置默认值）
+// 
 const isUserscript = typeof __PLATFORM__ !== "undefined" && __PLATFORM__ === "userscript"
 
-// 本地存储 - 用于非 Zustand 管理的数据
+//  -  Zustand 
 export const localStorage = new Storage({ area: "local" })
 
-// ==================== 存储键定义 ====================
+// ====================  ====================
 
 export const STORAGE_KEYS = {
-  // Zustand 存储的 keys (统一在 local)
+  // Zustand  keys ( local)
   SETTINGS: "settings",
   FOLDERS: "folders",
   TAGS: "tags",
   PROMPTS: "prompts",
   CONVERSATIONS: "conversations",
   READING_HISTORY: "readingHistory",
-  CLAUDE_SESSION_KEYS: "claudeSessionKeys", // Claude SessionKey管理
+  CLAUDE_SESSION_KEYS: "claudeSessionKeys", // Claude SessionKey
 } as const
 
-// 清除全部数据标记（用于跳过首次自动恢复/自动同步）
+// /
 export const CLEAR_ALL_FLAG_KEY = "ophel:clearAllFlag"
 export const CLEAR_ALL_FLAG_TTL_MS = 5 * 1000
 
-// ==================== 类型定义 ====================
+// ====================  ====================
 
-// 站点 ID 类型
+//  ID 
 export type SiteId = "gemini" | "gemini-enterprise" | "aistudio" | "_default"
 
-// 主题模式
+// 
 export type ThemeMode = "light" | "dark" | "system"
 
-// 站点主题配置
+// 
 export interface SiteThemeConfig {
   mode: ThemeMode
-  lightStyleId: string // 浅色模式样式 ID（内置预设或自定义样式）
-  darkStyleId: string // 深色模式样式 ID
+  lightStyleId: string //  ID
+  darkStyleId: string //  ID
 }
 
-// 自定义样式
+// 
 export interface CustomStyle {
-  id: string // 唯一 ID（crypto.randomUUID 生成）
-  name: string // 用户自定义名称
-  css: string // CSS 内容
-  mode: "light" | "dark" // 适用的主题模式
+  id: string //  IDcrypto.randomUUID 
+  name: string // 
+  css: string // CSS 
+  mode: "light" | "dark" // 
 }
 
-// 页面宽度配置
+// 
 export interface PageWidthConfig {
   enabled: boolean
   value: string
   unit: string
 }
 
-// 模型锁定配置
+// 
 export interface ModelLockConfig {
   enabled: boolean
   keyword: string
 }
 
-// 禅模式配置
+// 
 export interface ZenModeConfig {
   enabled: boolean
 }
 
-// 导出设置
+// 
 export interface ExportSettings {
-  customUserName?: string // 自定义用户名称
-  customModelName?: string // 自定义 AI 名称
-  exportFilenameTimestamp?: boolean // 导出文件名包含时间戳
-  includeThoughts?: boolean // 导出包含思维链
+  customUserName?: string // 
+  customModelName?: string //  AI 
+  exportFilenameTimestamp?: boolean // 
+  includeThoughts?: boolean // 
 }
 
-// AI Studio 设置
+// AI Studio 
 export interface AIStudioSettings {
-  // 界面状态
-  collapseNavbar?: boolean // 默认折叠侧边栏
-  collapseRunSettings?: boolean // 默认收起运行设置面板（整个右侧面板）
-  collapseTools?: boolean // 默认收起工具栏（运行设置中的工具栏区域）
-  collapseAdvanced?: boolean // 默认收起高级设置
+  // 
+  collapseNavbar?: boolean // 
+  collapseRunSettings?: boolean // 
+  collapseTools?: boolean // 
+  collapseAdvanced?: boolean // 
 
-  // 功能开关
-  enableSearch?: boolean // 默认启用 Google 搜索工具
-  markdownFix?: boolean // 修复响应中未渲染的加粗文本
+  // 
+  enableSearch?: boolean //  Google 
+  markdownFix?: boolean // 
 
-  // 默认模型
-  defaultModel?: string // 模型 ID，如 "models/gemini-3-flash-preview"
+  // 
+  defaultModel?: string //  ID "models/gemini-3-flash-preview"
 
-  // 缓存的模型列表（从 DOM 动态抓取）
+  //  DOM 
   cachedModels?: Array<{ id: string; name: string }>
 
-  // 去水印开关
+  // 
   removeWatermark?: boolean
 }
 
-// ChatGPT 设置
+// ChatGPT 
 export interface ChatGPTSettings {
-  markdownFix?: boolean // 修复响应中未渲染的加粗文本
+  markdownFix?: boolean // 
 }
 
 export interface Settings {
   language: string
-  hasAgreedToTerms: boolean // 用户是否同意免责声明
+  hasAgreedToTerms: boolean // 
 
-  // 面板行为
+  // 
   panel: {
     defaultOpen: boolean
     autoHide: boolean
     edgeSnap: boolean
     preventAutoScroll: boolean
-    defaultPosition: "left" | "right" // 默认位置
-    defaultEdgeDistance: number // 默认边距 (0-400, 默认 25)
-    edgeSnapThreshold: number // 吸附触发距离 (10-100, 默认 18)
-    height: number // 面板高度 (50-100, 默认 85, 单位 vh)
-    width: number // 面板宽度 (200-600, 默认 320, 单位 px)
+    defaultPosition: "left" | "right" // 
+    defaultEdgeDistance: number //  (0-400,  25)
+    edgeSnapThreshold: number //  (10-100,  18)
+    height: number //  (50-100,  85,  vh)
+    width: number //  (200-600,  320,  px)
   }
 
-  // Gemini Enterprise 专属设置
+  // Gemini Enterprise 
   geminiEnterprise?: {
     policyRetry: {
       enabled: boolean
@@ -135,7 +135,7 @@ export interface Settings {
     }
   }
 
-  // 内容处理（含复制、导出）
+  // 
   content: {
     markdownFix: boolean
     watermarkRemoval: boolean
@@ -143,36 +143,36 @@ export interface Settings {
     formulaDelimiter: boolean
     tableCopy: boolean
     exportImagesToBase64: boolean
-    userQueryMarkdown: boolean // 用户提问 Markdown 渲染
+    userQueryMarkdown: boolean //  Markdown 
   }
 
-  // 导出设置
+  // 
   export?: ExportSettings
 
-  // 主题（按站点独立 + 共享自定义样式）
+  //  + 
   theme: {
     sites: Partial<Record<SiteId, SiteThemeConfig>>
-    customStyles: CustomStyle[] // 自定义样式列表
+    customStyles: CustomStyle[] // 
   }
 
-  // 布局设置（页面宽度、用户问题宽度等）
+  // 
   layout: {
     pageWidth: Record<SiteId, PageWidthConfig>
     userQueryWidth: Record<SiteId, PageWidthConfig>
     zenMode?: Record<SiteId, ZenModeConfig>
   }
 
-  // 模型锁定（按站点独立）
+  // 
   modelLock: Record<string, ModelLockConfig>
 
-  // 全局搜索配置
+  // 
   globalSearch: {
     promptEnterBehavior: "smart" | "locate"
     enableFuzzySearch: boolean
     doubleShift: boolean
   }
 
-  // 功能模块配置
+  // 
   features: {
     order: string[]
     prompts: {
@@ -195,13 +195,13 @@ export interface Settings {
       showUserQueries: boolean
       followMode: "current" | "latest" | "manual"
       expandLevel: number
-      inlineBookmarkMode: "always" | "hover" | "hidden" // 页内收藏图标显示模式
-      panelBookmarkMode: "always" | "hover" | "hidden" // 面板收藏图标显示模式
+      inlineBookmarkMode: "always" | "hover" | "hidden" // 
+      panelBookmarkMode: "always" | "hover" | "hidden" // 
       showWordCount: boolean
     }
   }
 
-  // 浏览器标签页行为
+  // 
   tab: {
     openInNewTab: boolean
     autoRename: boolean
@@ -218,30 +218,30 @@ export interface Settings {
     customIcon: string
   }
 
-  // 阅读历史配置
+  // 
   readingHistory: {
     persistence: boolean
     autoRestore: boolean
     cleanupDays: number
   }
 
-  // 快捷按钮配置
+  // 
   collapsedButtons: Array<{ id: string; enabled: boolean }>
   quickButtonsOpacity: number
 
-  // 工具箱菜单配置 (启用的菜单项 ID 列表，undefined 表示全部显示)
+  //  ( ID undefined )
   toolsMenu?: string[]
 
   floatingToolbar: {
     open: boolean
   }
 
-  // Claude 专属设置
+  // Claude 
   claude?: {
-    currentKeyId: string // 当前选中的SessionKey ID,空字符串表示使用默认cookie
+    currentKeyId: string // SessionKey ID,cookie
   }
 
-  //  WebDAV 同步
+  //  WebDAV 
   webdav?: {
     enabled: boolean
     url: string
@@ -250,43 +250,43 @@ export interface Settings {
     syncMode: "manual" | "auto"
     syncInterval: number
     remoteDir: string
-    dataSources?: Array<"settings" | "conversations" | "prompts" | "claudeSessionKeys"> // 可备份的数据源
-    lastSyncTime?: number // 上次同步时间戳
+    dataSources?: Array<"settings" | "conversations" | "prompts" | "claudeSessionKeys"> // 
+    lastSyncTime?: number // 
     lastSyncStatus?: "success" | "failed" | "syncing"
   }
 
-  // 快捷键设置
+  // 
   shortcuts: ShortcutsSettings
 
-  // AI Studio 专属设置
+  // AI Studio 
   aistudio?: AIStudioSettings
 
-  // ChatGPT 专属设置
+  // ChatGPT 
   chatgpt?: ChatGPTSettings
 }
 
-// 默认站点主题配置
+// 
 const DEFAULT_SITE_THEME: SiteThemeConfig = {
   mode: "light",
   lightStyleId: "google-gradient",
   darkStyleId: "classic-dark",
 }
 
-// 默认页面宽度配置
+// 
 const DEFAULT_PAGE_WIDTH: PageWidthConfig = {
   enabled: false,
   value: "1280",
   unit: "px",
 }
 
-// 默认用户问题宽度配置（使用 px 防止随页面宽度缩放）
+//  px 
 const DEFAULT_USER_QUERY_WIDTH: PageWidthConfig = {
   enabled: false,
   value: "600",
   unit: "px",
 }
 
-// 默认禅模式配置
+// 
 const DEFAULT_ZEN_MODE: ZenModeConfig = {
   enabled: false,
 }
@@ -316,13 +316,13 @@ export const DEFAULT_SETTINGS: Settings = {
 
   content: {
     markdownFix: true,
-    // 油猴脚本环境默认开启（GM_xmlhttpRequest 已通过 @grant 声明）
+    // GM_xmlhttpRequest  @grant 
     watermarkRemoval: isUserscript,
     formulaCopy: true,
     formulaDelimiter: true,
     tableCopy: true,
     exportImagesToBase64: false,
-    userQueryMarkdown: false, // 默认关闭
+    userQueryMarkdown: false, // 
   },
 
   export: {
@@ -338,7 +338,7 @@ export const DEFAULT_SETTINGS: Settings = {
       "gemini-enterprise": { ...DEFAULT_SITE_THEME },
       _default: { ...DEFAULT_SITE_THEME },
     },
-    customStyles: [], // 空数组，用户可以添加自定义样式
+    customStyles: [], // 
   },
 
   layout: {
@@ -396,7 +396,7 @@ export const DEFAULT_SETTINGS: Settings = {
       followMode: "current",
       expandLevel: 6,
       inlineBookmarkMode: "always",
-      panelBookmarkMode: "always", // 默认保持原有行为 (Always Dimmed)
+      panelBookmarkMode: "always", //  (Always Dimmed)
       showWordCount: false,
     },
   },
@@ -407,7 +407,7 @@ export const DEFAULT_SETTINGS: Settings = {
     renameInterval: 3,
     showStatus: true,
     titleFormat: "{status}{title}->{model}",
-    // 油猴脚本环境默认开启（GM_notification 已通过 @grant 声明）
+    // GM_notification  @grant 
     showNotification: isUserscript,
     notificationSound: true,
     notificationVolume: 0.6,
@@ -440,7 +440,7 @@ export const DEFAULT_SETTINGS: Settings = {
   },
 
   claude: {
-    currentKeyId: "", // 空字符串表示使用浏览器默认cookie
+    currentKeyId: "", // cookie
   },
 
   webdav: {
@@ -451,7 +451,7 @@ export const DEFAULT_SETTINGS: Settings = {
     syncMode: "manual",
     syncInterval: 30,
     remoteDir: "ophel",
-    dataSources: ["settings", "conversations", "prompts", "claudeSessionKeys"], // 默认包括所有数据
+    dataSources: ["settings", "conversations", "prompts", "claudeSessionKeys"], // 
   },
 
   shortcuts: DEFAULT_SHORTCUTS_SETTINGS,
@@ -461,14 +461,14 @@ export const DEFAULT_SETTINGS: Settings = {
     collapseTools: false,
     collapseAdvanced: false,
     enableSearch: true,
-    defaultModel: "", // 空表示不覆盖
-    // 油猴脚本环境默认开启
+    defaultModel: "", // 
+    // 
     markdownFix: isUserscript,
     removeWatermark: isUserscript,
   },
 
   chatgpt: {
-    // 默认开启
+    // 
     markdownFix: true,
   },
 }
@@ -491,30 +491,30 @@ export interface Prompt {
   title: string
   content: string
   category: string
-  pinned?: boolean // 是否置顶
-  lastUsedAt?: number // 最近使用时间戳
+  pinned?: boolean // 
+  lastUsedAt?: number // 
 }
 
-// Claude SessionKey 管理
+// Claude SessionKey 
 export interface ClaudeSessionKey {
   id: string // crypto.randomUUID
-  name: string // 用户自定义名称
+  name: string // 
   key: string // sk-ant-sid01-...
   accountType?: "Free" | "Pro(5x)" | "Pro(20x)" | "API" | "Unknown"
-  isValid?: boolean // 最近测试结果
-  testedAt?: number // 最近测试时间戳
+  isValid?: boolean // 
+  testedAt?: number // 
   createdAt: number
 }
 
 export interface ClaudeSessionKeysState {
   keys: ClaudeSessionKey[]
-  currentKeyId: string // 空字符串表示使用浏览器默认cookie
+  currentKeyId: string // cookie
 }
 
-// ==================== 工具函数 ====================
+// ====================  ====================
 
 /**
- * 获取站点配置，如果不存在则返回默认配置
+ * 
  */
 export function getSiteTheme(settings: Settings, siteId: string): SiteThemeConfig {
   const sites = settings.theme?.sites
@@ -555,9 +555,9 @@ export function getSiteZenMode(settings: Settings, siteId: string): ZenModeConfi
 let clearAllFlagPromise: Promise<boolean> | null = null
 
 /**
- * 消费“清除全部数据”标记（仅首次返回 true）
- * - 用于在清除后首次加载时跳过自动恢复/自动同步
- * - 多处调用将共享结果，避免竞态
+ * “” true
+ * - /
+ * - 
  */
 export function consumeClearAllFlag(): Promise<boolean> {
   if (clearAllFlagPromise) {
@@ -597,16 +597,16 @@ export function consumeClearAllFlag(): Promise<boolean> {
   return clearAllFlagPromise
 }
 
-// 恢复备份标记（用于跳过恢复后的自动同步，保持备份文件的干净状态）
+// 
 export const RESTORE_FLAG_KEY = "ophel:restoreFlag"
 export const RESTORE_FLAG_TTL_MS = 10 * 1000
 
 let restoreFlagPromise: Promise<boolean> | null = null
 
 /**
- * 消费"恢复备份"标记（TTL 窗口内返回 true）
- * - 用于在恢复备份后跳过 autoFullSync，保持备份文件的干净状态
- * - 多处调用将共享结果，避免竞态
+ * ""TTL  true
+ * -  autoFullSync
+ * - 
  */
 export function consumeRestoreFlag(): Promise<boolean> {
   if (restoreFlagPromise) {
@@ -635,12 +635,12 @@ export function consumeRestoreFlag(): Promise<boolean> {
 
       const age = Date.now() - ts
       if (age <= RESTORE_FLAG_TTL_MS) {
-        // 不立即移除，允许多个标签页在 TTL 窗口内都能读取到恢复标记，避免竞态
+        //  TTL 
         resolve(true)
         return
       }
 
-      // 标记过期后清理，防止长期残留
+      // 
       chrome.storage.local.remove(RESTORE_FLAG_KEY, () => resolve(false))
     })
   })

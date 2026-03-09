@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 提示词 (魔法棒)
- * 风格：Outline (stroke-based)
+ * SVG  -  ()
+ * Outline (stroke-based)
  */
 import React from "react"
 

@@ -1,5 +1,5 @@
 /**
- * Options Page 页面组件导出
+ * Options Page 
  */
 export { default as GeneralPage } from "./GeneralPage"
 export { default as AppearancePage } from "./AppearancePage"

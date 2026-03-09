@@ -1,11 +1,11 @@
 /**
- * 变量输入弹窗组件
+ * 
  *
- * 用于提示词中的变量占位符填写
- * 支持三种语法：
- * - {{变量}}        基础变量（文本输入）
- * - {{变量:默认值}}  带默认值（文本输入，预填默认值）
- * - {{变量:选项1|选项2}}  下拉选择
+ * 
+ * 
+ * - {{}}        
+ * - {{:}}  
+ * - {{:1|2}}  
  */
 
 import React, { useEffect, useRef, useState } from "react"
@@ -14,16 +14,16 @@ import { ClearIcon } from "~components/icons"
 import { DialogOverlay } from "~components/ui"
 import { t } from "~utils/i18n"
 
-// ==================== 类型定义 ====================
+// ====================  ====================
 
 /**
- * 解析后的变量结构
+ * 
  */
 export interface ParsedVariable {
-  raw: string // 原始占位符内文本，如 "语言:中文" 或 "风格:正式|轻松|幽默"
-  name: string // 变量名，如 "语言"、"风格"
-  defaultValue?: string // 默认值，如 "中文"
-  options?: string[] // 下拉选项，如 ["正式", "轻松", "幽默"]
+  raw: string //  ":"  ":||"
+  name: string //  """"
+  defaultValue?: string //  ""
+  options?: string[] //  ["", "", ""]
 }
 
 interface Variable {
@@ -32,7 +32,7 @@ interface Variable {
 }
 
 interface VariableInputDialogProps {
-  variables: ParsedVariable[] // 解析后的变量列表
+  variables: ParsedVariable[] // 
   onConfirm: (values: Record<string, string>) => void
   onCancel: () => void
 }
@@ -50,7 +50,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   )
   const firstInputRef = useRef<HTMLInputElement>(null)
 
-  // 自动聚焦第一个输入框
+  // 
   useEffect(() => {
     setTimeout(() => {
       firstInputRef.current?.focus()
@@ -103,7 +103,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
       <div
         onKeyDown={handleKeyDown}
         style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        {/* 标题 */}
+        {/*  */}
         <div
           style={{
             padding: "16px",
@@ -119,7 +119,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
               fontWeight: 600,
               color: "var(--gh-text, #374151)",
             }}>
-            {t("promptVariableTitle") || "填写变量"}
+            {t("promptVariableTitle") || ""}
           </h3>
           <button
             onClick={onCancel}
@@ -134,7 +134,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           </button>
         </div>
 
-        {/* 变量输入区域 */}
+        {/*  */}
         <div style={{ padding: "16px", overflowY: "auto", flex: 1 }}>
           {variables.map((parsedVar, index) => (
             <div
@@ -155,7 +155,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                 {parsedVar.name}
               </label>
               {parsedVar.options ? (
-                /* 下拉选择 */
+                /*  */
                 <select
                   value={values[index]?.value ?? ""}
                   onChange={(e) => updateValue(index, e.target.value)}
@@ -187,7 +187,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                   ))}
                 </select>
               ) : (
-                /* 普通文本输入 */
+                /*  */
                 <input
                   ref={index === 0 ? firstInputRef : undefined}
                   type="text"
@@ -195,8 +195,8 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
                   onChange={(e) => updateValue(index, e.target.value)}
                   placeholder={
                     parsedVar.defaultValue
-                      ? `${t("promptVariablePlaceholder") || "请输入"} (${t("default") || "默认"}: ${parsedVar.defaultValue})`
-                      : t("promptVariablePlaceholder") || "请输入"
+                      ? `${t("promptVariablePlaceholder") || ""} (${t("default") || ""}: ${parsedVar.defaultValue})`
+                      : t("promptVariablePlaceholder") || ""
                   }
                   style={{
                     width: "100%",
@@ -224,7 +224,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
           ))}
         </div>
 
-        {/* 底部按钮 */}
+        {/*  */}
         <div
           style={{
             padding: "12px 16px",
@@ -244,7 +244,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
               fontSize: "14px",
               cursor: "pointer",
             }}>
-            {t("cancel") || "取消"}
+            {t("cancel") || ""}
           </button>
           <button
             onClick={handleSubmit}
@@ -258,7 +258,7 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
               cursor: "pointer",
               fontWeight: 500,
             }}>
-            {t("confirm") || "确认"}
+            {t("confirm") || ""}
           </button>
         </div>
       </div>
@@ -266,14 +266,14 @@ export const VariableInputDialog: React.FC<VariableInputDialogProps> = ({
   )
 }
 
-// ==================== 工具函数 ====================
+// ====================  ====================
 
 /**
- * 解析变量占位符内的文本
+ * 
  *
- * - "主题"           → { raw: "主题", name: "主题" }
- * - "语言:中文"       → { raw: "语言:中文", name: "语言", defaultValue: "中文" }
- * - "风格:正式|轻松|幽默" → { raw: "风格:正式|轻松|幽默", name: "风格", options: ["正式", "轻松", "幽默"] }
+ * - ""           → { raw: "", name: "" }
+ * - ":"       → { raw: ":", name: "", defaultValue: "" }
+ * - ":||" → { raw: ":||", name: "", options: ["", "", ""] }
  */
 export const parseVariable = (raw: string): ParsedVariable => {
   const colonIndex = raw.indexOf(":")
@@ -284,7 +284,7 @@ export const parseVariable = (raw: string): ParsedVariable => {
   const name = raw.substring(0, colonIndex)
   const rest = raw.substring(colonIndex + 1)
 
-  // 含 "|" 则为选项列表，否则为默认值
+  //  "|" 
   if (rest.includes("|")) {
     const options = rest.split("|").filter((o) => o.length > 0)
     return { raw, name, options }
@@ -294,9 +294,9 @@ export const parseVariable = (raw: string): ParsedVariable => {
 }
 
 /**
- * 提取提示词中的变量（解析后）
- * @param content 提示词内容
- * @returns 解析后的变量数组（按 name 去重）
+ * 
+ * @param content 
+ * @returns  name 
  */
 export const extractVariables = (content: string): ParsedVariable[] => {
   const regex = /\{\{([^\s{}]+)\}\}/g
@@ -314,10 +314,10 @@ export const extractVariables = (content: string): ParsedVariable[] => {
 }
 
 /**
- * 替换提示词中的变量
- * @param content 原始内容
- * @param values 变量值映射（key 为 raw 字段）
- * @returns 替换后的内容
+ * 
+ * @param content 
+ * @param values key  raw 
+ * @returns 
  */
 export const replaceVariables = (content: string, values: Record<string, string>): string => {
   return content.replace(/\{\{([^\s{}]+)\}\}/g, (fullMatch, raw) => {

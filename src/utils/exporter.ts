@@ -1,15 +1,15 @@
 /**
- * 会话导出工具
+ * 
  *
- * 支持导出为 Markdown、JSON、TXT 格式
- * 包含强大的 HTML 转 Markdown 功能
+ *  MarkdownJSONTXT 
+ *  HTML  Markdown 
  */
 
 import { t } from "~utils/i18n"
 import { showToast } from "~utils/toast"
 
-// 使用 String.fromCodePoint 在运行时生成 emoji
-// 避免构建工具将 Unicode 转义序列转换为 UTF-16 代理对字符串
+//  String.fromCodePoint  emoji
+//  Unicode  UTF-16 
 const EMOJI_EXPORT = String.fromCodePoint(0x1f4e4) // 📤
 const EMOJI_USER = String.fromCodePoint(0x1f64b) // 🙋
 const EMOJI_ASSISTANT = String.fromCodePoint(0x1f916) // 🤖
@@ -31,11 +31,11 @@ export interface ExportMetadata {
 
 export type ExportFormat = "markdown" | "json" | "txt" | "clipboard"
 
-// ==================== HTML 转 Markdown ====================
+// ==================== HTML  Markdown ====================
 
 /**
- * 将 HTML 元素转换为 Markdown
- * 支持数学公式、代码块、表格、图片等
+ *  HTML  Markdown
+ * 
  */
 export function htmlToMarkdown(el: Element): string {
   if (!el) return ""
@@ -54,7 +54,7 @@ export function htmlToMarkdown(el: Element): string {
 
       const element = node as HTMLElement
 
-      // 处理数学公式
+      // 
       if (element.classList?.contains("math-block")) {
         const latex = element.getAttribute("data-math")
         if (latex) return `\n$$${latex}$$\n`
@@ -68,14 +68,14 @@ export function htmlToMarkdown(el: Element): string {
       const tag = element.tagName?.toLowerCase() || ""
       if (!tag) return ""
 
-      // 图片
+      // 
       if (tag === "img") {
-        const alt = (element as HTMLImageElement).alt || element.getAttribute("alt") || "图片"
+        const alt = (element as HTMLImageElement).alt || element.getAttribute("alt") || ""
         const src = (element as HTMLImageElement).src || element.getAttribute("src") || ""
         return `![${alt}](${src})`
       }
 
-      // 代码块
+      // 
       if (tag === "code-block") {
         const decoration = element.querySelector(".code-block-decoration")
         const lang = decoration?.querySelector("span")?.textContent?.trim().toLowerCase() || ""
@@ -84,7 +84,7 @@ export function htmlToMarkdown(el: Element): string {
         return `\n\`\`\`${lang}\n${text}\n\`\`\`\n`
       }
 
-      // pre 块
+      // pre 
       if (tag === "pre") {
         const code = element.querySelector("code")
         const lang = code?.className.match(/language-(\w+)/)?.[1] || ""
@@ -92,13 +92,13 @@ export function htmlToMarkdown(el: Element): string {
         return `\n\`\`\`${lang}\n${text}\n\`\`\`\n`
       }
 
-      // 内联代码
+      // 
       if (tag === "code") {
         if (element.parentElement?.tagName.toLowerCase() === "pre") return ""
         return `\`${element.textContent}\``
       }
 
-      // 表格
+      // 
       if (tag === "table") {
         const rows: string[] = []
         const thead = element.querySelector("thead")
@@ -147,7 +147,7 @@ export function htmlToMarkdown(el: Element): string {
         return rows.length > 0 ? "\n" + rows.join("\n") + "\n" : ""
       }
 
-      // 表格容器
+      // 
       if (tag === "table-block" || tag === "ucs-markdown-table") {
         const innerTable = element.querySelector("table")
         if (innerTable) {
@@ -155,7 +155,7 @@ export function htmlToMarkdown(el: Element): string {
         }
       }
 
-      // 递归处理子节点
+      // 
       const children = Array.from(element.childNodes).map(processNode).join("")
 
       switch (tag) {
@@ -189,7 +189,7 @@ export function htmlToMarkdown(el: Element): string {
         case "ol":
           return `\n${children}`
         default:
-          // 处理 Shadow DOM
+          //  Shadow DOM
           if ((element as HTMLElement).shadowRoot) {
             return Array.from((element as HTMLElement).shadowRoot?.childNodes || [])
               .map(processNode)
@@ -199,7 +199,7 @@ export function htmlToMarkdown(el: Element): string {
       }
     } catch (err) {
       console.error("Error processing node in htmlToMarkdown:", err)
-      // 降级为纯文本，避免单个节点异常导致内容被静默丢弃
+      // 
       return node.textContent || ""
     }
   }
@@ -207,10 +207,10 @@ export function htmlToMarkdown(el: Element): string {
   return processNode(el).trim()
 }
 
-// ==================== 格式化函数 ====================
+// ====================  ====================
 
 /**
- * 为 UTF-8 文本添加 BOM，提升 Windows 记事本等工具的编码识别
+ *  UTF-8  BOM Windows 
  */
 export function ensureUtf8Bom(content: string): string {
   if (!content) return "\ufeff"
@@ -218,12 +218,12 @@ export function ensureUtf8Bom(content: string): string {
 }
 
 /**
- * 格式化为 Markdown
+ *  Markdown
  */
 export function formatToMarkdown(metadata: ExportMetadata, messages: ExportMessage[]): string {
   const lines: string[] = []
 
-  // 元数据头
+  // 
   lines.push(`# ${metadata.title}`)
   lines.push("")
   lines.push("---")
@@ -235,7 +235,7 @@ export function formatToMarkdown(metadata: ExportMetadata, messages: ExportMessa
   lines.push("---")
   lines.push("")
 
-  // 对话内容
+  // 
   messages.forEach((msg) => {
     if (msg.role === "user") {
       const userLabel = metadata.customUserName || t("exportUserLabel")
@@ -260,7 +260,7 @@ export function formatToMarkdown(metadata: ExportMetadata, messages: ExportMessa
 }
 
 /**
- * 格式化为 JSON
+ *  JSON
  */
 export function formatToJSON(metadata: ExportMetadata, messages: ExportMessage[]): string {
   const data = {
@@ -280,7 +280,7 @@ export function formatToJSON(metadata: ExportMetadata, messages: ExportMessage[]
 }
 
 /**
- * 格式化为 TXT
+ *  TXT
  */
 export function formatToTXT(metadata: ExportMetadata, messages: ExportMessage[]): string {
   const lines: string[] = []
@@ -310,11 +310,11 @@ export function formatToTXT(metadata: ExportMetadata, messages: ExportMessage[])
   return lines.join("\n")
 }
 
-// ==================== 文件操作 ====================
+// ====================  ====================
 
 /**
- * 下载文件
- * 使用 Blob + createObjectURL 直接下载到默认下载目录
+ * 
+ *  Blob + createObjectURL 
  */
 export async function downloadFile(
   content: string,
@@ -333,13 +333,13 @@ export async function downloadFile(
   } catch (err: unknown) {
     console.error("[Exporter] Download failed:", err)
     const errorMessage = err instanceof Error ? err.message : String(err)
-    showToast("下载失败: " + errorMessage)
+    showToast(": " + errorMessage)
     return false
   }
 }
 
 /**
- * 复制到剪贴板
+ * 
  */
 export async function copyToClipboard(content: string): Promise<boolean> {
   try {
@@ -352,7 +352,7 @@ export async function copyToClipboard(content: string): Promise<boolean> {
 }
 
 /**
- * 创建导出元数据
+ * 
  */
 export function createExportMetadata(
   title: string,

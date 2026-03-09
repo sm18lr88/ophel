@@ -1,6 +1,6 @@
 /**
- * 权限管理页面
- * 显示和管理扩展的权限
+ * 
+ * 
  */
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -19,22 +19,22 @@ import { showToast } from "~utils/toast"
 
 import { PageTitle, SettingCard, SettingRow } from "../components"
 
-// 必需权限（在 manifest 中声明，无法动态修改）
+//  manifest 
 const REQUIRED_PERMISSIONS = [
   {
     id: "storage",
-    name: "存储",
+    name: "",
     nameKey: "permissionStorage",
     description: "permissionStorageDesc",
     icon: "💾",
   },
 ]
 
-// 可选权限（非主机权限）
+// 
 const OPTIONAL_PERMISSIONS = [
   {
     id: "notifications",
-    name: "通知",
+    name: "",
     nameKey: "permissionNotifications",
     description: "permissionNotificationsDesc",
     icon: "🔔",
@@ -42,7 +42,7 @@ const OPTIONAL_PERMISSIONS = [
   },
   {
     id: "cookies",
-    name: "Cookie管理",
+    name: "Cookie",
     nameKey: "permissionCookies",
     description: "permissionCookiesDesc",
     icon: "🍪",
@@ -56,13 +56,13 @@ interface PermissionsPageProps {
 
 const PermissionsPage: React.FC<PermissionsPageProps> = () => {
   const { settings, updateNestedSetting, setSettings } = useSettingsStore()
-  // 可选权限状态
+  // 
   const [optionalPermissionStatus, setOptionalPermissionStatus] = useState<Record<string, boolean>>(
     {},
   )
   const [loading, setLoading] = useState(true)
 
-  // 确认弹窗状态
+  // 
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     message: React.ReactNode
@@ -73,8 +73,8 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
     onConfirm: () => {},
   })
 
-  // 判断是否在扩展页面上下文（可以直接调用权限 API）
-  // 注意：content script 中 chrome.permissions 为 undefined
+  //  API
+  // content script  chrome.permissions  undefined
   const isExtensionPage = typeof chrome.permissions !== "undefined"
   const webdavOrigin =
     settings?.webdav?.url && settings.webdav.url.trim()
@@ -103,12 +103,12 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
     [webdavOrigin],
   )
 
-  // 检查可选权限状态
+  // 
   const checkOptionalPermissions = useCallback(async () => {
     setLoading(true)
     const status: Record<string, boolean> = {}
 
-    // 检查可选非主机权限
+    // 
     for (const perm of OPTIONAL_PERMISSIONS) {
       try {
         let result = false
@@ -127,12 +127,12 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
         }
         status[perm.id] = result
       } catch (e) {
-        console.error(`检查权限 ${perm.id} 失败:`, e)
+        console.error(` ${perm.id} :`, e)
         status[perm.id] = false
       }
     }
 
-    // 检查可选主机权限
+    // 
     for (const perm of optionalHostPermissions) {
       try {
         if (!perm.origins?.length) {
@@ -156,7 +156,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
         }
         status[perm.id] = result
       } catch (e) {
-        console.error(`检查权限 ${perm.id} 失败:`, sanitizeErrorMessage(e))
+        console.error(` ${perm.id} :`, sanitizeErrorMessage(e))
         status[perm.id] = false
       }
     }
@@ -165,7 +165,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
     setLoading(false)
   }, [isExtensionPage, optionalHostPermissions])
 
-  // 请求可选权限（通用函数）
+  // 
   const requestPermission = useCallback(
     async (perm: { id: string; origins?: string[]; permissions?: string[] }) => {
       try {
@@ -184,36 +184,36 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
             setOptionalPermissionStatus((prev) => ({ ...prev, [perm.id]: true }))
           }
         } else {
-          // Content Script 发送消息请求
+          // Content Script 
           await sendToBackground({
             type: MSG_REQUEST_PERMISSIONS,
             permType: perm.id,
             origins: perm.origins,
             permissions: perm.permissions,
           })
-          // 延迟后自动刷新权限状态（给用户操作弹窗的时间）
+          // 
           setTimeout(() => checkOptionalPermissions(), 2000)
         }
       } catch (e) {
-        console.error(`请求权限 ${perm.id} 失败:`, sanitizeErrorMessage(e))
+        console.error(` ${perm.id} :`, sanitizeErrorMessage(e))
       }
     },
     [isExtensionPage, checkOptionalPermissions],
   )
 
-  // 初始化时检查权限
+  // 
   useEffect(() => {
     checkOptionalPermissions()
 
-    // 检查是否有自动请求参数 (auto_request)
-    // 只有在扩展页面环境下才处理
+    //  (auto_request)
+    // 
     if (isExtensionPage && typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search)
       if (urlParams.get("auto_request") === "true") {
-        // 给一点延迟，确保页面渲染完成
+        // 
         setTimeout(() => {
-          // 默认请求第一个可选权限（通常是 all_urls）
-          // 以后如果有多权限，可能需要传递具体权限 ID
+          //  all_urls
+          //  ID
           const perm = optionalHostPermissions[0]
           if (perm) {
             requestPermission(perm)
@@ -223,7 +223,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
     }
   }, [checkOptionalPermissions, isExtensionPage, optionalHostPermissions, requestPermission])
 
-  // 执行撤销逻辑
+  // 
   const executeRevoke = async (perm: {
     id: string
     origins?: string[]
@@ -250,7 +250,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
       if (removed) {
         setOptionalPermissionStatus((prev) => ({ ...prev, [perm.id]: false }))
 
-        // 自动关闭相关设置
+        // 
         if (perm.id === "notifications") {
           updateNestedSetting("tab", "showNotification", false)
         } else if (perm.id === "webdav") {
@@ -268,21 +268,21 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
         }
       }
     } catch (e) {
-      console.error(`撤销权限 ${perm.id} 失败:`, sanitizeErrorMessage(e))
+      console.error(` ${perm.id} :`, sanitizeErrorMessage(e))
     } finally {
       setConfirmDialog((prev) => ({ ...prev, open: false }))
     }
   }
 
-  // 点击撤销按钮
+  // 
   const handleRevokeClick = (perm: { id: string; origins?: string[]; permissions?: string[] }) => {
     let confirmMsg =
-      t("revokeConfirmDefault") || "确定要撤销此权限吗？撤销后，依赖该权限的功能将会自动关闭。"
+      t("revokeConfirmDefault") || ""
 
     if (perm.id === "notifications") {
       confirmMsg =
         t("revokeConfirmNotifications") ||
-        "确定要撤销通知权限吗？\n\n撤销后，【桌面通知】功能将自动关闭。如需再次使用，需重新授权。"
+        "\n\n"
     } else if (perm.id === "webdav") {
       confirmMsg =
         t("revokeConfirmWebdav") ||
@@ -298,14 +298,14 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
 
   return (
     <div>
-      <PageTitle title={t("navPermissions") || "权限管理"} Icon={PermissionsIcon} />
-      <p className="settings-page-desc">{t("permissionsPageDesc") || "查看和管理扩展的权限。"}</p>
+      <PageTitle title={t("navPermissions") || ""} Icon={PermissionsIcon} />
+      <p className="settings-page-desc">{t("permissionsPageDesc") || ""}</p>
 
-      {/* 可选权限 */}
+      {/*  */}
       <SettingCard
-        title={t("optionalPermissions") || "可选权限"}
-        description={t("optionalPermissionsDesc") || "这些权限可以按需授予或撤销"}>
-        {/* 同步提示 + 刷新按钮 */}
+        title={t("optionalPermissions") || ""}
+        description={t("optionalPermissionsDesc") || ""}>
+        {/*  +  */}
         <div
           style={{
             display: "flex",
@@ -316,7 +316,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
             borderBottom: "1px solid var(--gh-border, #e5e7eb)",
           }}>
           <span style={{ fontSize: "13px", color: "var(--gh-text-secondary, #9ca3af)" }}>
-            {t("permissionsSyncHint") || "权限状态与浏览器同步，如在此页面外修改请点击刷新。"}
+            {t("permissionsSyncHint") || ""}
           </span>
           <button
             className="settings-btn settings-btn-secondary"
@@ -324,11 +324,11 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
               e.preventDefault()
               e.stopPropagation()
               await checkOptionalPermissions()
-              showToast(t("permissionsRefreshed") || "权限状态已刷新", 1500)
+              showToast(t("permissionsRefreshed") || "", 1500)
             }}
             disabled={loading}
             style={{ fontSize: "12px", padding: "4px 12px", flexShrink: 0 }}>
-            {loading ? t("refreshing") || "刷新中..." : t("refreshStatus") || "刷新状态"}
+            {loading ? t("refreshing") || "..." : t("refreshStatus") || ""}
           </button>
         </div>
 
@@ -354,7 +354,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
                       background: "rgba(16, 185, 129, 0.1)",
                       color: "#10b981",
                     }}>
-                    {t("granted") || "已授予"}
+                    {t("granted") || ""}
                   </span>
                   <button
                     className="settings-btn settings-btn-secondary"
@@ -364,7 +364,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
                       e.stopPropagation()
                       handleRevokeClick(perm)
                     }}>
-                    {t("revoke") || "撤销"}
+                    {t("revoke") || ""}
                   </button>
                 </>
               ) : (
@@ -377,7 +377,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
                       background: "rgba(239, 68, 68, 0.1)",
                       color: "#ef4444",
                     }}>
-                    {t("notGranted") || "未授予"}
+                    {t("notGranted") || ""}
                   </span>
                   <button
                     className="settings-btn settings-btn-primary"
@@ -387,7 +387,7 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
                       e.stopPropagation()
                       requestPermission(perm)
                     }}>
-                    {t("allowRecommended") || "允许（推荐）"}
+                    {t("allowRecommended") || ""}
                   </button>
                 </>
               )}
@@ -396,10 +396,10 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
         ))}
       </SettingCard>
 
-      {/* 必需权限（只读展示） */}
+      {/*  */}
       <SettingCard
-        title={t("requiredPermissions") || "必需权限"}
-        description={t("requiredPermissionsDesc") || "这些权限是扩展正常运行所必需的，无法关闭"}>
+        title={t("requiredPermissions") || ""}
+        description={t("requiredPermissionsDesc") || ""}>
         {REQUIRED_PERMISSIONS.map((perm, index) => (
           <SettingRow
             key={perm.id}
@@ -419,19 +419,19 @@ const PermissionsPage: React.FC<PermissionsPageProps> = () => {
                 background: "rgba(107, 114, 128, 0.1)",
                 color: "var(--gh-text-secondary, #6b7280)",
               }}>
-              {t("required") || "必需"}
+              {t("required") || ""}
             </span>
           </SettingRow>
         ))}
       </SettingCard>
 
-      {/* 确认弹窗 */}
+      {/*  */}
       {confirmDialog.open && (
         <ConfirmDialog
-          title={t("warning") || "警告"}
+          title={t("warning") || ""}
           message={confirmDialog.message}
-          confirmText={t("confirm") || "确定"}
-          cancelText={t("cancel") || "取消"}
+          confirmText={t("confirm") || ""}
+          cancelText={t("cancel") || ""}
           danger={true}
           onConfirm={confirmDialog.onConfirm}
           onCancel={() => setConfirmDialog((prev) => ({ ...prev, open: false }))}

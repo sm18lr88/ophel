@@ -1,6 +1,6 @@
 /**
- * 标签组组件
- * 页面顶部的二级导航标签切换器
+ * 
+ * 
  */
 import React from "react"
 
@@ -10,11 +10,11 @@ export interface Tab {
 }
 
 export interface TabGroupProps {
-  /** 标签列表 */
+  /**  */
   tabs: Tab[]
-  /** 当前激活的标签 ID */
+  /**  ID */
   activeTab: string
-  /** 标签切换回调 */
+  /**  */
   onTabChange: (tabId: string) => void
 }
 

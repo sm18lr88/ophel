@@ -1,16 +1,6 @@
 /**
- * Grok 适配器（grok.com 独立站点）
  *
- * 选择器策略：
- * - 使用 data-* 属性（如 data-sidebar）- 稳定
- * - 使用语义化 CSS 类名（如 .tiptap.ProseMirror）- 稳定，Tailwind 命名
- * - 使用元素 ID（如 #model-select-trigger）- 稳定
- * - 使用标准 HTML 属性（如 contenteditable, type="submit"）
  *
- * 主题机制：
- * - localStorage.getItem("theme") 存储 "light" | "dark" | "system"
- * - document.documentElement.classList 包含 "light" 或 "dark"
- * - document.documentElement.style.colorScheme 同步
  */
 import { SITE_IDS } from "~constants"
 import { setSafeHTML } from "~utils/trusted-types"
@@ -39,22 +29,30 @@ const DELETE_REASON = {
 const DELETE_KEYWORDS = [
   "delete",
   "remove",
-  "删除",
-  "刪除",
+  "delete",
+  "delete",
   "supprimer",
   "eliminar",
   "löschen",
-  "削除",
+  "delete",
   "삭제",
   "удал",
   "excluir",
 ]
 
-const CONFIRM_KEYWORDS = ["confirm", "ok", "yes", "确定", "確認", "确认", "確定", "check"]
+const CONFIRM_KEYWORDS = [
+  "confirm",
+  "ok",
+  "yes",
+  "confirm",
+  "confirm",
+  "confirm",
+  "confirm",
+  "check",
+]
 
 export class GrokAdapter extends SiteAdapter {
   match(): boolean {
-    // 匹配 grok.com 独立站点
     const hostname = window.location.hostname
     return hostname === "grok.com" || hostname.endsWith(".grok.com")
   }
@@ -68,7 +66,6 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getThemeColors(): { primary: string; secondary: string } {
-    // Grok 官方主题色
     return { primary: "#f39c12", secondary: "#1e1f22" }
   }
 
@@ -78,11 +75,9 @@ export class GrokAdapter extends SiteAdapter {
 
   isNewConversation(): boolean {
     const path = window.location.pathname
-    // 根路径是新对话页面
     return path === "/" || path === ""
   }
 
-  // 缓存弹窗中的会话数据（用于同步时弹窗已关闭的情况）
   private cachedDialogConversations: Map<string, ConversationInfo> | null = null
 
   private reloadScheduled = false
@@ -91,21 +86,16 @@ export class GrokAdapter extends SiteAdapter {
     const sidebar = document.querySelector('[data-sidebar="content"]')
     if (!sidebar) return
 
-    // 使用 CSS 类特征定位"查看全部"按钮，避免依赖文本
-    // 特征：button, w-full, justify-start, text-xs, text-secondary
-    // 这些 Tailwind 类名描述了按钮的视觉样式（全宽、左对齐、小字体、次要颜色），相对稳定
     const viewAllBtn = sidebar.querySelector(
       "button.w-full.justify-start.text-xs.text-secondary.font-semibold",
     )
 
     if (viewAllBtn) {
-      // 显示同步提示
       const { showToast } = await import("~utils/toast")
       const { t } = await import("~utils/i18n")
-      showToast(t("grokSyncingConversations") || "正在同步会话，请稍候...")
+      showToast(t("grokSyncingConversations") || "Syncing conversations, please wait...")
       ;(viewAllBtn as HTMLElement).click()
 
-      // 轮询等待对话框出现（最多 3 秒）
       let cmdkList: Element | null = null
       for (let i = 0; i < 30; i++) {
         await new Promise((resolve) => setTimeout(resolve, 100))
@@ -113,7 +103,6 @@ export class GrokAdapter extends SiteAdapter {
         if (cmdkList) break
       }
 
-      // 多次滚动，确保虚拟列表加载全部内容
       if (cmdkList) {
         let prevHeight = 0
         let stableCount = 0
@@ -126,7 +115,6 @@ export class GrokAdapter extends SiteAdapter {
           const currentHeight = cmdkList.scrollHeight
           if (currentHeight === prevHeight) {
             stableCount++
-            // 连续3次高度不变，认为已加载完毕
             if (stableCount >= 3) break
           } else {
             stableCount = 0
@@ -135,14 +123,10 @@ export class GrokAdapter extends SiteAdapter {
         }
       }
 
-      // 在关闭弹窗之前，缓存弹窗中的所有会话
-      // 这样 getConversationList 在弹窗关闭后仍然可以返回这些数据
       this.cacheDialogConversations()
 
-      // 自动关闭弹窗：模拟按下 ESC 键（避免 target 不是元素导致快捷键处理报错）
       this.dispatchEscapeKey()
 
-      // 5 秒后清除缓存，确保后续调用使用实时数据
       setTimeout(() => {
         this.cachedDialogConversations = null
       }, 5000)
@@ -151,11 +135,9 @@ export class GrokAdapter extends SiteAdapter {
     }
   }
 
-  /** 缓存弹窗中的会话数据 */
   private cacheDialogConversations(): void {
     const cache = new Map<string, ConversationInfo>()
 
-    // 扫描所有 cmdk 对话框中的会话链接
     const allLinks = document.querySelectorAll('a[href^="/c/"]')
     allLinks.forEach((link) => {
       const href = link.getAttribute("href")
@@ -169,7 +151,6 @@ export class GrokAdapter extends SiteAdapter {
       let isActive = false
       const isPinned = false
 
-      // 识别 cmdk 对话框项
       const cmdkItem = link.closest("[cmdk-item]")
       if (cmdkItem) {
         const titleSpan = cmdkItem.querySelector("span.truncate")
@@ -191,21 +172,16 @@ export class GrokAdapter extends SiteAdapter {
     this.cachedDialogConversations = cache
   }
 
-  // ==================== 会话管理 ====================
-
   getConversationList(): ConversationInfo[] {
     const conversationMap = new Map<string, ConversationInfo>()
 
-    // 1. 优先扫描侧边栏（获取置顶状态）
     const sidebar = document.querySelector('[data-sidebar="content"]')
     if (sidebar) {
       const groups = sidebar.querySelectorAll('[data-sidebar="group"]')
       groups.forEach((group) => {
-        // 侧边栏中的链接
         const links = group.querySelectorAll('a[href^="/c/"]')
         if (links.length === 0) return
 
-        // 置顶判断：没有 sticky 日期标题的分组
         const hasStickyDateHeader = group.querySelector(".sticky") !== null
         const isPinnedGroup = !hasStickyDateHeader
 
@@ -215,7 +191,6 @@ export class GrokAdapter extends SiteAdapter {
 
           const id = this.extractConversationIdFromHref(href)
           if (!id) return
-          // 侧边栏标题提取：a > span
           const titleSpan = link.querySelector("span.flex-1, span.truncate, span")
           const title = titleSpan?.textContent?.trim() || link.textContent?.trim() || "New Chat"
           const isActive = link.classList.contains("bg-button-ghost-hover")
@@ -231,8 +206,6 @@ export class GrokAdapter extends SiteAdapter {
       })
     }
 
-    // 2. 扫描所有会话链接（补充对话框中的会话）
-    // 这能捕获"查看全部"对话框中的会话，无论选择器细节如何
     const allLinks = document.querySelectorAll('a[href^="/c/"]')
     allLinks.forEach((link) => {
       const href = link.getAttribute("href")
@@ -240,24 +213,18 @@ export class GrokAdapter extends SiteAdapter {
 
       const id = this.extractConversationIdFromHref(href)
       if (!id) return
-      if (conversationMap.has(id)) return // 已从侧边栏获取，跳过
+      if (conversationMap.has(id)) return
 
-      // 处理对话框（或其他位置）的会话
       let title = "New Chat"
       let isActive = false
-      const isPinned = false // 侧边栏以外默认不置顶
+      const isPinned = false
 
-      // 尝试识别 cmdk 对话框项
-      // 结构: div[cmdk-item] > a (empty) + div > ... > span.truncate
       const cmdkItem = link.closest("[cmdk-item]")
       if (cmdkItem) {
-        // 对话框标题提取：cmdk-item 内部查找
         const titleSpan = cmdkItem.querySelector("span.truncate")
         title = titleSpan?.textContent?.trim() || title
-        // 对话框激活状态：检查 current 标签
         isActive = cmdkItem.querySelector('[class*="border-border-l2"]') !== null
       } else {
-        // 其他情况的回退提取
         title = link.textContent?.trim() || title
       }
 
@@ -270,7 +237,6 @@ export class GrokAdapter extends SiteAdapter {
       })
     })
 
-    // 3. 合并缓存的弹窗会话数据（用于弹窗已关闭但缓存未过期的情况）
     if (this.cachedDialogConversations) {
       this.cachedDialogConversations.forEach((conv, id) => {
         if (!conversationMap.has(id)) {
@@ -283,15 +249,11 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getSidebarScrollContainer(): Element | null {
-    // 侧边栏内容区域使用 data-sidebar="content" 属性
     return document.querySelector('[data-sidebar="content"]')
   }
 
   getConversationObserverConfig(): ConversationObserverConfig | null {
     return {
-      // 同时匹配侧边栏和 cmdk 对话框中的会话链接
-      // - 侧边栏：[data-sidebar="content"] a[href^="/c/"]
-      // - 对话框：[cmdk-item][data-value^="conversation:"] a[href^="/c/"]
       selector:
         '[data-sidebar="content"] a[href^="/c/"], [cmdk-item][data-value^="conversation:"] a[href^="/c/"]',
       shadow: false,
@@ -301,7 +263,6 @@ export class GrokAdapter extends SiteAdapter {
         const id = this.extractConversationIdFromHref(href)
         if (!id) return null
 
-        // 判断来源：侧边栏还是对话框
         const isFromSidebar = !!el.closest('[data-sidebar="content"]')
         const isFromCmdk = !!el.closest("[cmdk-item]")
 
@@ -311,7 +272,6 @@ export class GrokAdapter extends SiteAdapter {
         if (isFromSidebar) {
           const titleSpan = el.querySelector("span.flex-1, span.truncate, span")
           title = titleSpan?.textContent?.trim() || el.textContent?.trim() || ""
-          // 通过检查分组是否有 sticky 日期标题判断置顶（语言无关）
           const group = el.closest('[data-sidebar="group"]')
           const hasStickyDateHeader = group?.querySelector(".sticky") !== null
           isPinned = !hasStickyDateHeader
@@ -319,18 +279,16 @@ export class GrokAdapter extends SiteAdapter {
           const cmdkItem = el.closest("[cmdk-item]")
           const titleSpan = cmdkItem?.querySelector("span.truncate")
           title = titleSpan?.textContent?.trim() || ""
-          isPinned = false // 对话框中无法判断置顶
+          isPinned = false
         }
 
         return { id, title, url: href, isPinned }
       },
       getTitleElement: (el: Element) => {
-        // 优先从对话框 cmdk-item 中找
         const cmdkItem = el.closest("[cmdk-item]")
         if (cmdkItem) {
           return cmdkItem.querySelector("span.truncate") || el
         }
-        // 否则从侧边栏找
         return el.querySelector("span.flex-1, span.truncate, span") || el
       },
     }
@@ -341,7 +299,6 @@ export class GrokAdapter extends SiteAdapter {
       window.location.href = url
       return true
     }
-    // 使用正确的 /c/ 路径格式
     window.location.href = `/c/${id}`
     return true
   }
@@ -985,7 +942,6 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getSessionName(): string | null {
-    // 从页面标题获取
     const title = document.title
     if (title && title !== DEFAULT_TITLE) {
       return title.replace(` - ${DEFAULT_TITLE}`, "").trim()
@@ -994,7 +950,6 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getConversationTitle(): string | null {
-    // 尝试从页面标题获取
     const title = document.title
     if (title && title !== DEFAULT_TITLE) {
       return title.replace(` - ${DEFAULT_TITLE}`, "").trim()
@@ -1003,24 +958,20 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getNewChatButtonSelectors(): string[] {
-    // 新对话按钮通常在侧边栏顶部
     return [
       'a[href="/"]',
       '[data-sidebar="header"] a',
-      'button[aria-label*="新"]',
+      'button[aria-label*="New"]',
       'button[aria-label*="New"]',
     ]
   }
 
   getLatestReplyText(): string | null {
-    // AI 回复：没有 rounded-br-lg 的 .message-bubble（用户消息有此类）
     const aiMessages = document.querySelectorAll(".message-bubble:not(.rounded-br-lg)")
     if (aiMessages.length === 0) return null
 
-    // 获取最后一个 AI 回复
     const lastMessage = aiMessages[aiMessages.length - 1]
 
-    // 从 .response-content-markdown 提取内容
     const contentContainer = lastMessage.querySelector(".response-content-markdown")
     if (contentContainer) {
       return this.extractTextWithLineBreaks(contentContainer)
@@ -1029,13 +980,7 @@ export class GrokAdapter extends SiteAdapter {
     return this.extractTextWithLineBreaks(lastMessage)
   }
 
-  // ==================== 页面宽度控制 ====================
-
-  // ==================== 页面宽度控制 ====================
-
   getWidthSelectors() {
-    // Grok 使用 CSS 变量 --content-max-width 控制主内容区域宽度
-    // 该变量定义在包含响应式断点的容器上
     return [
       {
         selector: '[class*="--content-max-width"]',
@@ -1045,8 +990,6 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getUserQueryWidthSelectors() {
-    // Grok 用户消息气泡使用 .message-bubble.rounded-br-lg 类
-    // 默认有 max-w-[100%] 和响应式 @sm/mainview:max-w-[90%]
     return [
       {
         selector: ".message-bubble.rounded-br-lg",
@@ -1055,10 +998,7 @@ export class GrokAdapter extends SiteAdapter {
     ]
   }
 
-  // ==================== 输入框操作 ====================
-
   getTextareaSelectors(): string[] {
-    // Grok 使用 Tiptap 富文本编辑器
     return [
       ".tiptap.ProseMirror[contenteditable='true']",
       '[contenteditable="true"].ProseMirror',
@@ -1068,7 +1008,6 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getSubmitButtonSelectors(): string[] {
-    // 发送按钮是 type="submit" 的按钮
     return [
       'button[type="submit"]',
       'form button[type="submit"]',
@@ -1079,7 +1018,6 @@ export class GrokAdapter extends SiteAdapter {
   isValidTextarea(element: HTMLElement): boolean {
     if (element.offsetParent === null) return false
     if (element.closest(".gh-main-panel")) return false
-    // 必须是 contenteditable 的元素
     return element.getAttribute("contenteditable") === "true"
   }
 
@@ -1094,16 +1032,12 @@ export class GrokAdapter extends SiteAdapter {
 
     editor.focus()
 
-    // Tiptap 编辑器使用 contenteditable
     if (editor.getAttribute("contenteditable") === "true") {
-      // 清空现有内容并插入新内容
       editor.replaceChildren()
       const paragraph = document.createElement("p")
       paragraph.textContent = content
       editor.appendChild(paragraph)
-      // 触发 input 事件通知 Tiptap
       editor.dispatchEvent(new Event("input", { bubbles: true }))
-      // 将光标移到末尾
       const selection = window.getSelection()
       if (selection) {
         const range = document.createRange()
@@ -1127,7 +1061,6 @@ export class GrokAdapter extends SiteAdapter {
 
     this.textarea.focus()
     if (this.textarea.getAttribute("contenteditable") === "true") {
-      // 清空 Tiptap 编辑器
       this.textarea.replaceChildren()
       const paragraph = document.createElement("p")
       paragraph.className = "is-empty is-editor-empty"
@@ -1139,24 +1072,18 @@ export class GrokAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 滚动容器 ====================
-
   getScrollContainer(): HTMLElement | null {
-    // 主内容区域的滚动容器
     const main = document.querySelector("main")
     if (main) {
-      // 查找可滚动的子元素
       const scrollable = main.querySelector('[class*="overflow-auto"]') as HTMLElement
       if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
         return scrollable
       }
-      // 或者 main 本身可滚动
       if (main.scrollHeight > main.clientHeight) {
         return main as HTMLElement
       }
     }
 
-    // 回退：查找任何大的可滚动容器
     const containers = document.querySelectorAll(
       '[class*="overflow-y-auto"], [class*="overflow-auto"]',
     )
@@ -1175,15 +1102,10 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getChatContentSelectors(): string[] {
-    // 消息内容使用 prose 类名
     return ['[class*="prose"]', '[dir="ltr"]']
   }
 
-  // ==================== 大纲提取 ====================
-
   getUserQuerySelector(): string {
-    // 用户消息气泡特征：.message-bubble 且有右下角圆角 rounded-br-lg
-    // 这是区分用户消息和 AI 消息的关键特征
     return ".message-bubble.rounded-br-lg"
   }
 
@@ -1192,12 +1114,9 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   extractUserQueryMarkdown(element: Element): string {
-    // Grok 用户消息结构：
     // .message-bubble.rounded-br-lg > div.relative > div.relative > .response-content-markdown
-    // 内部直接是 <p> 标签，需要提取文本并还原 Markdown
     const markdownContainer = element.querySelector(".response-content-markdown")
     if (markdownContainer) {
-      // 提取所有 <p> 标签的文本，用换行连接
       const paragraphs = markdownContainer.querySelectorAll("p")
       if (paragraphs.length > 0) {
         return Array.from(paragraphs)
@@ -1210,21 +1129,16 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   replaceUserQueryContent(element: Element, html: string): boolean {
-    // Grok 用户消息结构：
     // .message-bubble.rounded-br-lg > div.relative > div.relative > .response-content-markdown
-    // 内部直接是 <p> 标签，没有 .whitespace-pre-wrap 容器
     const markdownContainer = element.querySelector(".response-content-markdown")
     if (!markdownContainer) return false
 
-    // 检查是否已经处理过
     if (markdownContainer.querySelector(".gh-user-query-markdown")) {
       return false
     }
 
-    // 保存原始内容的引用（用于恢复）
     const originalContent = Array.from(markdownContainer.children)
 
-    // 创建原内容包装器并隐藏
     const originalWrapper = document.createElement("div")
     originalWrapper.className = "gh-user-query-original"
     originalWrapper.style.display = "none"
@@ -1233,24 +1147,19 @@ export class GrokAdapter extends SiteAdapter {
     })
     markdownContainer.appendChild(originalWrapper)
 
-    // 创建渲染容器
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
     setSafeHTML(rendered, html)
 
-    // 插入到 markdownContainer 开头
     markdownContainer.insertBefore(rendered, originalWrapper)
     return true
   }
 
   getExportConfig(): ExportConfig | null {
-    // 配置导出功能
-    // 注意：这里的选择器是基于推测的，后续可能需要根据实际 DOM 调整
     return {
       userQuerySelector: this.getUserQuerySelector(),
-      // AI 回复：没有 rounded-br-lg 的 .message-bubble（用户消息有此类）
       assistantResponseSelector: ".message-bubble:not(.rounded-br-lg) .response-content-markdown",
-      turnSelector: "", // 不使用 turn 选择器，直接通过 user/assistant 选择器匹配
+      turnSelector: "",
       useShadowDOM: false,
     }
   }
@@ -1260,9 +1169,7 @@ export class GrokAdapter extends SiteAdapter {
     const container = document.querySelector(this.getResponseContainerSelector())
     if (!container) return outline
 
-    // 辅助：获取消息 ID (Response ID)
     const getResponseId = (el: Element): string | null => {
-      // 往上找 id 以 response- 开头的 div
       const responseDiv = el.closest('[id^="response-"]')
       if (responseDiv) {
         return responseDiv.id
@@ -1270,7 +1177,6 @@ export class GrokAdapter extends SiteAdapter {
       return null
     }
 
-    // 辅助：生成标题 ID
     const msgHeaderCounts: Record<string, Record<string, number>> = {}
     const generateHeaderId = (msgId: string, tagName: string, text: string): string => {
       if (!msgHeaderCounts[msgId]) msgHeaderCounts[msgId] = {}
@@ -1280,11 +1186,8 @@ export class GrokAdapter extends SiteAdapter {
       return `${msgId}::${key}::${count}`
     }
 
-    // 计算用户提问的字数（统计后续 AI 回复）
     const userQuerySelector = this.getUserQuerySelector()
     const calculateUserQueryWordCount = (startEl: Element): number => {
-      // Grok 结构：用户消息和 AI 消息各自在独立的 #response-{id} 容器中
-      // 需要先找到父容器，然后遍历父容器的 siblings
       const parentContainer = startEl.closest('[id^="response-"]')
       if (!parentContainer) return 0
 
@@ -1292,13 +1195,11 @@ export class GrokAdapter extends SiteAdapter {
       let totalLength = 0
 
       while (current) {
-        // 检查是否是下一个用户消息的容器
         const userQueryInThis = current.querySelector(userQuerySelector)
         if (userQueryInThis) {
-          break // 遇到下一个用户提问的容器，结束
+          break
         }
 
-        // 查找 AI 回复内容：没有 rounded-br-lg 的 message-bubble
         const aiMessage = current.querySelector(".message-bubble:not(.rounded-br-lg)")
         if (aiMessage) {
           const markdownContent = aiMessage.querySelector(".response-content-markdown")
@@ -1310,17 +1211,13 @@ export class GrokAdapter extends SiteAdapter {
         current = current.nextElementSibling
       }
 
-      // Fallback：如果没有找到任何内容（可能是最后一条消息正在生成中）
-      // 尝试从整个 container 中查找跟在当前用户消息之后的 AI 回复
       if (totalLength === 0) {
         const allAiMessages = container.querySelectorAll(".message-bubble:not(.rounded-br-lg)")
         for (const aiMsg of Array.from(allAiMessages)) {
-          // 检查这个 AI 消息是否在 startEl 之后
           const positionToStart = startEl.compareDocumentPosition(aiMsg)
           const isAfterStart = positionToStart & Node.DOCUMENT_POSITION_FOLLOWING
           if (!isAfterStart) continue
 
-          // 检查是否在下一个用户消息之前
           const nextUserQuery =
             startEl.parentElement?.nextElementSibling?.querySelector(userQuerySelector)
           if (nextUserQuery) {
@@ -1339,7 +1236,6 @@ export class GrokAdapter extends SiteAdapter {
       return totalLength
     }
 
-    // 不包含用户提问时，只提取标题
     if (!includeUserQueries) {
       const headingSelectors: string[] = []
       for (let i = 1; i <= maxLevel; i++) {
@@ -1364,7 +1260,6 @@ export class GrokAdapter extends SiteAdapter {
             item.id = generateHeaderId(msgId, tagName, item.text)
           }
 
-          // 字数统计
           if (showWordCount) {
             let nextBoundaryEl: Element | null = null
             for (let i = index + 1; i < headings.length; i++) {
@@ -1375,7 +1270,6 @@ export class GrokAdapter extends SiteAdapter {
                 break
               }
             }
-            // 查找所属的 response container
             const responseContainer = heading.closest('[id^="response-"]')
             item.wordCount = this.calculateRangeWordCount(
               heading,
@@ -1390,7 +1284,6 @@ export class GrokAdapter extends SiteAdapter {
       return outline
     }
 
-    // 包含用户提问的模式：按 DOM 顺序遍历用户提问和标题
     const headingSelectors: string[] = []
     for (let i = 1; i <= maxLevel; i++) {
       headingSelectors.push(`h${i}`)
@@ -1482,18 +1375,14 @@ export class GrokAdapter extends SiteAdapter {
     return outline
   }
 
-  // ==================== 生成状态检测 ====================
-
   isGenerating(): boolean {
-    // 检查是否有停止按钮可见
     const stopButton = document.querySelector(
-      'button[aria-label*="停止"], button[aria-label*="Stop"]',
+      'button[aria-label*="Stop"], button[aria-label*="Stop"]',
     )
     if (stopButton && (stopButton as HTMLElement).offsetParent !== null) {
       return true
     }
 
-    // 检查是否有加载动画
     const loading = document.querySelector('[class*="loading"], [class*="animate-pulse"]')
     if (loading && (loading as HTMLElement).offsetParent !== null) {
       return true
@@ -1503,10 +1392,8 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getModelName(): string | null {
-    // 使用稳定的模型选择器按钮 ID
     const modelBtn = document.querySelector("#model-select-trigger")
     if (modelBtn) {
-      // 模型名称在按钮内部的 span 中
       const span = modelBtn.querySelector(".font-semibold")
       if (span) {
         return span.textContent?.trim() || null
@@ -1517,16 +1404,11 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   getNetworkMonitorConfig(): NetworkMonitorConfig | null {
-    // 精准匹配 Grok 的流式 API 路径
-    // 接口格式：/rest/app-chat/conversations/{id}/responses
-    // 该接口使用 NDJSON 流式输出，通过 isSoftStop: true 标记生成结束
     return {
       urlPatterns: ["rest/app-chat/conversations"],
       silenceThreshold: 500,
     }
   }
-
-  // ==================== 模型锁定 ====================
 
   getDefaultLockSettings(): { enabled: boolean; keyword: string } {
     return { enabled: false, keyword: "" }
@@ -1544,8 +1426,6 @@ export class GrokAdapter extends SiteAdapter {
   }
 
   /**
-   * 覆盖点击模拟方法
-   * Grok 使用 Radix UI，需要完整的 PointerEvent 序列才能触发菜单
    */
   protected simulateClick(element: HTMLElement): void {
     const eventTypes = ["pointerdown", "mousedown", "pointerup", "mouseup", "click"]
@@ -1589,26 +1469,17 @@ export class GrokAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 主题切换 ====================
-
   /**
-   * 切换 Grok 主题
-   * Grok 使用 localStorage("theme") 和 document.documentElement.classList 控制主题
-   * @param targetMode 目标主题模式
    */
   async toggleTheme(targetMode: "light" | "dark"): Promise<boolean> {
     try {
-      // 更新 localStorage
       localStorage.setItem("theme", targetMode)
 
-      // 更新 document.documentElement 的类
       document.documentElement.classList.remove("light", "dark")
       document.documentElement.classList.add(targetMode)
 
-      // 更新 color-scheme
       document.documentElement.style.colorScheme = targetMode
 
-      // 触发 storage 事件以通知其他可能监听的代码
       window.dispatchEvent(
         new StorageEvent("storage", {
           key: "theme",

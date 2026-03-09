@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 浅色主题 (太阳)
- * 风格：Outline (stroke-based)
+ * SVG  -  ()
+ * Outline (stroke-based)
  */
 import React from "react"
 
@@ -26,9 +26,9 @@ export const ThemeLightIcon: React.FC<IconProps> = ({
     strokeLinejoin="round"
     className={className}
     style={{ display: "block" }}>
-    {/* 太阳中心 */}
+    {/*  */}
     <circle cx="12" cy="12" r="4" />
-    {/* 光线 */}
+    {/*  */}
     <line x1="12" y1="2" x2="12" y2="4" />
     <line x1="12" y1="20" x2="12" y2="22" />
     <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" />

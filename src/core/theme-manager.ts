@@ -1,7 +1,4 @@
 /**
- * 主题管理器
- * 处理亮/暗模式切换，支持主题预置系统
- * 通过动态注入 CSS 变量实现 Shadow DOM 内的主题切换
  */
 
 import type { SiteAdapter } from "~adapters/base"
@@ -29,10 +26,8 @@ declare global {
   }
 }
 
-// 主题变化回调类型
 export type ThemeModeChangeCallback = (mode: ThemeMode, preference: ThemePreference) => void
 
-// 订阅者类型
 type Listener = () => void
 
 export class ThemeManager {
@@ -44,9 +39,9 @@ export class ThemeManager {
   private themeObserver: MutationObserver | null = null
   private onModeChange?: ThemeModeChangeCallback
   private adapter?: SiteAdapter | null
-  private customStyles: CustomStyle[] = [] // 存储自定义样式列表
-  private skipNextDetection = false // 标志：跳过下一次主题检测（用于 toggle 后避免被 monitorTheme 反悔）
-  private listeners: Set<Listener> = new Set() // 订阅者集合
+  private customStyles: CustomStyle[] = []
+  private skipNextDetection = false
+  private listeners: Set<Listener> = new Set()
   private systemMediaQuery: MediaQueryList | null = null
   private handleSystemChange = (event: MediaQueryListEvent) => {
     if (this.preference !== "system") return
@@ -76,7 +71,6 @@ export class ThemeManager {
     this.onModeChange = onModeChange
     this.adapter = adapter
 
-    // 注入全局动画样式 (View Transitions 需要在主文档生效)
     this.injectGlobalStyles()
     this.ensureSystemListener()
   }
@@ -243,8 +237,6 @@ export class ThemeManager {
   }
 
   /**
-   * 注入全局样式到主文档 head
-   * 主要是 View Transitions 相关的样式，因为它们必须在 document context 下才生效
    */
   private injectGlobalStyles() {
     if (document.getElementById("gh-global-styles")) return
@@ -266,22 +258,18 @@ export class ThemeManager {
   }
 
   /**
-   * 设置适配器引用（用于调用适配器的 toggleTheme 方法）
    */
   setAdapter(adapter: SiteAdapter | null) {
     this.adapter = adapter
   }
 
   /**
-   * 动态设置主题变化回调（用于 React 组件动态注册）
-   * 这使得单一 ThemeManager 实例可以在 main.ts 创建后，由 App.tsx 动态注册回调
    */
   setOnModeChange(callback: ThemeModeChangeCallback | undefined) {
     this.onModeChange = callback
   }
 
   /**
-   * 更新模式并应用
    */
   updateMode(mode: ThemePreference | string) {
     const normalizedPreference: ThemePreference =
@@ -297,11 +285,8 @@ export class ThemeManager {
   }
 
   /**
-   * 检测当前页面的实际主题状态
-   * 优先级：html Class (ChatGPT) > body Class (Gemini) > Data Attribute > Style (colorScheme)
    */
   private detectCurrentTheme(): ThemeMode {
-    // 1. html 元素的 class（ChatGPT 使用 html.dark / html.light）
     const htmlClass = document.documentElement.className
     if (/\bdark\b/i.test(htmlClass)) {
       return "dark"
@@ -309,7 +294,6 @@ export class ThemeManager {
       return "light"
     }
 
-    // 2. body 元素的 class（Gemini 标准版使用 body.dark-theme）
     const bodyClass = document.body.className
     if (/\bdark-theme\b/i.test(bodyClass)) {
       return "dark"
@@ -317,7 +301,6 @@ export class ThemeManager {
       return "light"
     }
 
-    // 3. Data 属性
     const dataTheme = document.body.dataset.theme || document.documentElement.dataset.theme
     if (dataTheme === "dark") {
       return "dark"
@@ -325,7 +308,6 @@ export class ThemeManager {
       return "light"
     }
 
-    // 4. Style colorScheme (Gemini Enterprise 使用这种方式)
     if (document.body.style.colorScheme === "dark") {
       return "dark"
     }
@@ -417,7 +399,6 @@ export class ThemeManager {
   }
 
   /**
-   * 应用主题到网页
    */
   apply(targetMode?: ThemeMode) {
     const mode = targetMode || this.mode
@@ -435,12 +416,10 @@ export class ThemeManager {
       }
     }
 
-    // 同步插件 UI 主题
     this.syncPluginUITheme(mode)
   }
 
   /**
-   * 获取当前主题预置
    */
   private getCurrentPreset(): ThemePreset {
     const presetId = this.mode === "dark" ? this.darkPresetId : this.lightPresetId
@@ -448,7 +427,6 @@ export class ThemeManager {
   }
 
   /**
-   * 更新主题预置 ID
    */
   setPresets(lightPresetId: string, darkPresetId: string) {
     this.lightPresetId = lightPresetId
@@ -457,11 +435,9 @@ export class ThemeManager {
   }
 
   /**
-   * 设置自定义样式列表
    */
   setCustomStyles(styles: CustomStyle[]) {
     this.customStyles = styles || []
-    // 如果当前正在使用自定义样式，需要立即刷新
     const currentId = this.mode === "dark" ? this.darkPresetId : this.lightPresetId
     const isUsingCustom = this.customStyles.some((s) => s.id === currentId)
     if (isUsingCustom) {
@@ -470,28 +446,19 @@ export class ThemeManager {
   }
 
   /**
-   * 同步插件 UI 的主题状态
-   * 从主题预置读取 CSS 变量值，注入到 Shadow DOM
-   * ⭐ 暂停 MutationObserver 以避免循环触发
    */
   private syncPluginUITheme(mode?: ThemeMode) {
     const currentMode = mode || this.mode
     const root = document.documentElement
 
-    // 从预置系统获取当前主题的 CSS 变量
     const presetId = currentMode === "dark" ? this.darkPresetId : this.lightPresetId
 
-    // 尝试在自定义样式中查找
     const customStyle = this.customStyles.find((s) => s.id === presetId)
 
-    // 预置变量（如果不是自定义样式）
     let vars: ThemeVariables | null = null
 
     if (customStyle) {
-      // 如果是自定义样式，直接使用其 CSS
-      // 不需要获取 vars，因为我们会直接注入 CSS
     } else {
-      // 否则从预置系统获取
       try {
         const preset = getPreset(presetId, currentMode)
         vars = preset.variables
@@ -501,14 +468,11 @@ export class ThemeManager {
       }
     }
 
-    // 暂时断开 MutationObserver，避免循环触发
-    // 因为下面的 DOM 修改会触发 observer，导致 onModeChange 被意外调用
     const wasObserving = this.themeObserver !== null
     if (wasObserving) {
       this.themeObserver?.disconnect()
     }
 
-    // 设置 body 属性
     if (currentMode === "dark") {
       document.body.dataset.ghMode = "dark"
       document.body.style.colorScheme = "dark"
@@ -517,21 +481,17 @@ export class ThemeManager {
       document.body.style.colorScheme = "light"
     }
 
-    // 在 :root 上设置变量（仅对预置主题有效）
-    // 自定义样式通常包含选择器，可能直接覆盖 :root 这里的变量，或者通过 CSS 规则生效
     if (vars) {
       for (const [key, value] of Object.entries(vars)) {
         root.style.setProperty(key, value)
       }
     }
 
-    // 查找 Shadow Host：支持 Plasmo 扩展 (plasmo-csui) 和油猴脚本 (#ophel-userscript-root)
     const shadowHosts = document.querySelectorAll("plasmo-csui, #ophel-userscript-root")
 
     shadowHosts.forEach((host) => {
       const shadowRoot = host.shadowRoot
       if (shadowRoot) {
-        // 在 Shadow Root 内查找 style 标签或创建一个
         let styleEl = shadowRoot.querySelector("#gh-theme-vars") as HTMLStyleElement
         if (!styleEl) {
           styleEl = document.createElement("style")
@@ -539,14 +499,10 @@ export class ThemeManager {
         }
 
         if (customStyle) {
-          // 自定义样式：直接注入 CSS
           styleEl.textContent = customStyle.css
         } else if (vars) {
-          // 预置主题：生成变量定义
           const cssVars = themeVariablesToCSS(vars)
 
-          // 同时设置 data-theme 属性以便 CSS 选择器使用
-          // 并添加强制覆盖的样式
           styleEl.textContent = `:host {
 ${cssVars}
 color-scheme: ${currentMode};
@@ -558,23 +514,17 @@ ${cssVars}
 }
 `
         }
-        // 设置 host 元素的 data-theme 属性
         ;(host as HTMLElement).dataset.theme = currentMode
 
-        // 始终将样式标签移动/追加到 Shadow Root 末尾
-        // 这样可以覆盖 Plasmo 静态注入的默认浅色主题变量
         shadowRoot.append(styleEl)
       }
     })
 
-    // 恢复 MutationObserver
     if (wasObserving && this.themeObserver) {
-      // 重新观察 body 和 html 元素
       this.themeObserver.observe(document.body, {
         attributes: true,
         attributeFilter: ["class", "data-theme", "style"],
       })
-      // 同时监听 html 元素的 class 和 data-theme 属性（ChatGPT 使用 html.dark/light）
       this.themeObserver.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ["class", "data-theme"],
@@ -583,12 +533,9 @@ ${cssVars}
   }
 
   /**
-   * 启动主题监听器 (Auto Dark Mode)
-   * 监听页面主题变化，自动同步到面板
    */
   monitorTheme() {
     const checkTheme = () => {
-      // 如果是 toggle() 主动触发后的首次恢复，跳过检测以避免覆盖用户意图
       if (this.skipNextDetection) {
         this.skipNextDetection = false
         return
@@ -608,11 +555,9 @@ ${cssVars}
           this.syncPluginUITheme(nextMode)
         }
       } else {
-        // 同步到插件 UI (ghMode)
         this.syncPluginUITheme(nextMode)
       }
 
-      // 如果检测到的模式或偏好发生变化，更新并触发回调
       if (this.mode !== nextMode || this.preference !== nextPreference) {
         this.mode = nextMode
         this.preference = nextPreference
@@ -623,22 +568,18 @@ ${cssVars}
       }
     }
 
-    // 首次检查
     checkTheme()
 
-    // 如果已有 Observer，不重复创建
     if (!this.themeObserver) {
       this.themeObserver = new MutationObserver(() => {
         checkTheme()
       })
 
-      // 监听 body 的 class、data-theme、style 属性变化
       this.themeObserver.observe(document.body, {
         attributes: true,
         attributeFilter: ["class", "data-theme", "style"],
       })
 
-      // 同时监听 html 元素的 class 和 data-theme 属性（ChatGPT 使用 html.dark/light）
       this.themeObserver.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ["class", "data-theme"],
@@ -647,7 +588,6 @@ ${cssVars}
   }
 
   /**
-   * 停止主题监听
    */
   stopMonitoring() {
     if (this.themeObserver) {
@@ -721,9 +661,7 @@ ${cssVars}
         )
       })
 
-      await transition.finished.catch(() => {
-        // 忽略动画错误
-      })
+      await transition.finished.catch(() => {})
     } catch {
       action()
       this.monitorTheme()
@@ -736,23 +674,18 @@ ${cssVars}
   }
 
   /**
-   * 切换主题（User Action）- 带圆形扩散动画
-   * @param event 可选的鼠标事件，用于确定动画中心
    */
   async toggle(event?: MouseEvent): Promise<ThemeMode> {
-    // 使用 detectCurrentTheme 统一检测当前主题
     const currentMode = this.preference === "system" ? this.mode : this.detectCurrentTheme()
     const nextMode: ThemeMode = currentMode === "dark" ? "light" : "dark"
     this.preference = nextMode
 
-    // 计算动画起点坐标（从点击位置或默认右上角）
     let x = 95
     let y = 5
     if (event && event.clientX !== undefined) {
       x = (event.clientX / window.innerWidth) * 100
       y = (event.clientY / window.innerHeight) * 100
     } else {
-      // 尝试从主题按钮位置获取
       const themeBtn =
         document.getElementById("theme-toggle-btn") || document.getElementById("quick-theme-btn")
       if (themeBtn) {
@@ -762,24 +695,18 @@ ${cssVars}
       }
     }
 
-    // 设置 CSS 变量
     document.documentElement.style.setProperty("--theme-x", `${x}%`)
     document.documentElement.style.setProperty("--theme-y", `${y}%`)
 
-    // 暂停 MutationObserver，防止在 View Transition 期间触发额外的 DOM 修改
     this.stopMonitoring()
 
-    // 执行主题切换的核心逻辑
     const doToggle = () => {
-      // 优先使用适配器的原生切换逻辑 (针对 Gemini Enterprise)
       if (this.adapter && typeof this.adapter.toggleTheme === "function") {
         this.adapter.toggleTheme(nextMode).catch(() => {})
       }
-      // 同步应用主题（包括 Shadow DOM）
       this.apply(nextMode)
     }
 
-    // 检查是否支持 View Transitions API
     if (
       !document.startViewTransition ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -787,19 +714,15 @@ ${cssVars}
       doToggle()
       this.mode = nextMode
       this.emitChange()
-      // 无条件启动监听（确保网页主题变化能被检测）
       this.monitorTheme()
       return nextMode
     }
 
-    // 执行动画切换
     const transition = document.startViewTransition(() => {
       doToggle()
     })
 
-    // 等待伪元素创建后，执行自定义动画
     transition.ready.then(() => {
-      // 获取点击位置距离最远角落的距离（作为圆的半径）
       const right = window.innerWidth - (x / 100) * window.innerWidth
       const bottom = window.innerHeight - (y / 100) * window.innerHeight
       const maxRadius = Math.hypot(
@@ -807,11 +730,8 @@ ${cssVars}
         Math.max((y / 100) * window.innerHeight, bottom),
       )
 
-      // 定义圆形扩散动画
       const clipPath = [`circle(0px at ${x}% ${y}%)`, `circle(${maxRadius}px at ${x}% ${y}%)`]
 
-      // 统一使用扩散动画：新视图从中点扩散覆盖旧视图
-      // 配合 CSS 中 ::view-transition-new(root) 的初始 clip-path: circle(0px) 设置
       document.documentElement.animate(
         {
           clipPath: clipPath,
@@ -825,34 +745,20 @@ ${cssVars}
       )
     })
 
-    // 使用 finally 确保 MutationObserver 一定会恢复（即使动画失败）
-    // 等待动画完成后再返回，确保调用方等待动画真正完成
-    await transition.finished.catch(() => {
-      // 忽略动画错误
-    })
+    await transition.finished.catch(() => {})
 
-    // 标记跳过下一次检测，防止 monitorTheme 检测到错误的页面状态而覆盖用户意图
     this.skipNextDetection = true
-    // 触发回调通知 React 更新状态（动画完成后）
     if (this.onModeChange) {
       this.onModeChange(nextMode, this.preference)
     }
-    // 无条件启动监听（确保网页主题变化能被检测）
     this.monitorTheme()
 
-    // 更新内部状态
     this.mode = nextMode
     this.emitChange()
     return nextMode
   }
 
   /**
-   * 设置主题模式（绝对操作）
-   * 与 toggle() 不同，此方法明确指定目标模式，无论调用多少次结果都是确定的
-   * 如果当前已是目标模式，则不做任何操作
-   * @param targetMode 目标模式
-   * @param event 可选的鼠标事件，用于确定动画中心
-   * @returns 包含最终模式和是否触发了动画
    */
   async setMode(
     targetMode: ThemePreference,
@@ -887,7 +793,6 @@ ${cssVars}
 
     const currentMode = this.detectCurrentTheme()
 
-    // 如果已经是目标模式，仅更新偏好
     if (currentMode === normalizedPreference) {
       this.preference = normalizedPreference
       this.syncPageTheme(normalizedPreference, normalizedPreference)
@@ -897,28 +802,23 @@ ${cssVars}
       return { mode: normalizedPreference, animated: false }
     }
 
-    // 否则执行切换动画
     const resultMode = await this.toggle(event)
     return { mode: resultMode, animated: true }
   }
 
   /**
-   * 获取当前模式
    */
   getMode(): ThemeMode {
     return this.mode
   }
 
   /**
-   * 获取当前模式快照（用于 useSyncExternalStore）
    */
   getSnapshot = (): ThemeMode => {
     return this.mode
   }
 
   /**
-   * 订阅模式变化（用于 useSyncExternalStore）
-   * @returns 取消订阅函数
    */
   subscribe = (listener: Listener): (() => void) => {
     this.listeners.add(listener)
@@ -928,7 +828,6 @@ ${cssVars}
   }
 
   /**
-   * 通知所有订阅者模式已变化
    */
   private emitChange() {
     for (const listener of this.listeners) {
@@ -937,7 +836,6 @@ ${cssVars}
   }
 
   /**
-   * 销毁，清理资源
    */
   destroy() {
     this.stopMonitoring()

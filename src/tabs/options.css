@@ -1,11 +1,11 @@
 /**
- * Options Page 样式入口
- * 导入所有需要的样式
+ * Options Page 
+ * 
  */
 @import url("../styles/theme-variables.css");
 @import url("../styles/settings.css");
 
-/* 页面基础样式 */
+/*  */
 html,
 body {
   margin: 0;
@@ -18,7 +18,7 @@ body {
   height: 100%;
 }
 
-/* 确保输入框可选中文本 */
+/*  */
 input,
 textarea,
 select {

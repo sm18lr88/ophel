@@ -254,7 +254,7 @@ function IndexPopup() {
           target="_blank"
           rel="noopener noreferrer"
           className="popup-feedback-link">
-          {t("popupFeedback") || "反馈"}
+          {t("popupFeedback") || "Feedback"}
         </a>
       </div>
 

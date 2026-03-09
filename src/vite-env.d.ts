@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 
 /**
- * Vite 类型声明
+ * Vite 
  *
- * 用于油猴脚本构建，声明 ?inline 后缀导入的类型
+ *  ?inline 
  */
 
 declare module "*?inline" {

@@ -15,6 +15,4 @@ export const config: PlasmoCSConfig = {
   world: "MAIN",
 }
 
-// 初始化 NetworkMonitor
-// 此文件作为 Main World Sciprt 注入，运行在页面上下文中
 initNetworkMonitor()

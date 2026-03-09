@@ -23,7 +23,7 @@ interface QuickButtonsProps {
   onPanelToggle: () => void
   onThemeToggle?: () => void
   themeMode?: "light" | "dark"
-  // 工具栏功能
+  // 
   onExport?: () => void
   onMove?: () => void
   onSetTag?: () => void
@@ -32,7 +32,7 @@ interface QuickButtonsProps {
   onCleanup?: () => void
   onGlobalSearch?: () => void
   scrollLocked?: boolean
-  // 新增功能
+  // 
   onCopyMarkdown?: () => void
   onModelLockToggle?: () => void
   isModelLocked?: boolean
@@ -67,11 +67,11 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const DRAG_THRESHOLD_PX = 6
   const DRAG_PADDING_PX = 8
 
-  // 工具菜单状态
+  // 
   const groupRef = useRef<HTMLDivElement>(null)
   const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false)
 
-  // 点击外部关闭菜单
+  // 
   useEffect(() => {
     if (!isToolsMenuOpen) return
     const handleClickOutside = (e: MouseEvent) => {
@@ -95,32 +95,32 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
   const pointerIdRef = useRef<number | null>(null)
   const suppressClickRef = useRef(false)
 
-  // 锚点状态（使用全局存储）
+  // 
   const anchorPosition = useSyncExternalStore(anchorStore.subscribe, anchorStore.getSnapshot)
   const hasAnchor = anchorPosition !== null
 
-  // 悬浮隐藏状态
+  // 
   const [_isHovered, setIsHovered] = useState(false)
   // groupRef moved to top
 
-  // 获取适配器
+  // 
   const adapter = getAdapter()
 
-  // 跟踪是否处于 Flutter 模式（图文并茂）
+  //  Flutter 
   const [_isFlutterMode, setIsFlutterMode] = useState(false)
 
-  // 加载状态
+  // 
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [loadingText, setLoadingText] = useState("")
   const abortLoadingRef = useRef(false)
 
-  // 滚动到顶部（支持图文并茂模式）
+  // 
   const scrollToTop = useCallback(async () => {
-    // 遮罩延迟显示
+    // 
     const OVERLAY_DELAY_MS = 1600
     abortLoadingRef.current = false
 
-    // 创建 AbortController 用于中断
+    //  AbortController 
     const abortController = new AbortController()
     const checkAbort = () => {
       if (abortLoadingRef.current) {
@@ -129,7 +129,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     }
     const abortCheckInterval = setInterval(checkAbort, 100)
 
-    // 延迟显示遮罩的定时器
+    // 
     let overlayTimer: ReturnType<typeof window.setTimeout> | null = setTimeout(() => {
       if (!abortLoadingRef.current) {
         setIsLoadingHistory(true)
@@ -138,22 +138,22 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     }, OVERLAY_DELAY_MS)
 
     try {
-      // 使用公共 HistoryLoader
+      //  HistoryLoader
       const result = await loadHistoryUntil({
         adapter,
         loadAll: true,
         signal: abortController.signal,
-        allowShortCircuit: true, // 用户主动点击，启用短对话短路
+        allowShortCircuit: true, // 
         onProgress: (msg) => {
           setLoadingText(`${t("loadingHistory")} ${msg}`)
         },
       })
 
-      // 保存锚点到全局存储
+      // 
       anchorStore.set(result.previousScrollTop)
       setIsFlutterMode(result.isFlutterMode)
 
-      // 清理遮罩
+      // 
       if (overlayTimer) {
         window.clearTimeout(overlayTimer)
         overlayTimer = null
@@ -161,7 +161,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
       setIsLoadingHistory(false)
       setLoadingText("")
 
-      // 显示完成提示（静默模式不显示）
+      // 
       if (result.success && !result.silent) {
         showToast(t("historyLoaded"), 2000)
       }
@@ -173,49 +173,49 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     }
   }, [adapter])
 
-  // 停止加载
+  // 
   const stopLoading = useCallback(() => {
     abortLoadingRef.current = true
   }, [])
 
-  // 滚动到底部（支持图文并茂模式）
+  // 
   const scrollToBottom = useCallback(async () => {
     const { previousScrollTop, container } = await smartScrollToBottom(adapter)
 
-    // 保存锚点到全局存储
+    // 
     anchorStore.set(previousScrollTop)
 
-    // 检测是否处于 Flutter 模式
+    //  Flutter 
     setIsFlutterMode(isFlutterProxy(container))
   }, [adapter])
 
-  // 锚点跳转（双向，支持图文并茂模式）
+  // 
   const handleAnchorClick = useCallback(async () => {
     const savedAnchor = anchorStore.get()
     if (savedAnchor === null) return
 
-    // 获取当前位置
+    // 
     const scrollInfo = await getScrollInfo(adapter)
     const currentPos = scrollInfo.scrollTop
 
-    // 跳转到锚点
+    // 
     await smartScrollTo(adapter, savedAnchor)
 
-    // 交换位置
+    // 
     anchorStore.set(currentPos)
   }, [adapter])
 
-  // 手动锚点：设置（支持图文并茂模式）
+  // 
   const setAnchorManually = useCallback(async () => {
     const scrollInfo = await getScrollInfo(adapter)
     anchorStore.set(scrollInfo.scrollTop)
     setIsFlutterMode(scrollInfo.isFlutterMode)
   }, [adapter])
 
-  // 获取主题图标
+  // 
   const getThemeIcon = () => {
     const isDark = themeMode === "dark"
-    // 深色模式显示太阳（点击切换到浅色），浅色模式显示月亮（点击切换到深色）
+    // 
     return isDark ? <ThemeLightIcon size={20} /> : <ThemeDarkIcon size={20} />
   }
 
@@ -235,7 +235,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     [DRAG_PADDING_PX],
   )
 
-  // 按钮点击处理器
+  // 
   const buttonActions: Record<string, (e?: React.MouseEvent) => void> = {
     scrollTop: scrollToTop,
     scrollBottom: scrollToBottom,
@@ -257,7 +257,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     },
   }
 
-  // 渲染单个按钮
+  // 
   const renderButton = (
     id: string,
     def: (typeof COLLAPSED_BUTTON_DEFS)[string],
@@ -269,12 +269,12 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     // Animation: Active state for floatingToolbar button is controlled by isToolsMenuOpen
     const isActive = isFloatingToolbarBtn ? isToolsMenuOpen : false
 
-    // panel-only 按钮：面板展开时隐藏
-    // 禁用的按钮：永远隐藏
+    // panel-only 
+    // 
     const shouldHide = isDisabled || (isPanelOnly && isPanelOpen)
     if (shouldHide) return null
 
-    // 优先使用 IconComponent，否则用 emoji
+    //  IconComponent emoji
     let icon: React.ReactNode
     if (id === "theme") {
       icon = getThemeIcon()
@@ -290,8 +290,8 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
 
     const tooltipContent = isAnchorBtn
       ? hasAnchor
-        ? t("goToAnchor") || "返回锚点"
-        : t("noAnchor") || "暂无锚点"
+        ? t("goToAnchor") || ""
+        : t("noAnchor") || ""
       : t(def.labelKey) || def.labelKey
 
     return (
@@ -310,7 +310,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     )
   }
 
-  // 渲染手动锚点组
+  // 
   const renderManualAnchorGroup = (enabled: boolean) => {
     if (!enabled) return null
 
@@ -319,8 +319,8 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
 
     return (
       <React.Fragment key="manualAnchor">
-        {/* 设置锚点（手动） */}
-        <Tooltip content={t("setAnchor") || "设置锚点"}>
+        {/*  */}
+        <Tooltip content={t("setAnchor") || ""}>
           <button
             className="quick-prompt-btn manual-anchor-btn set-btn gh-interactive"
             onClick={setAnchorManually}>
@@ -331,14 +331,14 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     )
   }
 
-  // 渲染分隔线
+  // 
   const renderDivider = (isPanelOnly: boolean, key: string) => {
-    // panel-only 分隔线：面板展开时隐藏
+    // panel-only 
     if (isPanelOnly && isPanelOpen) return null
     return <div key={key} className={`divider ${isPanelOnly ? "panel-only" : ""}`} />
   }
 
-  // 构建按钮列表（包含智能分隔线逻辑）
+  // 
   const renderButtonGroup = () => {
     const elements: React.ReactNode[] = []
     const navigations = new Set(["scrollTop", "scrollBottom", "anchor", "manualAnchor"])
@@ -388,7 +388,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     return elements
   }
 
-  // 工具菜单按钮点击处理器映射
+  // 
   const toolsMenuActions: Record<string, () => void> = {
     [TOOLS_MENU_IDS.EXPORT]: () => onExport?.(),
     [TOOLS_MENU_IDS.COPY_MARKDOWN]: () => onCopyMarkdown?.(),
@@ -400,34 +400,34 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     [TOOLS_MENU_IDS.SETTINGS]: () => onSettings?.(),
   }
 
-  // 获取开关类按钮的激活状态
+  // 
   const getToggleState = (id: string): boolean => {
     if (id === TOOLS_MENU_IDS.SCROLL_LOCK) return scrollLocked || false
     if (id === TOOLS_MENU_IDS.MODEL_LOCK) return isModelLocked || false
     return false
   }
 
-  // 渲染工具菜单项
+  // 
   const renderToolsMenuItems = () => {
     const elements: React.ReactNode[] = []
     let lastWasDanger = false
     let lastWasSystem = false
 
-    // 从设置中获取启用的菜单项，如果没有则使用默认全部显示
+    // 
     const enabledIds = currentSettings.toolsMenu ?? TOOLS_MENU_ITEMS.map((item) => item.id)
     const enabledSet = new Set(enabledIds)
 
     for (const item of TOOLS_MENU_ITEMS) {
-      // Settings 按钮始终显示
+      // Settings 
       const isVisible = item.isSystem || enabledSet.has(item.id)
       if (!isVisible) continue
 
-      // 分隔线逻辑：danger 区域前加分隔线
+      // danger 
       if (item.isDanger && !lastWasDanger) {
         elements.push(<div key={`divider-before-${item.id}`} className="menu-divider" />)
         lastWasDanger = true
       }
-      // system 区域前加分隔线
+      // system 
       if (item.isSystem && !lastWasSystem) {
         elements.push(<div key={`divider-before-${item.id}`} className="menu-divider" />)
         lastWasSystem = true
@@ -454,7 +454,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
     return elements
   }
 
-  // 悬浮隐藏：鼠标离开后延迟隐藏
+  // 
   useEffect(() => {
     if (!groupRef.current) return
 
@@ -582,7 +582,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
 
   return (
     <>
-      {/* 加载历史遮罩 */}
+      {/*  */}
       <LoadingOverlay isVisible={isLoadingHistory} text={loadingText} onStop={stopLoading} />
       <div
         ref={groupRef}
@@ -613,7 +613,7 @@ export const QuickButtons: React.FC<QuickButtonsProps> = ({
         />
         {renderButtonGroup()}
 
-        {/* 工具菜单 Popover */}
+        {/*  Popover */}
         {isToolsMenuOpen && (
           <div
             className={`quick-menu-popover ${quickButtonsSide === "left" ? "side-right" : "side-left"}`}

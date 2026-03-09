@@ -1,8 +1,5 @@
 /**
- * 共享模块初始化逻辑
  *
- * 抽取自 contents/main.ts, 供浏览器扩展和油猴脚本复用
- * 避免代码重复维护
  */
 
 import type { SiteAdapter } from "~adapters/base"
@@ -31,7 +28,6 @@ import {
 } from "~utils/storage"
 
 /**
- * 模块初始化上下文
  */
 export interface ModulesContext {
   adapter: SiteAdapter
@@ -40,7 +36,6 @@ export interface ModulesContext {
 }
 
 /**
- * 模块管理器实例集合
  */
 export interface ModuleInstances {
   themeManager: ThemeManager | null
@@ -56,7 +51,6 @@ export interface ModuleInstances {
   policyRetryManager: PolicyRetryManager | null
 }
 
-// 全局模块实例（用于设置变更时的热更新）
 let modules: ModuleInstances = {
   themeManager: null,
   copyManager: null,
@@ -74,7 +68,6 @@ let modules: ModuleInstances = {
 let readingHistoryAutoStartTimer: NodeJS.Timeout | null = null
 
 /**
- * 初始化主题管理器
  */
 export function initThemeManager(ctx: ModulesContext): ThemeManager {
   const { adapter, settings, siteId } = ctx
@@ -82,14 +75,13 @@ export function initThemeManager(ctx: ModulesContext): ThemeManager {
 
   const themeManager = new ThemeManager(
     siteTheme.mode,
-    undefined, // onModeChange callback - 由 App.tsx 动态注册
+    undefined,
     adapter,
     siteTheme.lightStyleId || "google-gradient",
     siteTheme.darkStyleId || "classic-dark",
   )
   themeManager.apply()
 
-  // 挂载到 window 对象，供 App.tsx 获取
   window.__ophelThemeManager = themeManager
   modules.themeManager = themeManager
 
@@ -97,8 +89,6 @@ export function initThemeManager(ctx: ModulesContext): ThemeManager {
 }
 
 /**
- * 同步页面原生主题与 settings
- * (恢复备份后，面板主题会正确应用，但页面本身的主题可能不一致)
  */
 export async function syncPageTheme(ctx: ModulesContext): Promise<void> {
   const { adapter, settings, siteId } = ctx
@@ -116,7 +106,6 @@ export async function syncPageTheme(ctx: ModulesContext): Promise<void> {
         ? "dark"
         : "light"
 
-  // 检测页面实际的主题状态
   const htmlClass = document.documentElement.className
   const htmlHasDark = /\bdark\b/i.test(htmlClass)
   const htmlHasLight = /\blight\b/i.test(htmlClass)
@@ -124,7 +113,6 @@ export async function syncPageTheme(ctx: ModulesContext): Promise<void> {
   const bodyHasDarkTheme = /\bdark-theme\b/i.test(bodyClass)
   const pageColorScheme = document.body.style.colorScheme
 
-  // 判断页面实际主题
   let actualPageTheme: "light" | "dark" = "light"
   if (htmlHasDark || bodyHasDarkTheme || pageColorScheme === "dark") {
     actualPageTheme = "dark"
@@ -132,7 +120,6 @@ export async function syncPageTheme(ctx: ModulesContext): Promise<void> {
     actualPageTheme = "light"
   }
 
-  // 如果不一致，需要同步主题
   if (actualPageTheme !== targetTheme) {
     if (modules.themeManager) {
       modules.themeManager.apply(targetTheme)
@@ -144,7 +131,6 @@ export async function syncPageTheme(ctx: ModulesContext): Promise<void> {
 }
 
 /**
- * 获取站点的 Markdown 修复开关状态
  */
 function getSiteMarkdownFix(settings: Settings, siteId: string): boolean {
   switch (siteId) {
@@ -160,7 +146,6 @@ function getSiteMarkdownFix(settings: Settings, siteId: string): boolean {
 }
 
 /**
- * 初始化 Markdown 修复器
  */
 export function initMarkdownFixer(ctx: ModulesContext): void {
   const { adapter, settings, siteId } = ctx
@@ -175,7 +160,6 @@ export function initMarkdownFixer(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化布局管理器
  */
 export function initLayoutManager(ctx: ModulesContext): void {
   const { adapter, settings, siteId } = ctx
@@ -193,7 +177,6 @@ export function initLayoutManager(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化复制管理器
  */
 export function initCopyManager(ctx: ModulesContext): void {
   const { adapter, settings } = ctx
@@ -210,12 +193,10 @@ export function initCopyManager(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化标签页管理器
  */
 export function initTabManager(ctx: ModulesContext): void {
   const { adapter, settings } = ctx
 
-  // 始终初始化 TabManager，以便支持隐私模式切换和其他不需要 autoRename 的功能
   if (settings.tab) {
     modules.tabManager = new TabManager(adapter, settings.tab)
     modules.tabManager.start()
@@ -223,7 +204,6 @@ export function initTabManager(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化水印移除器 (仅 Gemini)
  */
 export function initWatermarkRemover(ctx: ModulesContext): void {
   const { settings, siteId } = ctx
@@ -238,7 +218,6 @@ export function initWatermarkRemover(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化阅读历史管理器
  */
 export async function initReadingHistoryManager(ctx: ModulesContext): Promise<void> {
   const { adapter, settings } = ctx
@@ -279,7 +258,7 @@ export async function initReadingHistoryManager(ctx: ModulesContext): Promise<vo
         .restoreProgress((msg) => showToast(msg, 3000))
         .then((restored) => {
           if (restored) {
-            showToast("阅读进度已恢复", 2000)
+            showToast("Reading progress restored", 2000)
           }
         })
     }
@@ -289,7 +268,6 @@ export async function initReadingHistoryManager(ctx: ModulesContext): Promise<vo
 }
 
 /**
- * 初始化模型锁定器
  */
 export function initModelLocker(ctx: ModulesContext): void {
   const { adapter, settings, siteId } = ctx
@@ -302,7 +280,6 @@ export function initModelLocker(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化滚动锁定管理器
  */
 export function initScrollLockManager(ctx: ModulesContext): void {
   const { adapter, settings } = ctx
@@ -310,7 +287,6 @@ export function initScrollLockManager(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化用户提问 Markdown 渲染器
  */
 export function initUserQueryMarkdownRenderer(ctx: ModulesContext): void {
   const { adapter, settings } = ctx
@@ -321,40 +297,28 @@ export function initUserQueryMarkdownRenderer(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化所有核心模块
  */
 export async function initCoreModules(ctx: ModulesContext): Promise<ModuleInstances> {
-  // 1. 主题管理 (优先应用)
   initThemeManager(ctx)
 
-  // 延迟同步页面主题
   setTimeout(() => syncPageTheme(ctx), 1000)
 
-  // 2. Markdown 修复
   initMarkdownFixer(ctx)
 
-  // 3. 页面宽度管理
   initLayoutManager(ctx)
 
-  // 4. 复制功能
   initCopyManager(ctx)
 
-  // 5. 标签页管理
   initTabManager(ctx)
 
-  // 6. 水印移除
   initWatermarkRemover(ctx)
 
-  // 7. 阅读历史
   await initReadingHistoryManager(ctx)
 
-  // 8. 模型锁定
   initModelLocker(ctx)
 
-  // 9. 滚动锁定
   initScrollLockManager(ctx)
 
-  // 10. 用户提问 Markdown 渲染
   initUserQueryMarkdownRenderer(ctx)
 
   // 11. Policy Retry Manager
@@ -364,7 +328,6 @@ export async function initCoreModules(ctx: ModulesContext): Promise<ModuleInstan
 }
 
 /**
- * 初始化 Policy Retry Manager
  */
 export function initPolicyRetryManager(ctx: ModulesContext): void {
   const { adapter, settings, siteId } = ctx
@@ -377,13 +340,11 @@ export function initPolicyRetryManager(ctx: ModulesContext): void {
 }
 
 /**
- * 订阅设置变化，动态更新模块
  */
 export function subscribeModuleUpdates(ctx: ModulesContext): void {
   const { adapter, siteId } = ctx
 
   subscribeSettings((newSettings: Settings) => {
-    // 1. Theme Manager - 只更新主题预置
     const newSiteTheme = getSiteTheme(newSettings, siteId)
     if (newSiteTheme && modules.themeManager) {
       modules.themeManager.setPresets(
@@ -504,7 +465,6 @@ export function subscribeModuleUpdates(ctx: ModulesContext): void {
 }
 
 /**
- * 初始化 URL 变化监听 (SPA 导航)
  */
 export function initUrlChangeObserver(ctx: ModulesContext): void {
   const { adapter } = ctx
@@ -518,7 +478,6 @@ export function initUrlChangeObserver(ctx: ModulesContext): void {
       lastPathname = currentPathname
       console.warn("[Ophel] URL changed, reinitializing modules...")
 
-      // 1. 阅读历史：停止录制 → 延迟恢复并重启
       if (readingHistoryRestoreTimeoutId) {
         clearTimeout(readingHistoryRestoreTimeoutId)
         readingHistoryRestoreTimeoutId = null
@@ -533,16 +492,14 @@ export function initUrlChangeObserver(ctx: ModulesContext): void {
             showToast(msg, 3000),
           )
           if (restored) {
-            showToast("阅读进度已恢复", 2000)
+            showToast("Reading progress restored", 2000)
           }
           modules.readingHistoryManager?.startRecording()
         }, 1500)
       }
 
-      // 2. 大纲刷新 - 通过全局事件通知 App.tsx
       window.dispatchEvent(new Event("gh-url-change"))
 
-      // 3. 标签页标题更新
       if (modules.tabManager) {
         modules.tabManager.resetSessionCache()
         ;[300, 800, 1500].forEach((delay) =>
@@ -550,15 +507,12 @@ export function initUrlChangeObserver(ctx: ModulesContext): void {
         )
       }
 
-      // 4. Textarea 重新查找
       adapter.findTextarea()
 
-      // 5. 模型锁定重新触发（新对话/新页面可能重置模型）
       modules.modelLocker?.relock(300)
     }
   }
 
-  // 监听 popstate (后退/前进)
   window.addEventListener("popstate", handleUrlChange)
 
   // Monkey-patch pushState / replaceState
@@ -573,12 +527,10 @@ export function initUrlChangeObserver(ctx: ModulesContext): void {
     handleUrlChange()
   }
 
-  // 兜底定时器
   setInterval(handleUrlChange, 1000)
 }
 
 /**
- * 清除全部数据时的模块清理
  */
 export function handleClearAllData(): void {
   if (readingHistoryAutoStartTimer) {
@@ -592,7 +544,6 @@ export function handleClearAllData(): void {
 }
 
 /**
- * 获取当前模块实例
  */
 export function getModuleInstances(): ModuleInstances {
   return modules

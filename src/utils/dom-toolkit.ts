@@ -1,15 +1,15 @@
 /**
- * DOMToolkit - 通用 DOM 操作工具库
+ * DOMToolkit -  DOM 
  *
- * 核心功能：
- * 1. Shadow DOM 穿透查找
- * 2. 异步等待元素出现
- * 3. 持续监听新元素
- * 4. 元素变化监控
+ * 
+ * 1. Shadow DOM 
+ * 2. 
+ * 3. 
+ * 4. 
  */
 
 // ============================================================================
-// 常量与配置
+// 
 // ============================================================================
 
 const CONFIG = {
@@ -26,7 +26,7 @@ const NODE_TYPES = {
 }
 
 // ============================================================================
-// 类型定义
+// 
 // ============================================================================
 
 export interface QueryOptions {
@@ -83,7 +83,7 @@ export interface ScrollContainerOptions {
 }
 
 // ============================================================================
-// 工具函数
+// 
 // ============================================================================
 
 const Utils = {
@@ -124,7 +124,7 @@ const Utils = {
 }
 
 // ============================================================================
-// 缓存系统
+// 
 // ============================================================================
 
 class DOMCache {
@@ -151,7 +151,7 @@ class DOMCache {
     const node = contextMap.get(selector)
     if (!node) return null
 
-    // TTL 检查
+    // TTL 
     const ts = timeMap.get(selector)
     if (ts && Date.now() - ts > this.ttl) {
       contextMap.delete(selector)
@@ -159,7 +159,7 @@ class DOMCache {
       return null
     }
 
-    // 连接状态检查
+    // 
     if (!Utils.isConnected(node)) {
       contextMap.delete(selector)
       timeMap.delete(selector)
@@ -196,7 +196,7 @@ class DOMCache {
 }
 
 // ============================================================================
-// 共享 Observer 管理器
+//  Observer 
 // ============================================================================
 
 interface ObserverEntry {
@@ -260,7 +260,7 @@ class SharedObserverManager {
 }
 
 // ============================================================================
-// 核心类：DOMToolkit
+// DOMToolkit
 // ============================================================================
 
 class DOMToolkitClass {
@@ -274,7 +274,7 @@ class DOMToolkitClass {
     this.observerManager = new SharedObserverManager()
   }
 
-  // ===================== 配置 =====================
+  // =====================  =====================
 
   configCache(options: { enabled?: boolean } = {}) {
     if (typeof options.enabled === "boolean") {
@@ -286,10 +286,10 @@ class DOMToolkitClass {
     this.cache.clear()
   }
 
-  // ===================== 同步查询 =====================
+  // =====================  =====================
 
   /**
-   * 同步查询 DOM 元素（支持 Shadow DOM 穿透）
+   *  DOM  Shadow DOM 
    */
   query(selector: string | string[], options: QueryOptions = {}): Element | Element[] | null {
     const {
@@ -304,13 +304,13 @@ class DOMToolkitClass {
     const selectors = Array.isArray(selector) ? selector : [selector]
     const shouldCache = useCache && !filter
 
-    // 尝试从缓存获取
+    // 
     if (!all && shouldCache && selectors.length === 1) {
       const cached = this.cache.get(parent, selectors[0])
       if (cached) return cached
     }
 
-    // 在主文档中查找
+    // 
     for (const sel of selectors) {
       try {
         if (all) {
@@ -330,11 +330,11 @@ class DOMToolkitClass {
           }
         }
       } catch {
-        // 选择器无效，跳过
+        // 
       }
     }
 
-    // Shadow DOM 穿透搜索
+    // Shadow DOM 
     if (shadow && !all) {
       const found = this.findInShadow(parent, selectors, 0, maxDepth, filter)
       if (found && shouldCache && selectors.length === 1) {
@@ -412,10 +412,10 @@ class DOMToolkitClass {
     }
   }
 
-  // ===================== 异步查询 =====================
+  // =====================  =====================
 
   /**
-   * 异步获取元素（等待元素出现）
+   * 
    */
   async get(selector: string | string[], options: GetOptions = {}): Promise<Element | null> {
     const {
@@ -425,16 +425,16 @@ class DOMToolkitClass {
       filter = null,
     } = options
 
-    // 先尝试同步查找
+    // 
     const found = this.query(selector, { parent, shadow, filter })
     if (found && !Array.isArray(found)) return found
 
-    // 异步等待
+    // 
     return new Promise((resolve) => {
       const cleanup = Utils.createCleanupManager()
       const startTime = Date.now()
 
-      // 超时处理
+      // 
       let timer: ReturnType<typeof setTimeout>
       if (timeout > 0) {
         timer = setTimeout(() => {
@@ -444,7 +444,7 @@ class DOMToolkitClass {
         cleanup.add(() => clearTimeout(timer))
       }
 
-      // 轮询检查
+      // 
       const poll = () => {
         if (timeout > 0 && Date.now() - startTime >= timeout) return
 
@@ -459,7 +459,7 @@ class DOMToolkitClass {
         cleanup.add(() => clearTimeout(nextTimer))
       }
 
-      // 使用 MutationObserver 加速检测
+      //  MutationObserver 
       const selectors = Array.isArray(selector) ? selector : [selector]
       const observerHandle = this.observerManager.getSharedObserver(parent as Node)
 
@@ -494,10 +494,10 @@ class DOMToolkitClass {
     })
   }
 
-  // ===================== 持续监听 =====================
+  // =====================  =====================
 
   /**
-   * 持续处理现在和未来所有匹配的元素
+   * 
    */
   each(
     selector: string,
@@ -528,7 +528,7 @@ class DOMToolkitClass {
       }
     }
 
-    // 处理现有元素
+    // 
     const existing = this.query(selector, {
       parent,
       all: true,
@@ -536,7 +536,7 @@ class DOMToolkitClass {
     }) as Element[]
     existing.forEach((node) => processNode(node, false))
 
-    // 监听新元素
+    // 
     const observerHandle = this.observerManager.getSharedObserver(parent as Node)
 
     const observerCallback = (addedNode: Node) => {
@@ -566,10 +566,10 @@ class DOMToolkitClass {
     return stop
   }
 
-  // ===================== 元素监控 =====================
+  // =====================  =====================
 
   /**
-   * 监控特定元素的变化
+   * 
    */
   watch(
     element: Element,
@@ -626,7 +626,7 @@ class DOMToolkitClass {
   }
 
   /**
-   * 共享监听多个子元素的变化
+   * 
    */
   watchMultiple(container: Node, options: WatchMultipleOptions = {}) {
     const { debounce = 0, characterData = true, childList = true, attributes = false } = options
@@ -694,10 +694,10 @@ class DOMToolkitClass {
     }
   }
 
-  // ===================== 事件委托 =====================
+  // =====================  =====================
 
   /**
-   * 事件委托（支持现在和未来的元素）
+   * 
    */
   on(
     eventName: string,
@@ -708,7 +708,7 @@ class DOMToolkitClass {
     const { parent = this.doc, capture = false } = options
 
     const handler = (event: Event) => {
-      // 使用 composedPath 处理 Shadow DOM 中的事件
+      //  composedPath  Shadow DOM 
       const path = event.composedPath ? event.composedPath() : [event.target as Node]
 
       for (const target of path) {
@@ -722,7 +722,7 @@ class DOMToolkitClass {
         } catch {}
       }
 
-      // 回退：使用 closest
+      //  closest
       try {
         const target = (event.target as Element).closest?.(selector)
         if (target && parent.contains(target)) {
@@ -736,10 +736,10 @@ class DOMToolkitClass {
     return () => parent.removeEventListener(eventName, handler, capture)
   }
 
-  // ===================== 元素创建 =====================
+  // =====================  =====================
 
   /**
-   * 创建 DOM 元素
+   *  DOM 
    */
   create(tag: string, attributes: Record<string, unknown> = {}, textContent = ""): HTMLElement {
     const element = this.doc.createElement(tag)
@@ -769,7 +769,7 @@ class DOMToolkitClass {
   }
 
   /**
-   * 从 HTML 字符串创建元素
+   *  HTML 
    */
   createFromHTML(
     htmlString: string,
@@ -800,7 +800,7 @@ class DOMToolkitClass {
   }
 
   /**
-   * 清空元素内容
+   * 
    */
   clear(element: Element) {
     while (element.firstChild) {
@@ -808,10 +808,10 @@ class DOMToolkitClass {
     }
   }
 
-  // ===================== 样式注入 =====================
+  // =====================  =====================
 
   /**
-   * 向页面注入 CSS 样式
+   *  CSS 
    */
   css(cssText: string, id: string | null = null): HTMLStyleElement {
     if (id) {
@@ -832,7 +832,7 @@ class DOMToolkitClass {
   }
 
   /**
-   * 向 Shadow DOM 注入 CSS 样式
+   *  Shadow DOM  CSS 
    */
   cssToShadow(
     shadowRoot: ShadowRoot,
@@ -864,7 +864,7 @@ class DOMToolkitClass {
   }
 
   /**
-   * 向所有 Shadow DOM 注入 CSS 样式
+   *  Shadow DOM  CSS 
    */
   cssToAllShadows(
     cssText: string,
@@ -879,9 +879,9 @@ class DOMToolkitClass {
 
     const walk = (node: Node) => {
       if ((node as Element).shadowRoot) {
-        // 应用过滤器
+        // 
         if (filter && !filter(node as Element)) {
-          // 跳过这个 Shadow Host，但继续遍历内部
+          //  Shadow Host
         } else {
           try {
             this.cssToShadow((node as Element).shadowRoot!, cssText, id)
@@ -889,13 +889,13 @@ class DOMToolkitClass {
           } catch {}
         }
 
-        // 递归遍历 Shadow DOM 内部
+        //  Shadow DOM 
         try {
           walk((node as Element).shadowRoot!)
         } catch {}
       }
 
-      // 遍历子节点
+      // 
       const children = node.childNodes
       for (let i = 0; i < children.length; i++) {
         if (children[i].nodeType === NODE_TYPES.ELEMENT) {
@@ -908,10 +908,10 @@ class DOMToolkitClass {
     return count
   }
 
-  // ===================== Shadow DOM 遍历 =====================
+  // ===================== Shadow DOM  =====================
 
   /**
-   * 遍历所有 Shadow Root
+   *  Shadow Root
    */
   walkShadowRoots(
     callback: (shadowRoot: ShadowRoot, host: Element) => void,
@@ -947,12 +947,12 @@ class DOMToolkitClass {
   }
 
   /**
-   * 查找可滚动容器（支持 Shadow DOM）
+   *  Shadow DOM
    */
   findScrollContainer(options: ScrollContainerOptions = {}): Element | null {
     const { root = this.doc, selectors = [], minOverflow = 100 } = options
 
-    // 1. 优先尝试用户提供的选择器
+    // 1. 
     for (const sel of selectors) {
       const el = (this.doc as ParentNode).querySelector(sel)
       if (el && el.scrollHeight > el.clientHeight) {
@@ -960,7 +960,7 @@ class DOMToolkitClass {
       }
     }
 
-    // 2. 在 Shadow DOM 中查找
+    // 2.  Shadow DOM 
     const findInShadow = (node: Node, depth: number): Element | null => {
       if (depth > CONFIG.MAX_DEPTH) return null
 
@@ -992,7 +992,7 @@ class DOMToolkitClass {
     const fromShadow = findInShadow(root, 0)
     if (fromShadow) return fromShadow
 
-    // 3. 回退到 documentElement 或 body
+    // 3.  documentElement  body
     if (this.doc.documentElement.scrollHeight > this.doc.documentElement.clientHeight) {
       return this.doc.documentElement
     }
@@ -1000,7 +1000,7 @@ class DOMToolkitClass {
     return this.doc.body
   }
 
-  // ===================== 销毁 =====================
+  // =====================  =====================
 
   destroy() {
     this.observerManager.destroy()
@@ -1008,5 +1008,5 @@ class DOMToolkitClass {
   }
 }
 
-// 导出单例实例
+// 
 export const DOMToolkit = new DOMToolkitClass()

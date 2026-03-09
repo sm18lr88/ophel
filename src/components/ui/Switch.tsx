@@ -1,5 +1,5 @@
 /**
- * Switch 开关组件
+ * Switch 
  */
 import React from "react"
 
@@ -7,13 +7,13 @@ export interface SwitchProps {
   checked: boolean
   onChange: (checked: boolean) => void
   disabled?: boolean
-  /** 尺寸: sm=32x18, md=36x20 */
+  /** : sm=32x18, md=36x20 */
   size?: "sm" | "md"
 }
 
 /**
- * 通用开关组件
- * 使用 CSS 变量支持主题跟随
+ * 
+ *  CSS 
  */
 export const Switch: React.FC<SwitchProps> = ({
   checked,
@@ -21,7 +21,7 @@ export const Switch: React.FC<SwitchProps> = ({
   disabled = false,
   size = "md",
 }) => {
-  // 尺寸配置
+  // 
   const dimensions = size === "sm" ? { w: 32, h: 18, thumb: 14 } : { w: 36, h: 20, thumb: 16 }
 
   return (

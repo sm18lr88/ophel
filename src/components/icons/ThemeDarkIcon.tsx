@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 深色主题 (月亮)
- * 风格：Outline (stroke-based)
+ * SVG  -  ()
+ * Outline (stroke-based)
  */
 import React from "react"
 
@@ -26,7 +26,7 @@ export const ThemeDarkIcon: React.FC<IconProps> = ({
     strokeLinejoin="round"
     className={className}
     style={{ display: "block" }}>
-    {/* 弯月形状 */}
+    {/*  */}
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </svg>
 )

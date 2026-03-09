@@ -37,7 +37,7 @@ interface PromptsTabProps {
   selectedPromptId?: string | null
 }
 
-// 确认对话框状态类型
+// 
 interface ConfirmState {
   show: boolean
   title: string
@@ -45,7 +45,7 @@ interface ConfirmState {
   onConfirm: () => void
 }
 
-// 输入对话框状态类型
+// 
 interface PromptInputState {
   show: boolean
   title: string
@@ -62,7 +62,7 @@ interface LocatePromptDetail {
   promptId?: string
 }
 
-// 根据分类名称哈希自动分配颜色索引 1-7
+//  1-7
 const getCategoryColorIndex = (categoryName: string): number => {
   let hash = 0
   for (let i = 0; i < categoryName.length; i++) {
@@ -90,14 +90,14 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>(VIRTUAL_CATEGORY.ALL)
   const [searchQuery, setSearchQuery] = useState("")
 
-  // 模态弹窗状态
+  // 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPrompt, setEditingPrompt] = useState<Partial<Prompt> | null>(null)
 
-  // 分类管理弹窗状态
+  // 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
 
-  // 确认对话框状态
+  // 
   const [confirmState, setConfirmState] = useState<ConfirmState>({
     show: false,
     title: "",
@@ -105,18 +105,18 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     onConfirm: () => {},
   })
 
-  // 输入对话框状态
+  // 
   const [promptInputState, setPromptInputState] = useState<PromptInputState>({
     show: false,
     title: "",
     defaultValue: "",
     onConfirm: () => {},
   })
-  // 拖拽状态
+  // 
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const dragNodeRef = useRef<HTMLDivElement | null>(null)
 
-  // 变量输入弹窗状态
+  // 
   const [variableDialogState, setVariableDialogState] = useState<{
     show: boolean
     prompt: Prompt | null
@@ -124,16 +124,16 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     submitAfterInsert: boolean
   }>({ show: false, prompt: null, variables: [], submitAfterInsert: false })
 
-  // 导入确认弹窗状态
+  // 
   const [importDialogState, setImportDialogState] = useState<{
     show: boolean
     prompts: Prompt[]
   }>({ show: false, prompts: [] })
 
-  // Markdown 预览开关
+  // Markdown 
   const [showPreview, setShowPreview] = useState(false)
 
-  // 快捷预览弹窗状态
+  // 
   const [previewModal, setPreviewModal] = useState<{
     show: boolean
     prompt: Prompt | null
@@ -144,7 +144,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
   const promptListRef = useRef<HTMLDivElement | null>(null)
   const [locatedPromptId, setLocatedPromptId] = useState<string | null>(null)
 
-  // 预览容器 refs（用于初始化 SVG 图标）
+  //  refs SVG 
   const editPreviewRef = useRef<HTMLDivElement>(null)
   const modalPreviewRef = useRef<HTMLDivElement>(null)
 
@@ -154,12 +154,12 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     setPrompts(allPrompts)
     setCategories(allCategories)
 
-    // 分类有效性检查：如果当前选中的分类不再存在或变空，回退到「全部」
+    // 
     setSelectedCategory((prev) => {
       if (prev === VIRTUAL_CATEGORY.ALL) return prev
-      // 检查分类是否还存在
+      // 
       if (!allCategories.includes(prev)) return VIRTUAL_CATEGORY.ALL
-      // 检查分类下是否还有提示词
+      // 
       const hasPrompts = allPrompts.some((p) => p.category === prev)
       if (!hasPrompts) return VIRTUAL_CATEGORY.ALL
       return prev
@@ -291,14 +291,14 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     }
   }, [])
 
-  // 编辑模态框预览渲染后初始化复制按钮
+  // 
   useEffect(() => {
     if (showPreview && editPreviewRef.current) {
       initCopyButtons(editPreviewRef.current, { size: 14, color: "#6b7280" })
     }
   }, [showPreview, editingPrompt?.content])
 
-  // 快捷预览模态框渲染后初始化复制按钮
+  // 
   useEffect(() => {
     if (previewModal.show && modalPreviewRef.current) {
       initCopyButtons(modalPreviewRef.current, { size: 14, color: "#6b7280" })
@@ -308,15 +308,15 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
   const getFilteredPrompts = () => {
     let filtered: Prompt[]
 
-    // 最近使用筛选：显示有 lastUsedAt 的，按时间倒序
+    //  lastUsedAt 
     if (selectedCategory === VIRTUAL_CATEGORY.RECENT) {
       filtered = manager
         .getPrompts()
         .filter((p) => p.lastUsedAt)
         .sort((a, b) => (b.lastUsedAt || 0) - (a.lastUsedAt || 0))
-        .slice(0, 10) // 只显示最近 10 个
+        .slice(0, 10) //  10 
 
-      // 搜索过滤
+      // 
       if (searchQuery) {
         const lower = searchQuery.toLowerCase()
         filtered = filtered.filter(
@@ -327,7 +327,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
       filtered = manager.filterPrompts(searchQuery, selectedCategory)
     }
 
-    // 置顶的提示词优先显示（最近使用模式下不重排）
+    // 
     if (selectedCategory !== VIRTUAL_CATEGORY.RECENT) {
       filtered = filtered.sort((a, b) => {
         if (a.pinned && !b.pinned) return -1
@@ -339,12 +339,12 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     return filtered
   }
 
-  // 显示确认对话框
+  // 
   const showConfirm = (title: string, message: string, onConfirm: () => void) => {
     setConfirmState({ show: true, title, message, onConfirm })
   }
 
-  // 显示输入对话框
+  // 
   const showPromptInput = (
     title: string,
     defaultValue: string,
@@ -353,7 +353,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     setPromptInputState({ show: true, title, defaultValue, onConfirm })
   }
 
-  // 选中提示词并插入
+  // 
   const handleSelect = async (prompt: Prompt, submitAfterInsert = false) => {
     // Extract variables from the selected prompt
     const variables = extractVariables(prompt.content)
@@ -379,7 +379,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
       if (submitAfterInsert) {
         submitSuccess = await manager.submitPrompt(submitShortcut)
         if (!submitSuccess) {
-          showToast(t("promptSendFailed") || "发送失败，提示词已保留在输入框中")
+          showToast(t("promptSendFailed") || "")
         }
       }
 
@@ -392,13 +392,13 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
 
       if (submitAfterInsert) {
         if (submitSuccess) {
-          showToast(`${t("promptSent") || "已发送"}: ${prompt.title}`)
+          showToast(`${t("promptSent") || ""}: ${prompt.title}`)
         }
       } else {
-        showToast(`${t("inserted") || "已插入"}: ${prompt.title}`)
+        showToast(`${t("inserted") || ""}: ${prompt.title}`)
       }
     } else {
-      showToast(t("insertFailed") || "未找到输入框，请点击输入框后重试")
+      showToast(t("insertFailed") || "")
     }
   }
 
@@ -456,7 +456,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     loadData()
   }
 
-  // 导出提示词为 JSON 文件
+  //  JSON 
   const handleExport = () => {
     const allPrompts = manager.getPrompts()
     const json = JSON.stringify(allPrompts, null, 2)
@@ -469,10 +469,10 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    showToast(t("promptExportSuccess") || "导出成功")
+    showToast(t("promptExportSuccess") || "")
   }
 
-  // 导入提示词
+  // 
   const handleImport = () => {
     const input = document.createElement("input")
     input.type = "file"
@@ -486,44 +486,44 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
         const imported = JSON.parse(text) as Prompt[]
 
         if (!Array.isArray(imported)) {
-          showToast(t("promptImportFailed") || "导入失败：文件格式错误")
+          showToast(t("promptImportFailed") || "")
           return
         }
 
-        // 显示导入确认弹窗（支持覆盖/合并/取消）
+        // //
         setImportDialogState({ show: true, prompts: imported })
       } catch {
-        showToast(t("promptImportFailed") || "导入失败：文件解析错误")
+        showToast(t("promptImportFailed") || "")
       }
     }
     input.click()
   }
 
-  // 处理覆盖导入
+  // 
   const handleImportOverwrite = () => {
     const imported = importDialogState.prompts
     manager.setPrompts(imported)
     loadData()
     setImportDialogState({ show: false, prompts: [] })
     showToast(
-      (t("promptImportSuccess") || "已导入 {count} 个提示词").replace(
+      (t("promptImportSuccess") || " {count} ").replace(
         "{count}",
         imported.length.toString(),
       ),
     )
   }
 
-  // 处理合并导入（按 ID 合并）
+  //  ID 
   const handleImportMerge = () => {
     const imported = importDialogState.prompts
     const existing = manager.getPrompts()
     const existingIds = new Set(existing.map((p) => p.id))
 
-    // 分离：已存在的（更新）和 新的（追加）
+    //  
     const toUpdate = imported.filter((p) => existingIds.has(p.id))
     const toAdd = imported.filter((p) => !existingIds.has(p.id))
 
-    // 更新已存在的
+    // 
     toUpdate.forEach((p) => {
       manager.updatePrompt(p.id, {
         title: p.title,
@@ -533,7 +533,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
       })
     })
 
-    // 追加新的
+    // 
     toAdd.forEach((p) => {
       manager.addPrompt({
         title: p.title,
@@ -545,7 +545,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
 
     loadData()
     setImportDialogState({ show: false, prompts: [] })
-    const msg = `已合并：更新 ${toUpdate.length} 个，新增 ${toAdd.length} 个`
+    const msg = ` ${toUpdate.length}  ${toAdd.length} `
     showToast(
       t("promptMergeSuccess")
         ?.replace("{updated}", toUpdate.length.toString())
@@ -553,24 +553,24 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     )
   }
 
-  // 保存提示词（新增/编辑）
+  // /
   const handleSave = async () => {
     if (!editingPrompt?.title || !editingPrompt?.content) {
-      showToast(t("fillTitleContent") || "请填写标题和内容")
+      showToast(t("fillTitleContent") || "")
       return
     }
 
-    const newCategory = editingPrompt.category || t("uncategorized") || "未分类"
+    const newCategory = editingPrompt.category || t("uncategorized") || ""
     let shouldSwitchToNewCategory = false
 
     if (editingPrompt.id) {
-      // 编辑时检查是否需要切换分类
+      // 
       const oldPrompt = prompts.find((p) => p.id === editingPrompt.id)
       const oldCategory = oldPrompt?.category
 
-      // 如果分类发生变更，且当前选中的就是原分类
+      // 
       if (oldCategory && oldCategory !== newCategory && selectedCategory === oldCategory) {
-        // 检查编辑后原分类是否会变空
+        // 
         const otherPromptsInOldCategory = prompts.filter(
           (p) => p.category === oldCategory && p.id !== editingPrompt.id,
         )
@@ -584,9 +584,9 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
         content: editingPrompt.content,
         category: newCategory,
       })
-      showToast(t("promptUpdated") || "提示词已更新")
+      showToast(t("promptUpdated") || "")
 
-      // 切换到新分类
+      // 
       if (shouldSwitchToNewCategory) {
         setSelectedCategory(newCategory)
       }
@@ -596,7 +596,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
         content: editingPrompt.content!,
         category: newCategory,
       })
-      showToast(t("promptAdded") || "提示词已添加")
+      showToast(t("promptAdded") || "")
     }
     closeEditModal()
     loadData()
@@ -636,24 +636,24 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     })
   }, [])
 
-  // 删除提示词
+  // 
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
-    showConfirm(t("confirmDelete") || "确认删除", "确定删除该提示词？", async () => {
+    showConfirm(t("confirmDelete") || "", "", async () => {
       await manager.deletePrompt(id)
-      showToast(t("deleted") || "已删除")
+      showToast(t("deleted") || "")
       loadData()
     })
   }
 
-  // 复制提示词内容
+  // 
   const handleCopy = async (content: string, e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
     try {
       await navigator.clipboard.writeText(content)
-      showToast(t("copied") || "已复制")
+      showToast(t("copied") || "")
     } catch {
       const textarea = document.createElement("textarea")
       textarea.value = content
@@ -661,43 +661,43 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
       textarea.select()
       document.execCommand("copy")
       document.body.removeChild(textarea)
-      showToast(t("copied") || "已复制")
+      showToast(t("copied") || "")
     }
   }
 
-  // 打开编辑/新增弹窗
+  // /
   const openEditModal = (prompt?: Prompt) => {
     if (prompt) {
       setEditingPrompt({ ...prompt })
     } else {
-      // 新建时：如果当前选中了真实分类，使用该分类；否则使用第一个真实分类或「未分类」
+      // 
       const isVirtualCategory =
         selectedCategory === VIRTUAL_CATEGORY.ALL || selectedCategory === VIRTUAL_CATEGORY.RECENT
       const defaultCategory = isVirtualCategory
-        ? categories[0] || t("uncategorized") || "未分类"
+        ? categories[0] || t("uncategorized") || ""
         : selectedCategory
       setEditingPrompt({ title: "", content: "", category: defaultCategory })
     }
     setIsModalOpen(true)
   }
 
-  // === 分类管理 ===
+  // ===  ===
   const handleRenameCategory = (oldName: string, e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
     showPromptInput(
-      t("newCategoryName") || "请输入新分类名称",
+      t("newCategoryName") || "",
       oldName,
       async (newName: string) => {
         if (newName && newName.trim() && newName !== oldName) {
           await manager.renameCategory(oldName, newName.trim())
           showToast(
-            (t("categoryRenamedTo") || "分类已重命名为「{name}」").replace(
+            (t("categoryRenamedTo") || "{name}").replace(
               "{name}",
               newName.trim(),
             ),
           )
-          // 如果当前选中的分类被重命名，同步更新选中状态
+          // 
           if (selectedCategory === oldName) {
             setSelectedCategory(newName.trim())
           }
@@ -711,13 +711,13 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     e.stopPropagation()
     e.preventDefault()
     showConfirm(
-      t("confirmDeleteCategory") || "确认删除分类",
+      t("confirmDeleteCategory") || "",
       (
-        t("confirmDeleteCategoryMsg") || "确定删除分类「{name}」？关联的提示词将移至「未分类」"
+        t("confirmDeleteCategoryMsg") || "{name}"
       ).replace("{name}", name),
       async () => {
         await manager.deleteCategory(name)
-        showToast((t("categoryDeletedMsg") || "分类「{name}」已删除").replace("{name}", name))
+        showToast((t("categoryDeletedMsg") || "{name}").replace("{name}", name))
         if (selectedCategory === name) {
           setSelectedCategory(VIRTUAL_CATEGORY.ALL)
         }
@@ -726,7 +726,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     )
   }
 
-  // === 拖拽排序 ===
+  // ===  ===
   const handleDragStart = (e: React.DragEvent, id: string, node: HTMLDivElement) => {
     setDraggedId(id)
     dragNodeRef.current = node
@@ -801,7 +801,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     newOrder.splice(insertIndex, 0, removed)
 
     await manager.updateOrder(newOrder.map((p) => p.id))
-    showToast(t("orderUpdated") || "顺序已更新")
+    showToast(t("orderUpdated") || "")
     loadData()
     handleDragEnd()
   }
@@ -921,7 +921,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     }, 2200)
   }, [locatedPromptId, prompts, searchQuery, selectedCategory])
 
-  // 编辑/新增弹窗
+  // /
   const renderEditModal = () => {
     if (!isModalOpen) return null
 
@@ -963,7 +963,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             {editingPrompt?.id ? t("editPrompt") : t("addNewPrompt")}
           </div>
 
-          {/* 标题 */}
+          {/*  */}
           <div style={{ marginBottom: "16px" }}>
             <label
               style={{
@@ -992,7 +992,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             />
           </div>
 
-          {/* 分类 */}
+          {/*  */}
           <div style={{ marginBottom: "16px" }}>
             <label
               style={{
@@ -1008,7 +1008,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               type="text"
               value={editingPrompt?.category || ""}
               onChange={(e) => setEditingPrompt({ ...editingPrompt, category: e.target.value })}
-              placeholder={t("categoryPlaceholder") || "输入或选择分类"}
+              placeholder={t("categoryPlaceholder") || ""}
               style={{
                 width: "100%",
                 padding: "8px 12px",
@@ -1055,7 +1055,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             )}
           </div>
 
-          {/* 内容 */}
+          {/*  */}
           <div style={{ marginBottom: "16px" }}>
             <div>
               <div
@@ -1073,7 +1073,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                   }}>
                   {t("content")}
                 </label>
-                {/* ⭐ 预览开关 */}
+                {/* ⭐  */}
                 <button
                   onClick={() => setShowPreview(!showPreview)}
                   style={{
@@ -1087,7 +1087,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                     borderRadius: "4px",
                     cursor: "pointer",
                   }}>
-                  {t("promptMarkdownPreview") || "预览"}
+                  {t("promptMarkdownPreview") || ""}
                 </button>
               </div>
               <textarea
@@ -1108,7 +1108,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                   display: showPreview ? "none" : "block",
                 }}
               />
-              {/* ⭐ Markdown 预览区域 */}
+              {/* ⭐ Markdown  */}
               {showPreview && (
                 <>
                   <div
@@ -1129,7 +1129,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                     }}
                     ref={editPreviewRef}
                     onClick={(e) => {
-                      // 事件委托处理复制按钮（支持点击 SVG 内部）
+                      //  SVG 
                       const target = e.target as HTMLElement
                       const btn = target.closest(".gh-code-copy-btn") as HTMLElement
                       if (btn) {
@@ -1154,7 +1154,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             </div>
           </div>
 
-          {/* 按钮 */}
+          {/*  */}
           <div
             style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: "24px" }}>
             <Button
@@ -1173,7 +1173,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     )
   }
 
-  // 分类管理弹窗
+  // 
   const renderCategoryModal = () => {
     if (!isCategoryModalOpen) return null
 
@@ -1211,7 +1211,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               marginBottom: "20px",
               color: "var(--gh-text, #1f2937)",
             }}>
-            {t("categoryManage") || "分类管理"}
+            {t("categoryManage") || ""}
           </div>
 
           <div style={{ maxHeight: "300px", overflowY: "auto" }}>
@@ -1222,7 +1222,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                   color: "var(--gh-text-tertiary, #9ca3af)",
                   padding: "20px",
                 }}>
-                {t("categoryEmpty") || "暂无分类"}
+                {t("categoryEmpty") || ""}
               </div>
             ) : (
               categories.map((cat) => {
@@ -1240,19 +1240,19 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                     <div>
                       <div style={{ fontWeight: 500, color: "var(--gh-text, #374151)" }}>{cat}</div>
                       <div style={{ fontSize: "12px", color: "var(--gh-text-tertiary, #9ca3af)" }}>
-                        {count} {t("promptCountSuffix") || " 个提示词"}
+                        {count} {t("promptCountSuffix") || " "}
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <Tooltip content={t("rename") || "重命名"}>
+                      <Tooltip content={t("rename") || ""}>
                         <Button
                           size="sm"
                           onClick={(e) => handleRenameCategory(cat, e)}
                           style={{ color: "var(--gh-primary, #4285f4)" }}>
-                          {t("rename") || "重命名"}
+                          {t("rename") || ""}
                         </Button>
                       </Tooltip>
-                      <Tooltip content={t("delete") || "删除"}>
+                      <Tooltip content={t("delete") || ""}>
                         <Button
                           size="sm"
                           onClick={(e) => handleDeleteCategory(cat, e)}
@@ -1261,7 +1261,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                             background: "var(--gh-bg-danger, #fef2f2)",
                             color: "var(--gh-text-danger, #ef4444)",
                           }}>
-                          {t("delete") || "删除"}
+                          {t("delete") || ""}
                         </Button>
                       </Tooltip>
                     </div>
@@ -1276,7 +1276,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               variant="ghost"
               onClick={closeCategoryModal}
               style={{ background: "var(--gh-hover, #f3f4f6)" }}>
-              {t("close") || "关闭"}
+              {t("close") || ""}
             </Button>
           </div>
         </div>
@@ -1285,7 +1285,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     )
   }
 
-  // 预览弹窗渲染
+  // 
   const renderPreviewModal = () => {
     if (!previewModal.show || !previewModal.prompt) return null
 
@@ -1323,7 +1323,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             flexDirection: "column",
             animation: "slideUp 0.3s ease-out",
           }}>
-          {/* 标题栏 */}
+          {/*  */}
           <div
             style={{
               padding: "16px 20px",
@@ -1362,7 +1362,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               <ClearIcon size={16} />
             </button>
           </div>
-          {/* 内容区域 */}
+          {/*  */}
           <div
             className="gh-markdown-preview"
             style={{
@@ -1372,7 +1372,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             }}
             ref={modalPreviewRef}
             onClick={(e) => {
-              // 事件委托处理复制按钮（支持点击 SVG 内部）
+              //  SVG 
               const target = e.target as HTMLElement
               const btn = target.closest(".gh-code-copy-btn") as HTMLElement
               if (btn) {
@@ -1391,7 +1391,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               __html: createSafeHTML(renderMarkdown(previewModal.prompt.content)),
             }}
           />
-          {/* highlight.js 样式 */}
+          {/* highlight.js  */}
           <style>{getHighlightStyles()}</style>
         </div>
       </div>,
@@ -1399,7 +1399,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     )
   }
 
-  // 导入确认弹窗渲染
+  // 
   const renderImportDialog = () => {
     if (!importDialogState.show) return null
 
@@ -1439,7 +1439,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               marginBottom: "12px",
               color: "var(--gh-text)",
             }}>
-            {t("promptImportTitle") || "导入提示词"}
+            {t("promptImportTitle") || ""}
           </div>
           <div
             style={{
@@ -1448,13 +1448,13 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               marginBottom: "20px",
               lineHeight: 1.6,
             }}>
-            {(t("promptImportMessage2") || "发现 {count} 个提示词，请选择导入方式：").replace(
+            {(t("promptImportMessage2") || " {count} ").replace(
               "{count}",
               importDialogState.prompts.length.toString(),
             )}
             <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
-              <li>{t("promptImportOverwriteDesc") || "覆盖：清空现有，使用导入的"}</li>
-              <li>{t("promptImportMergeDesc") || "合并：相同ID更新，新ID追加"}</li>
+              <li>{t("promptImportOverwriteDesc") || ""}</li>
+              <li>{t("promptImportMergeDesc") || "IDID"}</li>
             </ul>
           </div>
           <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
@@ -1462,7 +1462,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               variant="ghost"
               onClick={closeImportDialog}
               style={{ background: "var(--gh-hover, #f3f4f6)" }}>
-              {t("cancel") || "取消"}
+              {t("cancel") || ""}
             </Button>
             <Button
               variant="ghost"
@@ -1471,10 +1471,10 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                 background: "var(--gh-primary-light, #e3f2fd)",
                 color: "var(--gh-primary, #4285f4)",
               }}>
-              {t("promptMerge") || "合并"}
+              {t("promptMerge") || ""}
             </Button>
             <Button variant="primary" onClick={handleImportOverwrite}>
-              {t("promptOverwrite") || "覆盖"}
+              {t("promptOverwrite") || ""}
             </Button>
           </div>
         </div>
@@ -1487,7 +1487,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
     <div
       className="gh-prompts-tab"
       style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* 搜索栏 + 导入导出按钮 */}
+      {/*  +  */}
       <div
         style={{
           padding: "12px",
@@ -1514,8 +1514,8 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             color: "var(--gh-text, #1f2937)",
           }}
         />
-        {/* 导入按钮 */}
-        <Tooltip content={t("promptImport") || "导入"}>
+        {/*  */}
+        <Tooltip content={t("promptImport") || ""}>
           <button
             onClick={handleImport}
             style={{
@@ -1534,8 +1534,8 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
             <ImportIcon size={16} />
           </button>
         </Tooltip>
-        {/* 导出按钮 */}
-        <Tooltip content={t("promptExport") || "导出"}>
+        {/*  */}
+        <Tooltip content={t("promptExport") || ""}>
           <button
             onClick={handleExport}
             style={{
@@ -1556,7 +1556,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
         </Tooltip>
       </div>
 
-      {/* 分类标签栏 */}
+      {/*  */}
       <div
         style={{
           padding: "8px 12px",
@@ -1565,7 +1565,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
           flexWrap: "wrap",
           background: "var(--gh-bg, white)",
           borderBottom: "1px solid var(--gh-border, #e5e7eb)",
-          userSelect: "none", // 禁止文字选中
+          userSelect: "none", // 
         }}>
         <span
           onClick={() => setSelectedCategory(VIRTUAL_CATEGORY.ALL)}
@@ -1618,8 +1618,8 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
           )
         })}
 
-        {/* ⭐ 最近使用（仅图标） */}
-        <Tooltip content={t("promptRecentUsed") || "最近使用"}>
+        {/* ⭐  */}
+        <Tooltip content={t("promptRecentUsed") || ""}>
           <span
             onClick={() => setSelectedCategory(VIRTUAL_CATEGORY.RECENT)}
             style={{
@@ -1657,12 +1657,12 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               color: "var(--gh-text-secondary, #9ca3af)",
               cursor: "pointer",
             }}>
-            {t("manageCategory") || "管理"}
+            {t("manageCategory") || ""}
           </button>
         )}
       </div>
 
-      {/* 提示词列表 */}
+      {/*  */}
       <div
         ref={promptListRef}
         style={{ flex: 1, overflowY: "auto", padding: "8px", scrollbarWidth: "none" }}>
@@ -1674,7 +1674,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
               color: "var(--gh-text-tertiary, #9ca3af)",
               fontSize: "14px",
             }}>
-            暂无提示词
+            
           </div>
         ) : (
           filtered.map((p) => {
@@ -1709,7 +1709,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                   position: "relative",
                   userSelect: "none",
                 }}>
-                {/* 头部 */}
+                {/*  */}
                 <div
                   style={{
                     display: "flex",
@@ -1739,11 +1739,11 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                       color: "var(--gh-text-secondary, #6b7280)",
                       flexShrink: 0,
                     }}>
-                    {p.category || t("uncategorized") || "未分类"}
+                    {p.category || t("uncategorized") || ""}
                   </span>
                 </div>
 
-                {/* 内容预览 */}
+                {/*  */}
                 <div
                   style={{
                     fontSize: "13px",
@@ -1757,13 +1757,13 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                   {p.content}
                 </div>
 
-                {/* 悬浮操作按钮 */}
+                {/*  */}
                 <div
                   className="prompt-item-actions"
                   style={{ position: "absolute", top: "8px", right: "8px", gap: "4px" }}>
-                  {/* ⭐ 置顶按钮 */}
+                  {/* ⭐  */}
                   <Tooltip
-                    content={p.pinned ? t("promptUnpin") || "取消置顶" : t("promptPin") || "置顶"}>
+                    content={p.pinned ? t("promptUnpin") || "" : t("promptPin") || ""}>
                     <button
                       onClick={(e) => handleTogglePin(p.id, e)}
                       style={{
@@ -1783,7 +1783,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                       <PinIcon size={12} filled={p.pinned} />
                     </button>
                   </Tooltip>
-                  <Tooltip content="拖动排序">
+                  <Tooltip content="">
                     <button
                       onMouseDown={(e) => {
                         e.stopPropagation()
@@ -1810,8 +1810,8 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
                       <DragIcon size={14} />
                     </button>
                   </Tooltip>
-                  {/* ⭐ 预览按钮 */}
-                  <Tooltip content={t("promptMarkdownPreview") || "预览"}>
+                  {/* ⭐  */}
+                  <Tooltip content={t("promptMarkdownPreview") || ""}>
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -1903,7 +1903,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
         )}
       </div>
 
-      {/* 添加按钮 */}
+      {/*  */}
       <div style={{ padding: "12px" }}>
         <button
           onClick={() => openEditModal()}
@@ -1937,13 +1937,13 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
         </button>
       </div>
 
-      {/* 弹窗 */}
+      {/*  */}
       {renderEditModal()}
       {renderCategoryModal()}
       {renderPreviewModal()}
       {renderImportDialog()}
 
-      {/* 公共对话框组件 */}
+      {/*  */}
       {confirmState.show && (
         <ConfirmDialog
           title={confirmState.title}
@@ -1970,7 +1970,7 @@ export const PromptsTab: React.FC<PromptsTabProps> = ({
         />
       )}
 
-      {/* ⭐ 变量输入弹窗 */}
+      {/* ⭐  */}
       {variableDialogState.show && (
         <VariableInputDialog
           variables={variableDialogState.variables}

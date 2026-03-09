@@ -1,7 +1,7 @@
 /**
- * 工具箱菜单配置
+ * 
  *
- * 定义工具箱弹出菜单中的所有按钮及其配置
+ * 
  */
 
 import React from "react"
@@ -18,29 +18,29 @@ import {
 } from "~components/icons"
 
 /**
- * 工具菜单项配置接口
+ * 
  */
 export interface ToolsMenuItem {
-  /** 唯一标识符 */
+  /**  */
   id: string
-  /** 国际化翻译键 */
+  /**  */
   labelKey: string
-  /** 默认文案 (无翻译 fallback) */
+  /**  ( fallback) */
   defaultLabel: string
-  /** 图标组件 */
+  /**  */
   IconComponent: React.ComponentType<{ size?: number }>
-  /** 是否是开关类按钮 (有 active 状态) */
+  /**  ( active ) */
   isToggle?: boolean
-  /** 是否渲染在分隔线之后 (危险操作区) */
+  /**  () */
   isDanger?: boolean
-  /** 是否渲染在最后分隔线之后 (系统区) */
+  /**  () */
   isSystem?: boolean
-  /** 默认是否显示 */
+  /**  */
   defaultVisible?: boolean
 }
 
 /**
- * 工具菜单按钮 ID 常量
+ *  ID 
  */
 export const TOOLS_MENU_IDS = {
   EXPORT: "export",
@@ -56,9 +56,9 @@ export const TOOLS_MENU_IDS = {
 export type ToolsMenuId = (typeof TOOLS_MENU_IDS)[keyof typeof TOOLS_MENU_IDS]
 
 /**
- * 工具菜单项定义 (按默认顺序)
+ *  ()
  *
- * 注意：Settings 按钮始终显示，用户不可关闭
+ * Settings 
  */
 export const TOOLS_MENU_ITEMS: ToolsMenuItem[] = [
   {
@@ -119,12 +119,12 @@ export const TOOLS_MENU_ITEMS: ToolsMenuItem[] = [
     defaultLabel: "Settings",
     IconComponent: SettingsIcon,
     isSystem: true,
-    defaultVisible: true, // 始终显示，不可关闭
+    defaultVisible: true, // 
   },
 ]
 
 /**
- * 获取默认启用的工具菜单项 ID 列表
+ *  ID 
  */
 export function getDefaultToolsMenuIds(): ToolsMenuId[] {
   return TOOLS_MENU_ITEMS.filter((item) => item.defaultVisible).map(

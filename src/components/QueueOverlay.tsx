@@ -1,9 +1,9 @@
 /**
  * Queue Overlay - Ghost Overlay UI
  *
- * 悬浮在原生输入框上方的队列管理浮层。
- * 独立于平台 DOM 树，通过 position: fixed 定位。
- * 仅在 settings.features.prompts.promptQueue 为 true 时渲染。
+ * 
+ *  DOM  position: fixed 
+ *  settings.features.prompts.promptQueue  true 
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react"
@@ -79,7 +79,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     return isMac ? "⌥J" : "Alt+J"
   }, [queueBinding])
 
-  // ==================== 位置计算 ====================
+  // ====================  ====================
 
   const updatePosition = useCallback(() => {
     const inputEl = adapter.getTextareaElement()
@@ -91,30 +91,30 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
 
     const rect = inputEl.getBoundingClientRect()
 
-    // 胶囊/面板中心对齐到输入框右缘内侧 20px 处
-    // 因为悬浮层不是被挂载在 document.body，而是放在 App 的容器里
-    // 导致 position: fixed 是相对于容器计算的（如果容器有 transform）。
-    // 所以这里的 top/left 必须算上容器的自身坐标去抵消！
+    // / 20px 
+    //  document.body App 
+    //  position: fixed  transform
+    //  top/left 
 
-    // 我们将挂载到最外层具有样式隔离和主题变量的容器
-    // 通常是 .ophel-container 或者是全局根节点
+    // 
+    //  .ophel-container 
 
-    // 如果找到了局部父容器，并且决定把 Portal 挂载到其内部（比如避免 Shadow DOM 被穿透），我们要计算其相对坐标。
-    // 但是这里为了既享受 CSS 变量又绕开局部 overflow:hidden 限制，
-    // 我们只要确保 Portal 挂在带有 .gh-root 的层级即可。
-    // 如果它挂在 .gh-root，而 .gh-root 本身是 fixed 的（占满全屏），那么 bottom/right 的表现等同于 window 视口
+    //  Portal  Shadow DOM 
+    //  CSS  overflow:hidden 
+    //  Portal  .gh-root 
+    //  .gh-root .gh-root  fixed  bottom/right  window 
 
-    // 下面恢复基于窗口绝对视口的计算方式（最稳定）
+    // 
     const bottomPos = window.innerHeight - rect.top + 12
 
-    // 修复定位偏移 bug: 使用 left 定位，避免右侧滚动条出现/消失导致的 right 坐标跳动。
+    //  bug:  left / right 
     const overlayWidth = Math.min(420, window.innerWidth - 40)
     let leftPos = rect.right - 20 - overlayWidth
 
-    // 如果 left 溢出屏幕左侧，强制贴着左侧边缘
+    //  left 
     if (leftPos < 20) leftPos = 20
 
-    // 将稳定的 left 的坐标转换为相应的 right 属性，以满足接口定义
+    //  left  right 
     const finalRight = window.innerWidth - (leftPos + overlayWidth)
 
     setPosition({
@@ -124,7 +124,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     })
   }, [adapter])
 
-  // ResizeObserver 精准监听输入框位置/大小变化
+  // ResizeObserver /
   useEffect(() => {
     updatePosition()
 
@@ -140,15 +140,15 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
         })
         observer.observe(targetEl)
         if (targetEl.parentElement) {
-          observer.observe(targetEl.parentElement) // 监听父级尺寸变化
+          observer.observe(targetEl.parentElement) // 
         }
       }
     }
 
-    // 初次尝试初始化
+    // 
     initObserver()
 
-    // 兜底轮询（防止页面动态加载输入框）
+    // 
     const intervalId = setInterval(() => {
       updatePosition()
       if (!observer && !targetEl) {
@@ -167,7 +167,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     }
   }, [updatePosition, adapter])
 
-  // ==================== 生成状态监控 ====================
+  // ====================  ====================
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -176,7 +176,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     return () => clearInterval(intervalId)
   }, [adapter])
 
-  // ==================== 自定义快捷键 ====================
+  // ====================  ====================
 
   useEffect(() => {
     const handleToggle = () => {
@@ -187,14 +187,14 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     return () => window.removeEventListener("ophel:togglePromptQueue", handleToggle)
   }, [])
 
-  // 展开时聚焦输入框
+  // 
   useEffect(() => {
     if (isExpanded && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isExpanded])
 
-  // 点击外部关闭
+  // 
   useEffect(() => {
     if (!isExpanded) return
 
@@ -204,7 +204,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
       }
     }
 
-    // 延迟注册以避免展开时的点击立即触发关闭
+    // 
     const timeoutId = setTimeout(() => {
       document.addEventListener("mousedown", handleClickOutside)
     }, 100)
@@ -215,7 +215,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     }
   }, [isExpanded])
 
-  // ==================== 提交逻辑 ====================
+  // ====================  ====================
 
   const handleSubmit = useCallback(async () => {
     const content = inputValue.trim()
@@ -224,16 +224,16 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     setInputValue("")
 
     if (isGenerating) {
-      // AI 正在生成 -> 加入队列
+      // AI  -> 
       store.enqueue(content)
-      // 确保调度器在运行
+      // 
       if (!dispatcher.isRunning()) {
         dispatcher.start()
       }
     } else {
-      // AI 空闲 -> 直接发送
-      // 注意：不在失败时回退入队，因为 submitPrompt 返回 false
-      // 可能只是确认超时（消息实际已发送），回退入队会导致重复发送
+      // AI  -> 
+      //  submitPrompt  false
+      // 
       await dispatcher.sendImmediately(content, submitShortcut)
     }
   }, [inputValue, isGenerating, store, dispatcher, submitShortcut])
@@ -262,11 +262,11 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
 
   const handleForceSend = useCallback(
     async (id: string, content: string) => {
-      // 允许强行发送（插队）
+      // 
       store.remove(id)
       const success = await dispatcher.sendImmediately(content, submitShortcut)
       if (!success) {
-        // 如果失败再放回去（虽然可能顺序变了，但算作 fallback）
+        //  fallback
         store.enqueue(content)
         if (!dispatcher.isRunning()) {
           dispatcher.start()
@@ -299,7 +299,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     setEditingItemId(null)
   }, [])
 
-  // 自动调整输入框高度
+  // 
   const adjustTextareaHeight = useCallback(() => {
     if (inputRef.current) {
       inputRef.current.style.height = "0px" // Reset first to allow shrinking
@@ -315,14 +315,14 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     setInputValue(e.target.value)
   }, [])
 
-  // ==================== 渲染 ====================
+  // ====================  ====================
 
   if (!position) return null
 
-  // 因为定位点(top, left)标志着组件要显示的右下角（紧贴输入框上方右侧）
-  // 所以需要用 translate(-100%, -100%) 把组件从锚定点推上去靠左
-  // 为了保证能读取到 CSS 主题变量，我们需要找到含有主题类名的容器
-  // App 组件渲染内容在 .gh-root 下
+  // (top, left)
+  //  translate(-100%, -100%) 
+  //  CSS 
+  // App  .gh-root 
   const targetContainer = document.querySelector(".gh-root") || document.body
 
   const capsuleStyle: React.CSSProperties = {
@@ -336,7 +336,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     width: position.width,
   }
 
-  // 折叠态：胶囊
+  // 
   if (!isExpanded) {
     return createPortal(
       <div
@@ -356,10 +356,10 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
     )
   }
 
-  // 展开态：面板
+  // 
   return createPortal(
     <div className="gh-queue-panel" style={panelStyle} ref={panelRef}>
-      {/* 头部 */}
+      {/*  */}
       <div className="gh-queue-header">
         <div className="gh-queue-header-title">
           <span>
@@ -394,7 +394,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
         </div>
       </div>
 
-      {/* 队列列表 */}
+      {/*  */}
       <div className="gh-queue-list">
         {items.filter((i) => i.status === "pending" || i.status === "sending").length === 0 ? (
           <div className="gh-queue-empty">{t("queueEmpty")}</div>
@@ -430,7 +430,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
                       <button
                         className="gh-queue-item-edit-btn-save"
                         onClick={() => handleEditSave(item.id)}
-                        title={t("queueEditSave") || "保存"}>
+                        title={t("queueEditSave") || ""}>
                         <svg
                           viewBox="0 0 24 24"
                           width="14"
@@ -446,7 +446,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
                       <button
                         className="gh-queue-item-edit-btn-cancel"
                         onClick={handleEditCancel}
-                        title={t("queueEditCancel") || "取消"}>
+                        title={t("queueEditCancel") || ""}>
                         <svg
                           viewBox="0 0 24 24"
                           width="14"
@@ -470,7 +470,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
                         <button
                           className="gh-queue-item-edit"
                           onClick={() => handleEditClick(item.id, item.content)}
-                          title={t("queueEdit") || "编辑"}>
+                          title={t("queueEdit") || ""}>
                           <svg
                             viewBox="0 0 24 24"
                             width="14"
@@ -529,7 +529,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
         )}
       </div>
 
-      {/* 输入区 */}
+      {/*  */}
       <div className="gh-queue-input-area">
         <div className="gh-queue-input-wrapper">
           <textarea
@@ -562,7 +562,7 @@ export const QueueOverlay: React.FC<QueueOverlayProps> = ({ adapter, dispatcher 
         </div>
       </div>
 
-      {/* 状态栏 */}
+      {/*  */}
       <div className="gh-queue-status">
         <span className="gh-queue-status-dot" data-generating={isGenerating ? "true" : "false"} />
         <span>{isGenerating ? t("queueStatusBusy") : t("queueStatusIdle")}</span>

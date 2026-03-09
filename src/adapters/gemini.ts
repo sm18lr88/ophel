@@ -1,5 +1,4 @@
 /**
- * Gemini 标准版适配器 (gemini.google.com)
  */
 import { SITE_IDS } from "~constants"
 import { DOMToolkit } from "~utils/dom-toolkit"
@@ -29,14 +28,14 @@ const GEMINI_DELETE_REASON = {
 const GEMINI_DELETE_KEYWORDS = [
   "delete",
   "remove",
-  "删除",
-  "删掉",
+  "delete",
+  "delete",
   "supprimer",
   "eliminar",
   "löschen",
   "삭제",
-  "削除",
-  "移除",
+  "delete",
+  "remove",
   "excluir",
   "hapus",
   "удал",
@@ -44,7 +43,7 @@ const GEMINI_DELETE_KEYWORDS = [
 
 const GEMINI_CANCEL_KEYWORDS = [
   "cancel",
-  "取消",
+  "cancel",
   "annuler",
   "abbrechen",
   "취소",
@@ -55,8 +54,7 @@ const GEMINI_CANCEL_KEYWORDS = [
 
 const GEMINI_EXPORT_THOUGHT_MARKER_ATTR = "data-ophel-export-thought-id"
 const GEMINI_EMAIL_REGEX = /([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i
-const GEMINI_ACCOUNT_HINT_REGEX =
-  /(google|account|账号|帳號|conta|compte|cuenta|konto|アカウント|계정|учет)/i
+const GEMINI_ACCOUNT_HINT_REGEX = /(google|account|conta|compte|cuenta|konto|アカウント|계정|учет)/i
 
 interface GeminiExportLifecycleState {
   toggledThoughtIds: string[]
@@ -68,28 +66,22 @@ export class GeminiAdapter extends SiteAdapter {
   private accountEmailLastDetectAt = 0
 
   private getUserPathPrefix(): string {
-    // Gemini 多账号路径格式：/u/2/app/...
     const match = window.location.pathname.match(/^\/u\/(\d+)(?:\/|$)/)
-    // - 若当前 URL 本身没有 /u/ 前缀：保持空前缀（生成 /app/...）
-    // - 若带 /u/n ：使用 /u/n
     if (!match) return ""
     const idx = match[1]
     return `/u/${idx}`
   }
 
   getCurrentCid(): string {
-    // 新逻辑：优先使用当前 Google 账号邮箱作为稳定标识（跨浏览器一致）
     const accountEmail = this.getCurrentAccountEmail()
     if (accountEmail) return accountEmail
 
-    // 兼容兜底：若暂时无法提取邮箱，回退到旧版 /u/<n> 索引
     const match = window.location.pathname.match(/^\/u\/(\d+)(?:\/|$)/)
     return match ? match[1] : "0"
   }
 
   private getCurrentAccountEmail(): string | null {
     const now = Date.now()
-    // 缓存命中（含空值）时短暂复用，减少频繁 DOM 扫描
     if (now - this.accountEmailLastDetectAt < 2000) {
       return this.cachedAccountEmail
     }
@@ -132,7 +124,6 @@ export class GeminiAdapter extends SiteAdapter {
       return this.extractEmail(value)
     }
 
-    // aria/title 可能来自普通内容，限定为账号语义后再提取邮箱，避免误识别正文邮箱
     if (!GEMINI_ACCOUNT_HINT_REGEX.test(value)) return null
     return this.extractEmail(value)
   }
@@ -169,20 +160,15 @@ export class GeminiAdapter extends SiteAdapter {
 
   isNewConversation(): boolean {
     const path = window.location.pathname.replace(/^\/u\/\d+/, "")
-    // 普通新对话
     if (path === "/app" || path === "/app/") return true
-    // Gem 相关页面：创建、编辑、使用 gem 新对话
     if (path === "/gems/create" || path === "/gems/create/") return true
     if (path.startsWith("/gems/edit/")) return true
-    // /gem/{gem_id} 是使用 gem 新对话，/gem/{gem_id}/{session_id} 是已有对话
     if (path.startsWith("/gem/")) {
-      const parts = path.split("/").filter(Boolean) // ["gem", "gem_id"] 或 ["gem", "gem_id", "session_id"]
-      return parts.length <= 2 // 只有 gem_id，没有 session_id
+      const parts = path.split("/").filter(Boolean)
+      return parts.length <= 2
     }
     return false
   }
-
-  // ==================== 会话管理 ====================
 
   getConversationList(): ConversationInfo[] {
     const items = (DOMToolkit.query(".conversation", { all: true }) as Element[]) || []
@@ -241,7 +227,6 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   navigateToConversation(id: string, url?: string): boolean {
-    // 通过 jslog 属性查找侧边栏会话元素
     const sidebarItem = document.querySelector(
       `.conversation[jslog*="${id}"]`,
     ) as HTMLElement | null
@@ -252,7 +237,6 @@ export class GeminiAdapter extends SiteAdapter {
       else sidebarItem.click()
       return true
     }
-    // 降级：页面刷新
     return super.navigateToConversation(id, url)
   }
 
@@ -473,8 +457,8 @@ export class GeminiAdapter extends SiteAdapter {
       'button[aria-haspopup="menu"]',
       'button[aria-label*="More"]',
       'button[aria-label*="more"]',
-      'button[aria-label*="更多"]',
-      'button[aria-label*="选项"]',
+      'button[aria-label*="More"]',
+      'button[aria-label*="Options"]',
       'button[title*="More"]',
       'button[title*="more"]',
       'button[data-test-id*="menu"]',
@@ -553,10 +537,10 @@ export class GeminiAdapter extends SiteAdapter {
     const signalText = this.getSignalText(button)
     return (
       signalText.includes("more") ||
-      signalText.includes("更多") ||
-      signalText.includes("选项") ||
+      signalText.includes("more") ||
+      signalText.includes("options") ||
       signalText.includes("menu") ||
-      signalText.includes("菜单")
+      signalText.includes("menu")
     )
   }
 
@@ -849,7 +833,6 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   getConversationTitle(): string | null {
-    // 尝试从侧边栏获取选中项
     const selected = document.querySelector(".conversation.selected .conversation-title")
     if (selected) return selected.textContent?.trim() || null
     return null
@@ -860,13 +843,13 @@ export class GeminiAdapter extends SiteAdapter {
       ".new-chat-button",
       ".chat-history-new-chat-button",
       '[aria-label="New chat"]',
-      '[aria-label="新对话"]',
-      '[aria-label="发起新对话"]',
+      '[aria-label="New chat"]',
+      '[aria-label="Start new chat"]',
       '[data-testid="new-chat-button"]',
       '[data-test-id="new-chat-button"]',
       '[data-test-id="expanded-button"]',
       '[data-test-id="temp-chat-button"]',
-      'button[aria-label="临时对话"]',
+      'button[aria-label="Temporary chat"]',
     ]
   }
 
@@ -874,27 +857,20 @@ export class GeminiAdapter extends SiteAdapter {
     const container = document.querySelector(this.getResponseContainerSelector())
     if (!container) return null
 
-    // 查找所有的 model-response
     const responses = container.querySelectorAll("model-response")
     if (responses.length === 0) return null
 
     const lastResponse = responses[responses.length - 1]
 
-    // 尝试获取文本容器，避免包含无关 UI
     const textContainer = lastResponse.querySelector(".model-response-text") || lastResponse
 
     return this.extractTextWithLineBreaks(textContainer)
   }
 
-  // ==================== 页面宽度 ====================
-
-  // ==================== 页面宽度控制 ====================
-
   getWidthSelectors() {
     return [
       { selector: ".conversation-container", property: "max-width" },
       { selector: ".input-area-container", property: "max-width" },
-      // 用户消息右对齐
       {
         selector: "user-query",
         property: "max-width",
@@ -912,13 +888,12 @@ export class GeminiAdapter extends SiteAdapter {
     ]
   }
 
-  /** 用户问题宽度选择器 */
   getUserQueryWidthSelectors() {
     return [
       {
         selector: ".user-query-bubble-with-background:not(.edit-mode)",
         property: "max-width",
-        noCenter: true, // 用户问题不需要居中
+        noCenter: true,
       },
     ]
   }
@@ -934,8 +909,6 @@ export class GeminiAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 输入框操作 ====================
-
   getTextareaSelectors(): string[] {
     return [
       'div[contenteditable="true"].ql-editor',
@@ -948,7 +921,7 @@ export class GeminiAdapter extends SiteAdapter {
   getSubmitButtonSelectors(): string[] {
     return [
       'button[aria-label*="Send"]',
-      'button[aria-label*="发送"]',
+      'button[aria-label*="Send"]',
       ".send-button",
       '[data-testid*="send"]',
     ]
@@ -1008,8 +981,6 @@ export class GeminiAdapter extends SiteAdapter {
     document.execCommand("delete", false, undefined)
   }
 
-  // ==================== 滚动容器 ====================
-
   getScrollContainer(): HTMLElement | null {
     if (this.isSharePage()) {
       return document.querySelector("div.content-container") as HTMLElement
@@ -1034,14 +1005,11 @@ export class GeminiAdapter extends SiteAdapter {
     ]
   }
 
-  // ==================== 大纲提取 ====================
-
   getUserQuerySelector(): string {
     return "user-query"
   }
 
   /**
-   * 清理用户提问元素，移除辅助可访问性节点。
    */
   private sanitizeUserQueryElement(element: Element): Element {
     const clone = element.cloneNode(true) as Element
@@ -1058,19 +1026,15 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   /**
-   * 从用户提问元素中提取原始 Markdown 文本
-   * Gemini 标准版：将按行拆分的 .query-text-line 合并为完整 Markdown
    */
   extractUserQueryMarkdown(element: Element): string {
     const sanitized = this.sanitizeUserQueryElement(element)
     const lines = sanitized.querySelectorAll(".query-text-line")
     if (lines.length === 0) {
-      // 回退：使用 extractUserQueryText
       return this.extractUserQueryText(sanitized)
     }
 
     const textLines = Array.from(lines).map((line) => {
-      // 空行（只有 <br>）
       if (line.querySelector("br") && line.textContent?.trim() === "") {
         return ""
       }
@@ -1081,7 +1045,6 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   /**
-   * 导出前自动展开当前会话中所有可见/可加载的思路内容，避免用户手动点击「显示思路」。
    */
   async prepareConversationExport(
     context: ExportLifecycleContext,
@@ -1099,7 +1062,6 @@ export class GeminiAdapter extends SiteAdapter {
     let stableRounds = 0
     let previousThoughtCount = -1
 
-    // 多轮扫描，兼容导出时的懒渲染/延迟挂载
     for (let round = 0; round < 10 && stableRounds < 2; round++) {
       const thoughts = this.getThoughtNodesForExport()
       if (thoughts.length === previousThoughtCount) {
@@ -1139,7 +1101,6 @@ export class GeminiAdapter extends SiteAdapter {
       await this.sleep(120)
     }
 
-    // 清理未成功展开项的 marker，仅保留需要恢复的节点标记
     this.getThoughtNodesForExport().forEach((thought) => {
       const markerId = thought.getAttribute(GEMINI_EXPORT_THOUGHT_MARKER_ATTR)
       if (markerId && !toggledThoughtIds.has(markerId)) {
@@ -1153,7 +1114,6 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   /**
-   * 导出后恢复导出前的折叠状态：仅恢复本次自动展开过的思路块。
    */
   async restoreConversationAfterExport(
     _context: ExportLifecycleContext,
@@ -1313,14 +1273,12 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   /**
-   * 导出前清理 Gemini 注入的辅助可访问性节点，避免进入 Markdown。
    */
   private sanitizeAssistantExportElement(element: Element): Element {
     const clone = element.cloneNode(true) as Element
     const hiddenNodes = clone.querySelectorAll(".cdk-visually-hidden")
     hiddenNodes.forEach((node) => node.remove())
 
-    // 清理导出流程中的临时 marker 属性
     clone
       .querySelectorAll(`model-thoughts[${GEMINI_EXPORT_THOUGHT_MARKER_ATTR}]`)
       .forEach((node) => {
@@ -1330,20 +1288,16 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   /**
-   * 过滤 Gemini 注入的辅助可访问性标题（例如 “Gemini says”）。
-   * 这类标题通常为 visually-hidden，不应进入大纲。
    */
   private shouldSkipOutlineHeading(heading: Element): boolean {
     if (this.isInRenderedMarkdownContainer(heading)) return true
 
-    // 仅过滤 Gemini 注入的辅助可访问性标题，避免误杀正常 Markdown 标题
     if (heading.classList.contains("cdk-visually-hidden")) return true
 
     return false
   }
 
   /**
-   * Gemini 导出：优先转 Markdown，并过滤辅助可访问性标题（如 “Gemini says”）。
    */
   extractAssistantResponseText(element: Element): string {
     const sanitized = this.sanitizeAssistantExportElement(element)
@@ -1354,7 +1308,6 @@ export class GeminiAdapter extends SiteAdapter {
       thoughtBlocks = this.extractThoughtBlockquotesFromElement(sanitized)
     }
 
-    // 正文始终移除思维链节点，避免正文与思维链内容重复
     sanitized.querySelectorAll("model-thoughts").forEach((node) => node.remove())
 
     const bodyMarkdown = htmlToMarkdown(sanitized) || this.extractTextWithLineBreaks(sanitized)
@@ -1369,27 +1322,21 @@ export class GeminiAdapter extends SiteAdapter {
   }
 
   /**
-   * 将渲染后的 HTML 替换到用户提问元素中
-   * Gemini 标准版：隐藏 .query-text 并插入渲染容器
    */
   replaceUserQueryContent(element: Element, html: string): boolean {
     const textContainer = element.querySelector(".query-text")
     if (!textContainer) return false
 
-    // 检查是否已经处理过
     if (textContainer.nextElementSibling?.classList.contains("gh-user-query-markdown")) {
       return false
     }
 
-    // 隐藏原内容
     ;(textContainer as HTMLElement).style.display = "none"
 
-    // 创建渲染容器
     const rendered = document.createElement("div")
     rendered.className = "gh-user-query-markdown gh-markdown-preview"
     setSafeHTML(rendered, html)
 
-    // 插入到原容器后面
     textContainer.after(rendered)
     return true
   }
@@ -1408,7 +1355,6 @@ export class GeminiAdapter extends SiteAdapter {
     const container = document.querySelector(this.getResponseContainerSelector())
     if (!container) return outline
 
-    // 辅助函数：提取 AI 回复的消息 ID
     const getMessageId = (el: Element): string | null => {
       const msgContent = el.closest("message-content")
       if (msgContent && msgContent.id) {
@@ -1418,7 +1364,6 @@ export class GeminiAdapter extends SiteAdapter {
       return null
     }
 
-    // 辅助函数：提取用户提问的消息 ID
     const getUserQueryId = (el: Element): string | null => {
       const btn = el.querySelector('button[jslog*="BardVeMetadataKey"]')
       if (btn) {
@@ -1429,7 +1374,6 @@ export class GeminiAdapter extends SiteAdapter {
       return null
     }
 
-    // 辅助函数：生成标题的稳定 ID
     const messageHeaderCounts: Record<string, Record<string, number>> = {}
     const generateHeaderId = (msgId: string, tagName: string, text: string): string => {
       if (!messageHeaderCounts[msgId]) {
@@ -1443,7 +1387,6 @@ export class GeminiAdapter extends SiteAdapter {
       return `${msgId}::${key}::${count}`
     }
 
-    // 辅助函数：计算字数
     const userQuerySelector = this.getUserQuerySelector()
     const calculateWordCount = (
       startEl: Element,
@@ -1453,25 +1396,19 @@ export class GeminiAdapter extends SiteAdapter {
       if (!startEl) return 0
       try {
         if (isUserQueryItem) {
-          // 对于用户提问，Gemini 的结构是：
           // <user-query>...</user-query>
-          // <model-response>...</model-response> (AI 回复)
-          // 它们是 siblings。为了兼容可能存在的多个回复块（例如工具调用、引用等）
-          // 我们收集直到下一个 user-query 之前的所有内容
           let current = startEl.nextElementSibling
           let totalLength = 0
 
           while (current) {
             const tagName = current.tagName.toLowerCase()
             if (tagName === "user-query") {
-              break // 遇到下一个用户提问，结束
+              break
             }
 
             if (tagName === "model-response") {
-              // 获取 markdown 内容（排除思维链 model-thoughts）
               const markdownContent = current.querySelector(".model-response-text, message-content")
               if (markdownContent) {
-                // 计算文本长度时排除思维链内容
                 const thoughts = current.querySelector("model-thoughts")
                 const thoughtsLength = thoughts?.textContent?.trim().length || 0
                 const totalText = markdownContent.textContent?.trim().length || 0
@@ -1484,19 +1421,12 @@ export class GeminiAdapter extends SiteAdapter {
           return totalLength
         }
 
-        // 对于标题（Heading），使用基类的 Range 工具方法
         const messageContent = startEl.closest("message-content")
         return this.calculateRangeWordCount(startEl, nextEl, messageContent || container)
       } catch {
         return 0
       }
     }
-
-    // 统一收集逻辑：为了正确处理边界，即使不包含 userQueries，我们也最好获取它们作为边界参考
-    // 但为了保持原有逻辑简单，我们分别处理
-    // 实际上，如果不包含 userQueries，我们只需要在 Heading 之间计算
-    // 用户提问本身就是一个自然的分割线，通常 Heading 不会跨越 User Query (因为是新的回复)
-    // 所以如果不包含 UserQuery，boundary 只需要是下一个 Heading
 
     if (!includeUserQueries) {
       const headingSelectors: string[] = []
@@ -1517,17 +1447,14 @@ export class GeminiAdapter extends SiteAdapter {
             element: heading,
           }
 
-          // 尝试生成稳定 ID
           const msgId = getMessageId(heading)
           if (msgId) {
             const tagName = heading.tagName.toLowerCase()
             item.id = generateHeaderId(msgId, tagName, item.text)
           }
 
-          // 字数统计
           if (showWordCount) {
             let nextBoundaryEl: Element | null = null
-            // 寻找下一个边界
             for (let i = index + 1; i < headings.length; i++) {
               const candidate = headings[i]
               const candidateLevel = parseInt(candidate.tagName.charAt(1), 10)
@@ -1545,7 +1472,6 @@ export class GeminiAdapter extends SiteAdapter {
       return outline
     }
 
-    // 包含用户提问的模式
     const headingSelectors: string[] = []
     for (let i = 1; i <= maxLevel; i++) {
       headingSelectors.push(`h${i}`)
@@ -1579,8 +1505,6 @@ export class GeminiAdapter extends SiteAdapter {
         }
 
         if (showWordCount) {
-          // 用户提问的 nextBoundary 实际上对于 calculateWordCount(isUserQuery=true) 不重要
-          // 但我们可以传 null
           item.wordCount = calculateWordCount(element, null, true)
         }
 
@@ -1632,8 +1556,6 @@ export class GeminiAdapter extends SiteAdapter {
     return outline
   }
 
-  // ==================== 生成状态检测 ====================
-
   isGenerating(): boolean {
     const stopIcon = document.querySelector('mat-icon[fonticon="stop"]')
     return stopIcon !== null && (stopIcon as HTMLElement).offsetParent !== null
@@ -1660,8 +1582,6 @@ export class GeminiAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 模型锁定 ====================
-
   getDefaultLockSettings(): { enabled: boolean; keyword: string } {
     return { enabled: false, keyword: "" }
   }
@@ -1683,22 +1603,13 @@ export class GeminiAdapter extends SiteAdapter {
     }
   }
 
-  // ==================== 主题切换 ====================
-
   /**
-   * 切换 Gemini 主题
-   * 直接修改 localStorage + body.className 实现即时无感切换
-   * @param targetMode 目标主题模式
    */
   async toggleTheme(targetMode: "light" | "dark"): Promise<boolean> {
     try {
-      // Gemini 使用 "Bard-Color-Theme" 键存储主题
-      // 值域：Bard-Light-Theme / Bard-Dark-Theme
-      // 当设置为跟随系统时，localStorage 里没有这个变量
       const themeValue = targetMode === "dark" ? "Bard-Dark-Theme" : "Bard-Light-Theme"
       localStorage.setItem("Bard-Color-Theme", themeValue)
 
-      // 同时更新 body.className（Gemini 使用 body.dark-theme / body.light-theme）
       if (targetMode === "dark") {
         document.body.classList.add("dark-theme")
         document.body.classList.remove("light-theme")
@@ -1707,10 +1618,8 @@ export class GeminiAdapter extends SiteAdapter {
         document.body.classList.add("light-theme")
       }
 
-      // 更新 colorScheme
       document.body.style.colorScheme = targetMode
 
-      // 触发 storage 事件
       window.dispatchEvent(
         new StorageEvent("storage", {
           key: "Bard-Color-Theme",

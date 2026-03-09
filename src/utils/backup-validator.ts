@@ -1,23 +1,23 @@
 /**
- * 备份数据校验工具
- * 用于验证导入/恢复的备份数据格式是否正确
+ * 
+ * /
  */
 
 export interface ValidationResult {
   valid: boolean
-  /** 错误信息的国际化 key 列表 */
+  /**  key  */
   errorKeys: string[]
 }
 
 /**
- * 校验备份数据格式
- * @param data 解析后的备份数据对象
- * @returns 校验结果，errorKeys 为国际化 key
+ * 
+ * @param data 
+ * @returns errorKeys  key
  */
 export function validateBackupData(data: unknown): ValidationResult {
   const errorKeys: string[] = []
 
-  // 基础格式校验
+  // 
   if (!data || typeof data !== "object") {
     return { valid: false, errorKeys: ["backupValidationInvalidFormat"] }
   }
@@ -35,7 +35,7 @@ export function validateBackupData(data: unknown): ValidationResult {
 
   const backupData = parsedData.data
 
-  // 数据类型校验
+  // 
   if (backupData.settings !== undefined) {
     if (typeof backupData.settings !== "object" || Array.isArray(backupData.settings)) {
       errorKeys.push("backupValidationSettingsType")

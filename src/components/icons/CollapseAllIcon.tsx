@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 折叠全部 (圆圈减号)
- * 风格：Outline (stroke-based)
+ * SVG  -  ()
+ * Outline (stroke-based)
  */
 import React from "react"
 

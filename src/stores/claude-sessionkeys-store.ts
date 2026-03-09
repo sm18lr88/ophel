@@ -1,17 +1,9 @@
-/**
- * Claude SessionKeys Store - Zustand 状态管理
- *
- * 管理Claude SessionKey列表和当前使用的Token
- */
-
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 
 import type { ClaudeSessionKey, ClaudeSessionKeysState } from "~utils/storage"
 
 import { chromeStorageAdapter } from "./chrome-adapter"
-
-// ==================== Store 类型定义 ====================
 
 interface SessionKeysStore extends ClaudeSessionKeysState {
   _hasHydrated: boolean
@@ -22,17 +14,15 @@ interface SessionKeysStore extends ClaudeSessionKeysState {
   deleteKey: (id: string) => void
   setCurrentKey: (id: string) => void
   testKey: (id: string, result: { isValid: boolean; accountType?: string }) => void
-  setKeys: (keys: ClaudeSessionKey[]) => void // 批量设置(用于导入)
+  setKeys: (keys: ClaudeSessionKey[]) => void
   setHasHydrated: (state: boolean) => void
 }
-
-// ==================== Store 创建 ====================
 
 export const useClaudeSessionKeysStore = create<SessionKeysStore>()(
   persist(
     (set, _get) => ({
       keys: [],
-      currentKeyId: "", // 空字符串表示使用浏览器默认cookie
+      currentKeyId: "",
       _hasHydrated: false,
 
       addKey: (data) => {
@@ -55,7 +45,6 @@ export const useClaudeSessionKeysStore = create<SessionKeysStore>()(
       deleteKey: (id) =>
         set((state) => ({
           keys: state.keys.filter((k) => k.id !== id),
-          // 如果删除的是当前使用的key,重置为默认
           currentKeyId: state.currentKeyId === id ? "" : state.currentKeyId,
         })),
 
@@ -93,13 +82,9 @@ export const useClaudeSessionKeysStore = create<SessionKeysStore>()(
   ),
 )
 
-// ==================== 便捷 Hooks ====================
-
 export const useSessionKeysHydrated = () => useClaudeSessionKeysStore((state) => state._hasHydrated)
 export const useSessionKeys = () => useClaudeSessionKeysStore((state) => state.keys)
 export const useCurrentKeyId = () => useClaudeSessionKeysStore((state) => state.currentKeyId)
-
-// ==================== 非 React 环境使用 ====================
 
 export const getSessionKeysState = () => useClaudeSessionKeysStore.getState()
 export const getCurrentKey = (): ClaudeSessionKey | null => {

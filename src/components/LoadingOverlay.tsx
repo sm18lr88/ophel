@@ -10,8 +10,8 @@ interface LoadingOverlayProps {
 }
 
 /**
- * 全屏加载遮罩组件
- * 用于显示历史加载等长时间操作的进度
+ * 
+ * 
  */
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ isVisible, text, onStop }) => {
   if (!isVisible) return null

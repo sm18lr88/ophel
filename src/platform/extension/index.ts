@@ -1,9 +1,3 @@
-/**
- * Platform Implementation - Browser Extension
- *
- * 浏览器扩展平台实现，通过 chrome.runtime.sendMessage 与 background 通信
- */
-
 import type {
   FetchOptions,
   FetchResponse,
@@ -14,9 +8,6 @@ import type {
 } from "../types"
 import { validateLlmProviderUrl } from "~utils/network-security"
 
-/**
- * 扩展版存储实现
- */
 const extensionStorage: PlatformStorage = {
   async get<T>(key: string): Promise<T | undefined> {
     const result = await chrome.storage.local.get(key)
@@ -45,9 +36,6 @@ const extensionStorage: PlatformStorage = {
   },
 }
 
-/**
- * 浏览器扩展平台实现
- */
 export const platform: Platform = {
   type: "extension",
 
@@ -94,7 +82,6 @@ export const platform: Platform = {
   },
 
   hasCapability(_cap: PlatformCapability): boolean {
-    // 扩展版支持所有能力
     return true
   },
 

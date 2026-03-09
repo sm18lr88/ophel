@@ -1,8 +1,8 @@
 /**
- * 常量统一导出
+ * 
  */
 
-// UI 相关
+// UI 
 export {
   TAB_IDS,
   TAB_DEFINITIONS,
@@ -27,14 +27,14 @@ export {
   type TabId,
 } from "./ui"
 
-// 快捷键
+// 
 export {
   SHORTCUT_ACTIONS,
   SHORTCUT_CATEGORIES,
   DEFAULT_KEYBINDINGS as SHORTCUT_DEFAULT_BINDINGS,
 } from "./shortcuts"
 
-// 默认值
+// 
 export {
   getDefaultPrompts,
   DEFAULT_FOLDERS,
@@ -47,10 +47,10 @@ export {
   type Folder,
 } from "./defaults"
 
-// 提示词模块
+// 
 export { VIRTUAL_CATEGORY, type VirtualCategoryType } from "./prompts"
 
-// 工具箱菜单
+// 
 export {
   TOOLS_MENU_IDS,
   TOOLS_MENU_ITEMS,

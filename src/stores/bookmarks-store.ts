@@ -7,12 +7,12 @@ import type { OutlineItem } from "~adapters/base"
 export interface Bookmark {
   id: string
   sessionId: string
-  siteId: string // 站点标识 (chatgpt/claude/gemini...)
-  cid: string // 账号/团队 ID
+  siteId: string
+  cid: string
   title: string
   level: number
-  signature: string // 模糊匹配签名: title + nextSiblingText
-  scrollTop: number // 回退位置
+  signature: string
+  scrollTop: number
   timestamp: number
 }
 
@@ -44,7 +44,6 @@ interface BookmarkStore {
   clearAllBookmarks: () => void
 }
 
-// 扁平化 storage adapter：直接存储 bookmarks 数组到根节点
 const flatBookmarkStorage = {
   getItem: async (_name: string) => {
     const data = await chromeStorageAdapter.getItem("bookmarks")
@@ -131,7 +130,7 @@ export const useBookmarkStore = create<BookmarkStore>()(
       },
     }),
     {
-      name: "bookmarks", // 存储键名
+      name: "bookmarks",
       storage: createJSONStorage(() => flatBookmarkStorage),
     },
   ),

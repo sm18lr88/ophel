@@ -1,11 +1,6 @@
 /**
- * 滚动锁定管理器
  *
- * 功能：当功能开启时，阻止页面自动滚动到底部，方便用户阅读上文。
  *
- * 核心策略：
- * 通过主世界脚本（scroll-lock-main.ts）劫持 scrollIntoView、scrollTo 等 API
- * 本管理器通过 postMessage 控制主世界脚本的启用/禁用
  */
 
 import type { SiteAdapter } from "~adapters/base"
@@ -26,7 +21,6 @@ export class ScrollLockManager {
     const wasEnabled = this.settings.panel?.preventAutoScroll
     this.settings = settings
 
-    // 动态开关支持
     if (!wasEnabled && settings.panel?.preventAutoScroll) {
       this.enable()
     } else if (wasEnabled && !settings.panel?.preventAutoScroll) {
@@ -46,7 +40,6 @@ export class ScrollLockManager {
     if (this.enabled) return
     this.enabled = true
 
-    // 通知主世界脚本启用 API 劫持
     this.toggleMainWorldHijack(true)
   }
 
@@ -54,7 +47,6 @@ export class ScrollLockManager {
     if (!this.enabled) return
     this.enabled = false
 
-    // 通知主世界脚本禁用 API 劫持
     this.toggleMainWorldHijack(false)
   }
 
@@ -63,7 +55,6 @@ export class ScrollLockManager {
   }
 
   /**
-   * 通过 postMessage 通知主世界脚本启用/禁用 API 劫持
    */
   private toggleMainWorldHijack(enabled: boolean) {
     window.postMessage({ type: "OPHEL_SCROLL_LOCK_TOGGLE", enabled }, window.location.origin)

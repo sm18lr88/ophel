@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 清除/关闭
- * 风格：Outline (stroke-based)
+ * SVG  - /
+ * Outline (stroke-based)
  */
 import React from "react"
 
@@ -26,7 +26,7 @@ export const ClearIcon: React.FC<IconProps> = ({
     strokeLinejoin="round"
     className={className}
     style={{ display: "block" }}>
-    {/* X 关闭符号 */}
+    {/* X  */}
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>

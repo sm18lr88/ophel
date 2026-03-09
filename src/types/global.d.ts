@@ -1,26 +1,26 @@
 /**
- * 全局类型声明
- * 为 window 对象上的自定义属性提供类型支持
+ * 
+ *  window 
  */
 
 import type { ThemeManager } from "~core/theme-manager"
 
 declare global {
   interface Window {
-    /** Ophel 初始化标记 */
+    /** Ophel  */
     ophelInitialized?: boolean
-    /** 全局 ThemeManager 实例 */
+    /**  ThemeManager  */
     __ophelThemeManager?: ThemeManager
-    /** 滚动锁定初始化标记 */
+    /**  */
     __ophelScrollLockInitialized?: boolean
-    /** 滚动锁定是否启用 */
+    /**  */
     __ophelScrollLockEnabled?: boolean
-    /** 原始滚动 API 备份 */
+    /**  API  */
     __ophelOriginalApis?: {
       scrollIntoView: typeof Element.prototype.scrollIntoView
       scrollTo: typeof window.scrollTo
     }
-    /** iframe 滚动初始化标记 */
+    /** iframe  */
     __ophelIframeScrollInitialized?: boolean
   }
 }

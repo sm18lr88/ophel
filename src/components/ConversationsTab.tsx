@@ -1,6 +1,6 @@
 /**
- * 会话 Tab 组件
- * 从油猴脚本 geminiHelper.user.js 5874~6606 行原封不动移植
+ *  Tab 
+ *  geminiHelper.user.js 5874~6606 
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -41,7 +41,7 @@ import {
 } from "~components/icons"
 import { SelectDropdown, Tooltip } from "~components/ui"
 
-// ==================== 类型定义 ====================
+// ====================  ====================
 
 interface ConversationsTabProps {
   manager: ConversationManager
@@ -97,29 +97,29 @@ const getFolderDisplayName = (folder: Pick<Folder, "name" | "icon">): string => 
   return trimmedName
 }
 
-// ==================== 主组件 ====================
+// ====================  ====================
 
 export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   manager,
   onInteractionStateChange,
 }) => {
-  // 设置 - 使用 Zustand store，确保设置变更实时生效
+  //  -  Zustand store
   const { settings } = useSettingsStore()
 
-  // 数据状态
+  // 
   const [folders, setFolders] = useState<Folder[]>([])
   const [conversations, setConversations] = useState<Record<string, Conversation>>({})
   const [tags, setTags] = useState<Tag[]>([])
   const [lastUsedFolderId, setLastUsedFolderId] = useState("inbox")
 
-  // UI 状态
+  // UI 
   const [expandedFolderId, setExpandedFolderId] = useState<string | null>(null)
   const [batchMode, setBatchMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [syncing, setSyncing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // 搜索状态
+  // 
   const [searchQuery, setSearchQuery] = useState("")
   const [filterPinned, setFilterPinned] = useState(false)
   const [filterTagIds, setFilterTagIds] = useState<Set<string>>(new Set())
@@ -128,7 +128,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   const [isFolderSelectOpen, setIsFolderSelectOpen] = useState(false)
   const [isNarrowLayout, setIsNarrowLayout] = useState(false)
 
-  // 对话框和菜单
+  // 
   const [dialog, setDialog] = useState<DialogType>(null)
   const [menu, setMenu] = useState<MenuType>(null)
 
@@ -139,7 +139,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
   const tagFilterMenuRef = useRef<HTMLDivElement>(null)
   const tagFilterBtnRef = useRef<HTMLDivElement>(null)
 
-  // 根据面板宽度切换紧凑布局，优先给标题与标签留空间
+  // 
   useEffect(() => {
     const el = contentRef.current
     if (!el || typeof ResizeObserver === "undefined") return
@@ -155,7 +155,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     return () => observer.disconnect()
   }, [])
 
-  // 加载数据（设置由 Zustand store 管理，无需手动加载）
+  //  Zustand store 
   const loadData = useCallback(async () => {
     setFolders([...manager.getFolders()])
     setConversations({ ...manager.getAllConversations() })
@@ -167,7 +167,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     loadData()
   }, [loadData])
 
-  // 订阅 ConversationManager 的数据变更事件
+  //  ConversationManager 
   useEffect(() => {
     const unsubscribe = manager.onDataChange(() => {
       loadData()
@@ -175,7 +175,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     return () => unsubscribe()
   }, [manager, loadData])
 
-  // 搜索处理
+  // 
   const handleSearch = useCallback(
     (query: string) => {
       if (!query && !filterPinned && filterTagIds.size === 0) {
@@ -218,17 +218,17 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     [folders, conversations, filterPinned, filterTagIds],
   )
 
-  // 监听筛选条件变化，自动触发搜索
+  // 
   useEffect(() => {
     handleSearch(searchQuery)
   }, [filterPinned, filterTagIds, handleSearch, searchQuery])
 
-  // 监听标签筛选菜单外部点击
+  // 
   useEffect(() => {
     if (!showTagFilterMenu) return
 
     const handleClickOutside = (e: MouseEvent) => {
-      // 使用 composedPath() 获取完整的事件路径（穿透 Shadow DOM）
+      //  composedPath()  Shadow DOM
       const path = e.composedPath()
       const clickedInMenu = tagFilterMenuRef.current && path.includes(tagFilterMenuRef.current)
       const clickedInBtn = tagFilterBtnRef.current && path.includes(tagFilterBtnRef.current)
@@ -238,9 +238,9 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       }
     }
 
-    // 延迟添加监听，避免立即触发
+    // 
     const timer = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside, true) // 使用捕获阶段
+      document.addEventListener("click", handleClickOutside, true) // 
     }, 0)
 
     return () => {
@@ -249,7 +249,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }
   }, [showTagFilterMenu])
 
-  // 监听所有弹窗状态，向上汇报交互状态
+  // 
   useEffect(() => {
     const isInteracting = !!(
       menu ||
@@ -270,14 +270,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     onInteractionStateChange,
   ])
 
-  // 防抖搜索
+  // 
   const handleSearchInput = (value: string) => {
     setSearchQuery(value)
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
     searchTimeoutRef.current = setTimeout(() => handleSearch(value), 150)
   }
 
-  // 同步
+  // 
   const handleSync = useCallback(async () => {
     setSyncing(true)
     try {
@@ -300,9 +300,9 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }
   }, [manager, lastUsedFolderId, loadData])
 
-  // 定位当前对话
+  // 
   const handleLocate = useCallback(() => {
-    // 分享页面或新对话页面不执行定位
+    // 
     if (manager.siteAdapter?.isSharePage?.() || manager.siteAdapter?.isNewConversation?.()) {
       return
     }
@@ -318,7 +318,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
 
     setExpandedFolderId(conv.folderId)
     setTimeout(() => {
-      // 使用 contentRef 在组件内查找元素（Shadow DOM 内）
+      //  contentRef Shadow DOM 
       const container = contentRef.current
       if (!container) return
       const item = container.querySelector(`.conversations-item[data-id="${sessionId}"]`)
@@ -330,19 +330,19 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }, 100)
   }, [manager, handleSync])
 
-  // 监听快捷键触发的定位事件
+  // 
   useEffect(() => {
     const locateWindow = window as LocateConversationWindow
 
     const handleLocateEvent = () => {
-      // 清除全局标记
+      // 
       locateWindow.__ophelPendingLocateConversation = false
       handleLocate()
     }
 
-    // 检查挂载时是否有待处理的定位请求
+    // 
     if (locateWindow.__ophelPendingLocateConversation) {
-      // 延迟执行，确保组件完全渲染
+      // 
       setTimeout(() => {
         handleLocateEvent()
       }, 100)
@@ -354,7 +354,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }
   }, [handleLocate])
 
-  // 监听快捷键触发的刷新事件
+  // 
   useEffect(() => {
     const handleRefreshEvent = () => {
       handleSync()
@@ -366,7 +366,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     }
   }, [handleSync])
 
-  // 批量模式
+  // 
   const toggleBatchMode = () => {
     if (batchMode) {
       setSelectedIds(new Set())
@@ -379,7 +379,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     setBatchMode(false)
   }
 
-  // 清除筛选
+  // 
   const clearFilters = () => {
     setSearchQuery("")
     setFilterPinned(false)
@@ -389,7 +389,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
 
   const hasFilters = searchQuery || filterPinned || filterTagIds.size > 0
 
-  // 获取文件夹下的会话（过滤并排序）
+  // 
   const getConversationsInFolder = (folderId: string): Conversation[] => {
     let convs = Object.values(conversations).filter((c) => c.folderId === folderId)
     if (searchResult) {
@@ -409,7 +409,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     return convs
   }
 
-  // 获取文件夹计数
+  // 
   const getFolderCount = (folderId: string): number => {
     if (searchResult) {
       return Object.values(conversations).filter(
@@ -419,7 +419,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     return Object.values(conversations).filter((c) => c.folderId === folderId).length
   }
 
-  // 高亮文本
+  // 
   const highlightText = (text: string, query: string): React.ReactNode => {
     if (!query) return text
     const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"))
@@ -434,7 +434,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     )
   }
 
-  // 点击会话
+  // 
   const handleConversationClick = (conv: Conversation) => {
     if (batchMode) {
       const newSelected = new Set(selectedIds)
@@ -444,16 +444,16 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       return
     }
 
-    // 使用适配器的 navigateToConversation 方法（SPA 导航）
+    //  navigateToConversation SPA 
     manager.siteAdapter?.navigateToConversation(conv.id, conv.url)
   }
 
-  // 文件夹展开/折叠（手风琴模式）
+  // /
   const handleFolderClick = (folderId: string) => {
     setExpandedFolderId(expandedFolderId === folderId ? null : folderId)
   }
 
-  // 文件夹全选
+  // 
   const handleFolderSelectAll = (folderId: string, checked: boolean) => {
     const convs = getConversationsInFolder(folderId)
     const newSelected = new Set(selectedIds)
@@ -473,7 +473,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     return selected.length > 0 && selected.length < convs.length
   }
 
-  // 判断文件夹是否应显示
+  // 
   const shouldShowFolder = (folder: Folder): boolean => {
     if (!searchResult) return true
     const folderMatch = searchResult.folderMatches.has(folder.id)
@@ -481,7 +481,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     return folderMatch || hasChildren
   }
 
-  // 判断文件夹是否应展开
+  // 
   const shouldExpandFolder = (folderId: string): boolean => {
     if (searchResult) {
       return Array.from(searchResult.conversationFolderMap.values()).includes(folderId)
@@ -511,11 +511,11 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
     [folders],
   )
 
-  // ==================== 渲染 ====================
+  // ====================  ====================
 
   return (
     <>
-      <LoadingOverlay isVisible={isDeleting} text={`${t("delete") || "删除"}...`} />
+      <LoadingOverlay isVisible={isDeleting} text={`${t("delete") || ""}...`} />
       <div
         ref={contentRef}
         className={`conversations-content ${isNarrowLayout ? "is-narrow" : ""}`}
@@ -525,11 +525,11 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           height: "100%",
           overflow: "hidden",
         }}>
-        {/* 工具栏 */}
+        {/*  */}
         <div className="conversations-toolbar">
-          {/* 1. 同步目标选择 */}
+          {/* 1.  */}
           <Tooltip
-            content={t("conversationsSelectFolder") || "选择文件夹"}
+            content={t("conversationsSelectFolder") || ""}
             triggerStyle={{ flex: 1, minWidth: 0 }}>
             <SelectDropdown
               className="conversations-folder-select-dropdown"
@@ -538,7 +538,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
               optionClassName="conversations-folder-select-option"
               options={folderSelectOptions}
               value={lastUsedFolderId}
-              ariaLabel={t("conversationsSelectFolder") || "选择文件夹"}
+              ariaLabel={t("conversationsSelectFolder") || ""}
               onOpenChange={setIsFolderSelectOpen}
               onChange={(selectedFolderId) => {
                 setLastUsedFolderId(selectedFolderId)
@@ -547,8 +547,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             />
           </Tooltip>
 
-          {/* 2. 同步按钮 */}
-          <Tooltip content={t("conversationsSync") || "同步"}>
+          {/* 2.  */}
+          <Tooltip content={t("conversationsSync") || ""}>
             <button
               className="conversations-toolbar-btn sync"
               disabled={syncing}
@@ -557,15 +557,15 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             </button>
           </Tooltip>
 
-          {/* 3. 定位按钮 */}
-          <Tooltip content={t("conversationsLocate") || "定位当前对话"}>
+          {/* 3.  */}
+          <Tooltip content={t("conversationsLocate") || ""}>
             <button className="conversations-toolbar-btn locate" onClick={handleLocate}>
               <LocateIcon size={18} />
             </button>
           </Tooltip>
 
-          {/* 4. 批量模式 */}
-          <Tooltip content={t("conversationsBatchMode") || "批量操作"}>
+          {/* 4.  */}
+          <Tooltip content={t("conversationsBatchMode") || ""}>
             <button
               className={`conversations-toolbar-btn batch-mode ${batchMode ? "active" : ""}`}
               onClick={toggleBatchMode}>
@@ -573,8 +573,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             </button>
           </Tooltip>
 
-          {/* 5. 新建文件夹 */}
-          <Tooltip content={t("conversationsAddFolder") || "新建文件夹"}>
+          {/* 5.  */}
+          <Tooltip content={t("conversationsAddFolder") || ""}>
             <button
               className="conversations-toolbar-btn add-folder"
               onClick={() => {
@@ -586,7 +586,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           </Tooltip>
         </div>
 
-        {/* 搜索栏 */}
+        {/*  */}
         <div className="conversations-search-bar">
           <div className="conversations-search-wrapper" style={{ position: "relative" }}>
             <div className="conversations-search-input-group">
@@ -594,14 +594,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                 ref={searchInputRef}
                 type="text"
                 className="conversations-search-input"
-                placeholder={t("conversationsSearchPlaceholder") || "搜索会话..."}
+                placeholder={t("conversationsSearchPlaceholder") || "..."}
                 value={searchQuery}
                 onChange={(e) => handleSearchInput(e.target.value)}
               />
             </div>
 
-            {/* 置顶筛选 */}
-            <Tooltip content={t("conversationsFilterPinned") || "筛选置顶"}>
+            {/*  */}
+            <Tooltip content={t("conversationsFilterPinned") || ""}>
               <div
                 className={`conversations-pin-filter-btn ${filterPinned ? "active" : ""}`}
                 style={{ userSelect: "none" }}
@@ -610,8 +610,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
               </div>
             </Tooltip>
 
-            {/* 标签筛选 */}
-            <Tooltip content={t("conversationsFilterByTags") || "按标签筛选"}>
+            {/*  */}
+            <Tooltip content={t("conversationsFilterByTags") || ""}>
               <div
                 ref={tagFilterBtnRef}
                 className={`conversations-tag-search-btn ${filterTagIds.size > 0 ? "active" : ""}`}
@@ -625,7 +625,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
               </div>
             </Tooltip>
 
-            {/* 标签筛选菜单 */}
+            {/*  */}
             {showTagFilterMenu && (
               <div ref={tagFilterMenuRef} className="conversations-tag-filter-menu">
                 <div
@@ -635,7 +635,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     <div
                       className="conversations-tag-filter-item"
                       style={{ color: "var(--gh-text-tertiary, #9ca3af)", cursor: "default" }}>
-                      {t("conversationsNoTags") || "暂无标签"}
+                      {t("conversationsNoTags") || ""}
                     </div>
                   ) : (
                     tags.map((tag) => (
@@ -662,18 +662,18 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     className="conversations-tag-filter-item conversations-tag-filter-action"
                     onClick={() => {
                       setShowTagFilterMenu(false)
-                      // 从筛选菜单打开标签管理对话框，作为纯管理模式（不绑定会话）
+                      // 
                       onInteractionStateChange?.(true)
                       setDialog({ type: "tagManager", conv: undefined })
                     }}>
-                    {t("conversationsManageTags") || "管理标签"}
+                    {t("conversationsManageTags") || ""}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* 清除按钮 */}
-            <Tooltip content={t("conversationsClearAll") || "清除所有筛选"}>
+            {/*  */}
+            <Tooltip content={t("conversationsClearAll") || ""}>
               <div
                 className={`conversations-search-clear ${!hasFilters ? "disabled" : ""}`}
                 onClick={hasFilters ? clearFilters : undefined}>
@@ -682,21 +682,21 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             </Tooltip>
           </div>
 
-          {/* 搜索结果计数 */}
+          {/*  */}
           {searchQuery && searchResult && (
             <div className="conversations-result-bar visible">
-              {searchResult.totalCount} {t("conversationsSearchResult") || "个结果"}
+              {searchResult.totalCount} {t("conversationsSearchResult") || ""}
             </div>
           )}
         </div>
 
-        {/* 文件夹列表 */}
+        {/*  */}
         <div className="conversations-folder-list">
           {folders.filter(shouldShowFolder).length === 0 ? (
             <div className="conversations-empty">
               {searchResult
-                ? t("conversationsNoSearchResult") || "未找到匹配结果"
-                : t("conversationsEmpty") || "暂无会话"}
+                ? t("conversationsNoSearchResult") || ""
+                : t("conversationsEmpty") || ""}
             </div>
           ) : (
             folders.filter(shouldShowFolder).map((folder, index) => {
@@ -704,9 +704,9 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
               const count = getFolderCount(folder.id)
               const folderName = getFolderDisplayName(folder)
 
-              // 彩虹色 - 根据设置决定是否启用
-              // 非彩虹色模式：只有收件箱有背景色，其他文件夹透明
-              // 彩虹色模式：所有文件夹都有彩色背景
+              //  - 
+              // 
+              // 
               const useRainbow = settings?.features?.conversations?.folderRainbow ?? false
               let bgVar = "transparent"
               if (folder.isDefault) {
@@ -714,20 +714,20 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
               } else if (useRainbow) {
                 bgVar = `var(--gh-folder-bg-${index % 8})`
               } else if (isExpanded) {
-                // 展开状态下的背景色 (淡蓝色 / 暗黑模式适配)
+                //  ( / )
                 bgVar = "var(--gh-folder-bg-expanded, rgba(59, 130, 246, 0.08))"
               }
 
               return (
                 <React.Fragment key={folder.id}>
-                  {/* 文件夹项 */}
+                  {/*  */}
                   <div
                     className={`conversations-folder-item ${isExpanded ? "expanded" : ""} ${folder.isDefault ? "default" : ""}`}
                     data-folder-id={folder.id}
                     style={{ background: bgVar }}
                     onClick={() => handleFolderClick(folder.id)}>
                     <div className="conversations-folder-info">
-                      {/* 批量模式复选框 */}
+                      {/*  */}
                       {batchMode && (
                         <input
                           type="checkbox"
@@ -753,14 +753,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                         </span>
                       </Tooltip>
 
-                      {/* 排序按钮 */}
+                      {/*  */}
                       {!folder.isDefault && (
                         <div
                           className="conversations-folder-order-btns"
                           style={{ userSelect: "none" }}>
                           <button
                             className="conversations-folder-order-btn"
-                            title={t("moveUp") || "上移"}
+                            title={t("moveUp") || ""}
                             disabled={index <= 1}
                             onClick={() => {
                               manager.moveFolder(folder.id, "up")
@@ -770,7 +770,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                           </button>
                           <button
                             className="conversations-folder-order-btn"
-                            title={t("moveDown") || "下移"}
+                            title={t("moveDown") || ""}
                             disabled={index >= folders.length - 1}
                             onClick={() => {
                               manager.moveFolder(folder.id, "down")
@@ -801,12 +801,12 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     </div>
                   </div>
 
-                  {/* 会话列表 */}
+                  {/*  */}
                   {isExpanded && (
                     <div className="conversations-list" data-folder-id={folder.id}>
                       {getConversationsInFolder(folder.id).length === 0 ? (
                         <div className="conversations-list-empty">
-                          {t("conversationsEmpty") || "暂无会话"}
+                          {t("conversationsEmpty") || ""}
                         </div>
                       ) : (
                         getConversationsInFolder(folder.id).map((conv) => (
@@ -823,7 +823,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                 onChange={() => {}}
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  // 切换选中状态
+                                  // 
                                   const newSelected = new Set(selectedIds)
                                   if (newSelected.has(conv.id)) {
                                     newSelected.delete(conv.id)
@@ -871,8 +871,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                                         )}
                                         {searchQuery &&
                                         searchResult?.conversationMatches.has(conv.id)
-                                          ? highlightText(conv.title || "无标题", searchQuery)
-                                          : conv.title || "无标题"}
+                                          ? highlightText(conv.title || "", searchQuery)
+                                          : conv.title || ""}
                                       </span>
                                     </Tooltip>
 
@@ -922,7 +922,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                             <div className="conversations-item-meta">
                               <button
                                 className="conversations-item-menu-btn"
-                                title={t("more") || "更多操作"}
+                                title={t("more") || ""}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   onInteractionStateChange?.(true)
@@ -942,14 +942,14 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           )}
         </div>
 
-        {/* 批量操作栏 */}
+        {/*  */}
         {batchMode && selectedIds.size > 0 && (
           <div className="conversations-batch-bar">
             <span className="conversations-batch-info">
-              {(t("batchSelected") || "已选 {n} 个").replace("{n}", String(selectedIds.size))}
+              {(t("batchSelected") || " {n} ").replace("{n}", String(selectedIds.size))}
             </span>
             <div className="conversations-batch-btns">
-              <Tooltip content={t("exportToClipboard") || "复制 Markdown"}>
+              <Tooltip content={t("exportToClipboard") || " Markdown"}>
                 <button
                   className="conversations-batch-btn"
                   style={{ padding: "4px 6px", minWidth: "auto", marginLeft: "4px" }}
@@ -960,7 +960,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                   <CopyIcon size={16} />
                 </button>
               </Tooltip>
-              <Tooltip content={t("batchExport") || "导出"}>
+              <Tooltip content={t("batchExport") || ""}>
                 <button
                   className="conversations-batch-btn"
                   style={{ padding: "4px 6px", minWidth: "auto", marginLeft: "4px" }}
@@ -971,7 +971,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                   <ExportIcon size={16} />
                 </button>
               </Tooltip>
-              <Tooltip content={t("batchMove") || "移动"}>
+              <Tooltip content={t("batchMove") || ""}>
                 <button
                   className="conversations-batch-btn"
                   style={{ padding: "4px 6px", minWidth: "auto", marginLeft: "4px" }}
@@ -982,7 +982,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                   <FolderMoveIcon size={16} />
                 </button>
               </Tooltip>
-              <Tooltip content={t("batchDelete") || "删除"}>
+              <Tooltip content={t("batchDelete") || ""}>
                 <button
                   className="conversations-batch-btn danger"
                   style={{ padding: "4px 6px", minWidth: "auto", marginLeft: "4px" }}
@@ -990,8 +990,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                     onInteractionStateChange?.(true)
                     setDialog({
                       type: "confirm",
-                      title: t("batchDelete") || "批量删除",
-                      message: `确定删除选中的 ${selectedIds.size} 个会话吗？`,
+                      title: t("batchDelete") || "",
+                      message: ` ${selectedIds.size} `,
                       danger: true,
                       onConfirm: async () => {
                         if (isDeleting) return
@@ -1001,12 +1001,12 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                         try {
                           const result = await manager.deleteConversations(Array.from(selectedIds))
                           if (result.localDeletedCount === 0) {
-                            showToast(t("deleteError") || "删除失败")
+                            showToast(t("deleteError") || "")
                             return
                           }
                           if (result.remoteAttemptedCount > 0 && result.remoteFailedCount > 0) {
                             showToast(
-                              `已删除 ${result.localDeletedCount} 个，本地成功，云端失败 ${result.remoteFailedCount} 个`,
+                              ` ${result.localDeletedCount}  ${result.remoteFailedCount} `,
                             )
                           }
                           clearSelection()
@@ -1020,7 +1020,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                   <DeleteIcon size={16} />
                 </button>
               </Tooltip>
-              <Tooltip content={t("batchExit") || "退出"}>
+              <Tooltip content={t("batchExit") || ""}>
                 <button
                   className="conversations-batch-btn cancel"
                   style={{ padding: "4px 6px", minWidth: "auto", marginLeft: "4px" }}
@@ -1033,7 +1033,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
         )}
       </div>
 
-      {/* 对话框渲染 */}
+      {/*  */}
       {dialog?.type === "confirm" && (
         <ConfirmDialog
           title={dialog.title}
@@ -1049,19 +1049,19 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
           onConfirm={async (name, icon) => {
             let newFolderId: string | null = null
             if (dialog.folder) {
-              // 更新
+              // 
               await manager.updateFolder(dialog.folder.id, { name, icon })
             } else {
-              // 新建，假设 createFolder 返回新文件夹的 ID (需要确认 manager 实现，如果是 void 则需要其他方式)
-              // 暂时假设 createFolder 返回 void，我们需要通过名字查找或者 manager 修改
-              // 实际上 manager.createFolder 是 async 的，我们可以稍微修改 manager 使其返回 ID
-              // 但为了保险，这里先不依赖返回值，而是通过逻辑判断
+              //  createFolder  ID ( manager  void )
+              //  createFolder  void manager 
+              //  manager.createFolder  async  manager  ID
+              // 
               const folder = await manager.createFolder(name, icon)
               if (folder) newFolderId = folder.id
             }
             loadData()
 
-            // 如果是从"移动到..."跳转来的，则重新打开选择对话框
+            // "..."
             if (dialog.returnToSelect) {
               setDialog({
                 type: "folderSelect",
@@ -1078,7 +1078,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
       )}
       {dialog?.type === "rename" && (
         <RenameDialog
-          title={t("conversationsRename") || "重命名"}
+          title={t("conversationsRename") || ""}
           currentValue={dialog.conv.title}
           onConfirm={async (newTitle) => {
             await manager.renameConversation(dialog.conv.id, newTitle)
@@ -1129,7 +1129,7 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
         />
       )}
 
-      {/* 菜单渲染 */}
+      {/*  */}
       {menu?.type === "folder" && (
         <FolderMenu
           folder={menu.folder}
@@ -1143,8 +1143,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             setMenu(null)
             setDialog({
               type: "confirm",
-              title: t("conversationsDelete") || "删除",
-              message: `确定删除文件夹 "${getFolderDisplayName(menu.folder)}" 吗？其中的会话将移至收件箱。`,
+              title: t("conversationsDelete") || "",
+              message: ` "${getFolderDisplayName(menu.folder)}" `,
               danger: true,
               onConfirm: async () => {
                 await manager.deleteFolder(menu.folder.id)
@@ -1181,8 +1181,8 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
             setMenu(null)
             setDialog({
               type: "confirm",
-              title: t("conversationsDelete") || "删除",
-              message: `确定删除会话 "${menu.conv.title}" 吗？`,
+              title: t("conversationsDelete") || "",
+              message: ` "${menu.conv.title}" `,
               danger: true,
               onConfirm: async () => {
                 if (isDeleting) return
@@ -1192,11 +1192,11 @@ export const ConversationsTab: React.FC<ConversationsTabProps> = ({
                 try {
                   const result = await manager.deleteConversation(menu.conv.id)
                   if (!result.localDeleted) {
-                    showToast(t("deleteError") || "删除失败")
+                    showToast(t("deleteError") || "")
                     return
                   }
                   if (result.remoteAttempted && !result.remoteSuccess) {
-                    showToast("已从面板删除，但云端删除失败")
+                    showToast("")
                   }
                   await loadData()
                 } finally {

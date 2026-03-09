@@ -1,6 +1,6 @@
 /**
- * 图标组件导出
- * 统一导出所有 SVG 图标组件
+ * 
+ *  SVG 
  */
 
 export { ManualAnchorIcon } from "./ManualAnchorIcon"

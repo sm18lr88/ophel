@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 滚动到顶部
- * 风格：Outline (stroke-based)，与 SIDEBAR_ICONS 保持一致
+ * SVG  - 
+ * Outline (stroke-based) SIDEBAR_ICONS 
  */
 import React from "react"
 
@@ -26,7 +26,7 @@ export const ScrollTopIcon: React.FC<IconProps> = ({
     strokeLinejoin="round"
     className={className}
     style={{ display: "block" }}>
-    {/* 向上箭头 */}
+    {/*  */}
     <line x1="12" y1="19" x2="12" y2="5" />
     <polyline points="5 12 12 5 19 12" />
   </svg>

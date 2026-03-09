@@ -1,6 +1,6 @@
 /**
- * SVG 图标组件 - 拖拽手柄
- * 风格：Outline (stroke-based)
+ * SVG  - 
+ * Outline (stroke-based)
  */
 import React from "react"
 

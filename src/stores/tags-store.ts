@@ -1,9 +1,3 @@
-/**
- * Tags Store - Zustand 状态管理
- *
- * 管理会话标签列表
- */
-
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 
@@ -11,10 +5,7 @@ import type { Tag } from "~utils/storage"
 
 import { chromeStorageAdapter } from "./chrome-adapter"
 
-// ==================== Store 类型定义 ====================
-
 interface TagsState {
-  // 状态
   tags: Tag[]
   _hasHydrated: boolean
 
@@ -25,8 +16,6 @@ interface TagsState {
   setHasHydrated: (state: boolean) => void
 }
 
-// ==================== Store 创建 ====================
-
 export const useTagsStore = create<TagsState>()(
   persist(
     (set, get) => ({
@@ -35,7 +24,6 @@ export const useTagsStore = create<TagsState>()(
 
       addTag: (name, color) => {
         const state = get()
-        // 检查重复
         const exists = state.tags.some((t) => t.name.toLowerCase() === name.toLowerCase())
         if (exists) return null
 
@@ -52,7 +40,6 @@ export const useTagsStore = create<TagsState>()(
 
       updateTag: (tagId, name, color) => {
         const state = get()
-        // 检查重复（排除自己）
         const exists = state.tags.some(
           (t) => t.id !== tagId && t.name.toLowerCase() === name.toLowerCase(),
         )
@@ -89,12 +76,8 @@ export const useTagsStore = create<TagsState>()(
   ),
 )
 
-// ==================== 便捷 Hooks ====================
-
 export const useTagsHydrated = () => useTagsStore((state) => state._hasHydrated)
 export const useTags = () => useTagsStore((state) => state.tags)
-
-// ==================== 非 React 环境使用 ====================
 
 export const getTagsState = () => useTagsStore.getState().tags
 export const getTagsStore = () => useTagsStore.getState()

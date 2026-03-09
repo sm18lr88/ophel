@@ -51,7 +51,7 @@ export const DEFAULT_FOLDERS: Folder[] = [
   { id: "inbox", name: "Inbox", icon: "📥", isDefault: true },
 ]
 
-// ==================== 布局配置默认值 ====================
+// ====================  ====================
 export const LAYOUT_CONFIG = {
   PAGE_WIDTH: {
     DEFAULT_PX: "1280",
@@ -69,18 +69,18 @@ export const LAYOUT_CONFIG = {
   },
 } as const
 
-// ==================== 验证规则 ====================
+// ====================  ====================
 export const VALIDATION_PATTERNS = {
-  // Claude Session Key 格式：sk-ant-sidXX-
+  // Claude Session Key sk-ant-sidXX-
   CLAUDE_KEY: /^sk-ant-sid\d{2}-/,
 } as const
 
-// ==================== 批量测试配置 ====================
+// ====================  ====================
 export const BATCH_TEST_CONFIG = {
-  INTERVAL_MS: 500, // 两次请求间隔
+  INTERVAL_MS: 500, // 
 } as const
 
-// ==================== 站点 ID ====================
+// ====================  ID ====================
 export const SITE_IDS = {
   CLAUDE: "claude",
   GEMINI: "gemini",

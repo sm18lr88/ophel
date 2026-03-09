@@ -188,7 +188,7 @@ const toGlobalSearchFuzzyWords = (value: string): string[] => {
   }
 
   return value
-    .split(/[^a-z0-9\u4e00-\u9fff]+/gi)
+    .split(/[^a-z0-9一-鿿]+/gi)
     .map((word) => word.trim())
     .filter((word) => word.length > 0)
 }

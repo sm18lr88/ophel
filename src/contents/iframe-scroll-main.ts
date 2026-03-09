@@ -1,16 +1,10 @@
 /**
- * iframe 滚动操作 - 主世界脚本
  *
- * 这个脚本运行在主世界（Main World），用于访问 iframe 内的 Flutter 滚动容器
- * Content Script (Isolated World) 无法直接访问 iframe 的 contentDocument，
- * 需要通过 postMessage 与 Main World 脚本通信。
  *
- * 主要用途：图文并茂（Canvas）模式下的滚动控制
  */
 
 import type { PlasmoCSConfig } from "plasmo"
 
-// 配置为主世界运行
 export const config: PlasmoCSConfig = {
   matches: ["https://gemini.google.com/*", "https://business.gemini.google/*"],
   world: "MAIN",
@@ -23,13 +17,10 @@ type IframeScrollWindow = Window & {
 
 const iframeScrollWindow = window as IframeScrollWindow
 
-// 防止重复初始化
 if (!iframeScrollWindow.__ophelIframeScrollInitialized) {
   iframeScrollWindow.__ophelIframeScrollInitialized = true
 
   /**
-   * 查找 iframe 内的 Flutter 滚动容器（图文并茂模式）
-   * 只有 Main World 才能访问 iframe 的 contentDocument
    */
   function getFlutterScrollContainer(): HTMLElement | null {
     const iframes = document.querySelectorAll("iframe")
@@ -39,7 +30,6 @@ if (!iframeScrollWindow.__ophelIframeScrollInitialized) {
           (iframe as HTMLIFrameElement).contentDocument ||
           (iframe as HTMLIFrameElement).contentWindow?.document
         if (iframeDoc) {
-          // 查找 Flutter 滚动容器
           const scrollContainer = iframeDoc.querySelector(
             'flt-semantics[style*="overflow-y: scroll"]',
           ) as HTMLElement
@@ -48,7 +38,6 @@ if (!iframeScrollWindow.__ophelIframeScrollInitialized) {
           }
         }
       } catch {
-        // 跨域 iframe 会抛出错误，忽略
       }
     }
     return null

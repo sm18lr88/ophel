@@ -1,9 +1,3 @@
-/**
- * Conversations Store - Zustand 状态管理
- *
- * 管理会话元数据（不包含会话内容，只有标题、文件夹、标签等元信息）
- */
-
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 
@@ -11,10 +5,7 @@ import type { Conversation } from "~core/conversation/types"
 
 import { chromeStorageAdapter } from "./chrome-adapter"
 
-// ==================== Store 类型定义 ====================
-
 interface ConversationsState {
-  // 状态
   conversations: Record<string, Conversation>
   lastUsedFolderId: string
   _hasHydrated: boolean
@@ -31,8 +22,6 @@ interface ConversationsState {
   setLastUsedFolderId: (folderId: string) => void
   setHasHydrated: (state: boolean) => void
 }
-
-// ==================== Store 创建 ====================
 
 export const useConversationsStore = create<ConversationsState>()(
   persist(
@@ -153,13 +142,9 @@ export const useConversationsStore = create<ConversationsState>()(
   ),
 )
 
-// ==================== 便捷 Hooks ====================
-
 export const useConversationsHydrated = () => useConversationsStore((state) => state._hasHydrated)
 export const useConversations = () => useConversationsStore((state) => state.conversations)
 export const useLastUsedFolderId = () => useConversationsStore((state) => state.lastUsedFolderId)
-
-// ==================== 非 React 环境使用 ====================
 
 export const getConversationsState = () => useConversationsStore.getState().conversations
 export const getConversationsStore = () => useConversationsStore.getState()

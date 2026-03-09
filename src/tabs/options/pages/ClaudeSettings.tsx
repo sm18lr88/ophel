@@ -1,6 +1,6 @@
 /**
- * Claude 专属设置组件
- * 包含 SessionKey 管理功能
+ * Claude 
+ *  SessionKey 
  */
 import React, { useState } from "react"
 
@@ -31,7 +31,7 @@ interface ClaudeSettingsProps {
   siteId: string
 }
 
-// 对话框状态类型
+// 
 type DialogState =
   | { type: "none" }
   | { type: "add" }
@@ -62,40 +62,40 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
 
   const isClaudeSite = siteId === SITE_IDS.CLAUDE
 
-  // 获取当前 Session Key
+  //  Session Key
   const currentKey = keys.find((k) => k.id === currentKeyId)
 
-  // 关闭对话框
+  // 
   const closeDialog = () => setDialog({ type: "none" })
 
-  // 复制 Session Key（带反馈动画）
+  //  Session Key
   const handleCopyKey = async (keyId: string, keyValue: string) => {
     try {
       await navigator.clipboard.writeText(keyValue)
       setCopiedKeyId(keyId)
       showToast(t("claudeKeyCopied"), TOAST_DURATION.SHORT)
-      // 1.5秒后恢复图标
+      // 1.5
       setTimeout(() => setCopiedKeyId(null), TOAST_DURATION.SHORT)
     } catch {
       showToast(t("claudeKeyCopyFailed"), TOAST_DURATION.SHORT)
     }
   }
 
-  // 切换 Session Key（带检测）
+  //  Session Key
   const handleSwitchToken = async (keyId: string) => {
-    // 禁止切换到空值（已移除默认选项）
+    // 
     if (!keyId) {
       showToast(t("claudePleaseSelectKey"), TOAST_DURATION.SHORT)
       return
     }
 
-    // 如果点击的是当前使用的，提示无需切换
+    // 
     if (keyId === currentKeyId) {
       showToast(t("claudeAlreadyUsing"), TOAST_DURATION.SHORT)
       return
     }
 
-    // 1. 检查cookies权限 (仅当平台支持动态权限时)
+    // 1. cookies ()
     if (platform.hasCapability("permissions")) {
       const checkResult = await sendToBackground({
         type: MSG_CHECK_PERMISSIONS,
@@ -112,23 +112,23 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
       }
     }
 
-    // 2. 设置cookie（使用平台抽象）
+    // 2. cookie
     const key = keyId ? keys.find((k) => k.id === keyId)?.key : ""
     await platform.setClaudeSessionKey(key || "")
 
-    // 3. 更新当前选中
+    // 3. 
     setCurrentKey(keyId)
     showToast(t("claudeKeySwitched"), TOAST_DURATION.MEDIUM)
   }
 
-  // 提取单个 Key 的测试逻辑，以便单独调用或批量调用
+  //  Key 
   const performTestKey = async (
     id: string,
     keyName: string,
     keyValue: string,
     showToastMsg: boolean = true,
   ) => {
-    // 安全检测：如果正在生成则拒绝测试（仅扩展环境）
+    // 
     if (platform.hasCapability("tabs")) {
       try {
         const checkResult = await sendToBackground({
@@ -136,17 +136,17 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
         })
         if (checkResult.isGenerating) {
           if (showToastMsg) showToast(t("claudeGenerating"), TOAST_DURATION.LONG)
-          return false // 不能测试
+          return false // 
         }
       } catch {
-        // 检测失败时允许继续
+        // 
       }
     }
 
     setTesting((prev) => ({ ...prev, [id]: true }))
 
     try {
-      // 使用平台抽象测试 key
+      //  key
       const result = await platform.testClaudeSessionKey(keyValue)
 
       if (result.isValid) {
@@ -171,14 +171,14 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     }
   }
 
-  // 测试 Session Key 有效性
+  //  Session Key 
   const handleTestToken = async (id: string) => {
     const key = keys.find((k) => k.id === id)
     if (!key) return
     await performTestKey(id, key.name, key.key, true)
   }
 
-  // 批量检测
+  // 
   const handleBatchTest = async () => {
     if (keys.length === 0) return
     if (isBatchTesting) return
@@ -190,19 +190,19 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     try {
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i]
-        // 如果中途离开页面或组件卸载，这里可能需要额外处理取消逻辑，但目前简单版即可
+        // 
         setBatchProgress(
           t("claudeBatchTesting")
             .replace("{current}", String(i + 1))
             .replace("{total}", String(keys.length)),
         )
 
-        // 执行测试，不弹Toast
+        // Toast
         const isValid = await performTestKey(key.id, key.name, key.key, false)
         if (isValid) validCount++
         else invalidCount++
 
-        // 间隔 500ms
+        //  500ms
         if (i < keys.length - 1) {
           await new Promise((resolve) => setTimeout(resolve, BATCH_TEST_CONFIG.INTERVAL_MS))
         }
@@ -221,10 +221,10 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     }
   }
 
-  // 从浏览器导入当前Cookie
+  // Cookie
   const handleImportFromBrowser = async () => {
     try {
-      // 权限检查仅在扩展环境
+      // 
       if (platform.hasCapability("permissions")) {
         const checkResult = await sendToBackground({
           type: MSG_CHECK_PERMISSIONS,
@@ -241,7 +241,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
         }
       }
 
-      // 使用平台抽象获取 session key
+      //  session key
       const result = await platform.getClaudeSessionKey()
 
       if (!result.success) {
@@ -264,7 +264,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     }
   }
 
-  // 导出所有 Session Key
+  //  Session Key
   const handleExportTokens = () => {
     if (keys.length === 0) {
       showToast(t("claudeNoTokensToExport"), TOAST_DURATION.SHORT)
@@ -286,7 +286,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     showToast(t("claudeExported"), TOAST_DURATION.SHORT)
   }
 
-  // 导入 Session Key
+  //  Session Key
   const handleImportTokens = () => {
     const input = document.createElement("input")
     input.type = "file"
@@ -324,12 +324,12 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     input.click()
   }
 
-  // 添加 Session Key
+  //  Session Key
   const handleAddToken = () => {
     setDialog({ type: "add" })
   }
 
-  // 添加 Session Key - 确认
+  //  Session Key - 
   const handleAddTokenConfirm = (name: string, key: string) => {
     if (!name.trim()) {
       showToast(t("claudeNameRequired"), TOAST_DURATION.SHORT)
@@ -356,7 +356,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     closeDialog()
   }
 
-  // 从浏览器导入 - 完成命名
+  //  - 
   const handleImportComplete = (name: string) => {
     if (!name.trim()) {
       showToast(t("claudeNameRequired"), TOAST_DURATION.SHORT)
@@ -366,7 +366,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     const dialogState = dialog as { type: "import-name"; sessionKey: string }
     const newKey = addKey({ name: name.trim(), key: dialogState.sessionKey })
 
-    // 自动设为当前使用（因为这就是浏览器当前正在用的 key）
+    //  key
     setCurrentKey(newKey.id)
 
     showToast(t("claudeKeyImported"), TOAST_DURATION.SHORT)
@@ -374,7 +374,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     setTimeout(() => handleTestToken(newKey.id), BATCH_TEST_CONFIG.INTERVAL_MS)
   }
 
-  // 删除 Session Key
+  //  Session Key
   const handleDeleteToken = (id: string, name: string) => {
     setDialog({ type: "delete", id, name })
   }
@@ -386,7 +386,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     closeDialog()
   }
 
-  // 渲染状态标签
+  // 
   const renderStatusBadge = (isValid: boolean | undefined) => {
     if (isValid === undefined) return <span style={{ color: STATUS_COLORS.INFO }}>-</span>
     return isValid ? (
@@ -396,7 +396,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
     )
   }
 
-  // 渲染类型标签
+  // 
   const renderTypeBadge = (type: string | undefined) => {
     if (!type)
       return <span style={{ color: "var(--gh-text-secondary)" }}>{t("claudeKeyUntested")}</span>
@@ -416,12 +416,12 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
 
   return (
     <div>
-      {/* Session Key 管理（合并后的卡片） */}
+      {/* Session Key  */}
       <SettingCard
         title={t("claudeSessionKeyTitle")}
         description={t("claudeSessionKeyDesc")}
         settingId="claude-session-keys">
-        {/* 当前使用状态栏 */}
+        {/*  */}
         <div
           style={{
             display: "flex",
@@ -477,7 +477,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
             {!isClaudeSite && (
               <div
                 style={{
-                  color: "#ca8a04", // 保持醒目的黄色，但在暗色模式下可能需要调整
+                  color: "#ca8a04", // 
                   backgroundColor: "rgba(234, 179, 8, 0.1)",
                   fontSize: "12px",
                   display: "flex",
@@ -492,10 +492,10 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
                 <span>{t("claudeNotOnSiteHint")}</span>
               </div>
             )}
-            {/* 快捷切换下拉 */}
+            {/*  */}
             <Tooltip
               content={
-                !isClaudeSite ? t("claudeNotOnSiteHint") || "请在 Claude 站点使用此功能" : ""
+                !isClaudeSite ? t("claudeNotOnSiteHint") || " Claude " : ""
               }>
               <select
                 className="settings-select"
@@ -527,13 +527,13 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
           </div>
         </div>
 
-        {/* 操作按钮栏 */}
+        {/*  */}
         <div
           style={{
-            display: "flex", // 改为 Flex 布局
-            gap: "10px", // 间距适中
+            display: "flex", //  Flex 
+            gap: "10px", // 
             marginBottom: "20px",
-            flexWrap: "nowrap", // 强制不换行
+            flexWrap: "nowrap", // 
           }}>
           <button
             className="settings-btn settings-btn-primary"
@@ -541,10 +541,10 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
             disabled={isBatchTesting}
             style={{
               justifyContent: "center",
-              padding: "8px 12px", // 减小一点内边距以便容纳更多
-              flex: "1 1 auto", // 自适应宽度
+              padding: "8px 12px", // 
+              flex: "1 1 auto", // 
               opacity: isBatchTesting ? 0.6 : 1,
-              whiteSpace: "nowrap", // 防止文字换行
+              whiteSpace: "nowrap", // 
             }}>
             ➕ {t("claudeAddKey")}
           </button>
@@ -583,7 +583,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
             )}
           </button>
 
-          {/* 从浏览器导入按钮仅在扩展环境显示（油猴脚本无法读取 HttpOnly cookie） */}
+          {/*  HttpOnly cookie */}
           {platform.hasCapability("cookies") && (
             <Tooltip content={!isClaudeSite ? t("claudeNotOnSiteHint") : ""}>
               <button
@@ -632,7 +632,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
           </button>
         </div>
 
-        {/* Token 列表 */}
+        {/* Token  */}
         {keys.length === 0 ? (
           <div
             style={{
@@ -677,7 +677,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
                   }}
                   onMouseEnter={() => setHoveredKeyId(key.id)}
                   onMouseLeave={() => setHoveredKeyId(null)}>
-                  {/* 左侧信息区 */}
+                  {/*  */}
                   <div
                     style={{
                       display: "flex",
@@ -706,7 +706,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
                             fontWeight: 500,
                             border: "1px solid var(--gh-border)",
                           }}>
-                          当前使用
+                          
                         </span>
                       )}
                       {renderTypeBadge(key.accountType)}
@@ -759,14 +759,14 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
                     </div>
                   </div>
 
-                  {/* 右侧状态与操作区 */}
+                  {/*  */}
                   <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    {/* 状态 */}
+                    {/*  */}
                     <div style={{ fontSize: "13px", color: "var(--gh-text-secondary)" }}>
                       {renderStatusBadge(key.isValid)}
                     </div>
 
-                    {/* 操作按钮组 */}
+                    {/*  */}
                     <div style={{ display: "flex", gap: "8px" }}>
                       <Tooltip
                         content={
@@ -841,7 +841,7 @@ const ClaudeSettings: React.FC<ClaudeSettingsProps> = ({ siteId }) => {
         )}
       </SettingCard>
 
-      {/* 对话框 */}
+      {/*  */}
       {dialog.type === "add" && (
         <AddKeyDialog onConfirm={handleAddTokenConfirm} onCancel={closeDialog} />
       )}
@@ -901,7 +901,7 @@ const AddKeyDialog: React.FC<AddKeyDialogProps> = ({ onConfirm, onCancel }) => {
               fontWeight: 500,
               color: "var(--gh-text)",
             }}>
-            {t("claudeAddKeyNameTitle").split("-")[1].trim().replace("输入", "")}
+            {t("claudeAddKeyNameTitle").split("-")[1].trim().replace("", "")}
           </div>
           <input
             ref={nameInputRef}

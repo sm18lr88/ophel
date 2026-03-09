@@ -1,6 +1,6 @@
 /**
- * Options Page 入口
- * 独立的设置页面，通过 chrome.windows.create 打开
+ * Options Page 
+ *  chrome.windows.create 
  */
 import React, { useEffect, useRef, useState } from "react"
 
@@ -23,47 +23,47 @@ import AboutPage from "./options/pages/AboutPage"
 import AppearancePage from "./options/pages/AppearancePage"
 import BackupPage from "./options/pages/BackupPage"
 import FeaturesPage from "./options/pages/FeaturesPage"
-// 页面组件
+// 
 import GeneralPage from "./options/pages/GeneralPage"
 import PermissionsPage from "./options/pages/PermissionsPage"
 import SiteSettingsPage from "./options/pages/SiteSettingsPage"
-// 样式
+// 
 import "./options.css"
 
 import { SidebarFooter } from "./options/components/SidebarFooter"
 
-// 图标组件
+// 
 
-// 导航菜单定义
+// 
 const NAV_ITEMS = [
-  // 导航项定义
+  // 
   {
     id: "general",
     Icon: GeneralIcon,
     labelKey: "navGeneral",
-    label: "基本设置",
+    label: "",
   },
-  { id: "features", Icon: FeaturesIcon, labelKey: "navFeatures", label: "功能模块" },
+  { id: "features", Icon: FeaturesIcon, labelKey: "navFeatures", label: "" },
   {
     id: "siteSettings",
     Icon: PageContentIcon,
     labelKey: "navSiteSettings",
-    label: "站点设置",
+    label: "",
   },
   {
     id: "appearance",
     Icon: AppearanceIcon,
     labelKey: "navAppearance",
-    label: "外观主题",
+    label: "",
   },
-  { id: "backup", Icon: BackupIcon, labelKey: "navBackup", label: "备份与同步" },
+  { id: "backup", Icon: BackupIcon, labelKey: "navBackup", label: "" },
   {
     id: "permissions",
     Icon: PermissionsIcon,
     labelKey: "navPermissions",
-    label: "权限管理",
+    label: "",
   },
-  { id: "about", Icon: AboutIcon, labelKey: "navAbout", label: "关于" },
+  { id: "about", Icon: AboutIcon, labelKey: "navAbout", label: "" },
 ]
 
 const OptionsPage = () => {
@@ -76,7 +76,7 @@ const OptionsPage = () => {
   const highlightTimerRef = useRef<number | undefined>(undefined)
   const highlightedElementRef = useRef<HTMLElement | null>(null)
 
-  // 初始化时检查 URL search params
+  //  URL search params
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
@@ -98,7 +98,7 @@ const OptionsPage = () => {
     }
   }, [])
 
-  // URL 深链定位并高亮目标设置项
+  // URL 
   useEffect(() => {
     if (!locateRequest?.settingId) return
 
@@ -169,7 +169,7 @@ const OptionsPage = () => {
     }
   }, [activePage, initialSubTab, locateRequest])
 
-  // 卸载时清理高亮状态
+  // 
   useEffect(() => {
     return () => {
       if (highlightTimerRef.current !== undefined) {
@@ -185,12 +185,12 @@ const OptionsPage = () => {
   const { settings } = useSettingsStore()
   const isHydrated = useSettingsHydrated()
 
-  // 语言初始化状态
-  // 确保在语言设置完成后才渲染内容，避免首次渲染显示默认语言
+  // 
+  // 
   const [languageReady, setLanguageReady] = useState(false)
 
-  // 初始化 i18n 语言设置
-  // 当 settings 加载完成后，根据 settings.language 设置界面语言
+  //  i18n 
+  //  settings  settings.language 
   useEffect(() => {
     if (isHydrated && settings?.language) {
       setLanguage(settings.language)
@@ -198,19 +198,19 @@ const OptionsPage = () => {
     }
   }, [isHydrated, settings?.language])
 
-  // 获取当前站点 ID（Options 页面使用 _default）
+  //  IDOptions  _default
   const siteId = "_default"
 
-  // 等待 hydration 和语言初始化完成
+  //  hydration 
   if (!settings || !isHydrated || !languageReady) {
     return (
       <div className="settings-layout">
-        <div style={{ padding: 40, textAlign: "center" }}>{t("loading") || "加载中..."}</div>
+        <div style={{ padding: 40, textAlign: "center" }}>{t("loading") || "..."}</div>
       </div>
     )
   }
 
-  // 渲染当前页面
+  // 
   const renderPage = () => {
     switch (activePage) {
       case "general":
@@ -232,12 +232,12 @@ const OptionsPage = () => {
     }
   }
 
-  // 检测是否在独立 Options 页面（非 content script 环境）
-  // 如果是独立页面，不显示外观主题菜单（因为主题是按站点配置的）
+  //  Options  content script 
+  // 
   const isStandalonePage = !window.__ophelThemeManager
 
-  // 在独立页面中过滤掉 appearance 导航项
-  // 在油猴脚本环境中过滤掉 permissions 导航项（因为没有权限 API）
+  //  appearance 
+  //  permissions  API
   const filteredNavItems = NAV_ITEMS.filter((item) => {
     if (isStandalonePage && item.id === "appearance") return false
     if (!platform.hasCapability("permissions") && item.id === "permissions") return false
@@ -246,7 +246,7 @@ const OptionsPage = () => {
 
   return (
     <div className="settings-layout">
-      {/* 侧边栏 */}
+      {/*  */}
       <aside className="settings-sidebar">
         <div className="settings-sidebar-header">
           <div className="settings-sidebar-logo">
@@ -272,11 +272,11 @@ const OptionsPage = () => {
           ))}
         </nav>
 
-        {/* 侧边栏底部快捷设置 */}
+        {/*  */}
         <SidebarFooter siteId={siteId} />
       </aside>
 
-      {/* 内容区 */}
+      {/*  */}
       <main className="settings-content" ref={contentRef}>
         {renderPage()}
       </main>

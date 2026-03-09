@@ -1,12 +1,12 @@
 /**
- * Markdown 渲染工具
+ * Markdown 
  *
- * 基于 markdown-it + highlight.js 实现
- * 支持代码高亮和变量占位符高亮
+ *  markdown-it + highlight.js 
+ * 
  */
 
 import hljs from "highlight.js/lib/core"
-// 按需加载语言
+// 
 import bash from "highlight.js/lib/languages/bash"
 import css from "highlight.js/lib/languages/css"
 import diff from "highlight.js/lib/languages/diff"
@@ -28,7 +28,7 @@ import { full as emoji } from "markdown-it-emoji"
 import mark from "markdown-it-mark"
 import taskLists from "markdown-it-task-lists"
 
-// 注册语言
+// 
 hljs.registerLanguage("javascript", javascript)
 hljs.registerLanguage("js", javascript)
 hljs.registerLanguage("typescript", typescript)
@@ -53,37 +53,37 @@ hljs.registerLanguage("git", diff)
 hljs.registerLanguage("dockerfile", dockerfile)
 hljs.registerLanguage("docker", dockerfile)
 
-// 创建 markdown-it 实例
+//  markdown-it 
 const md = new MarkdownIt({
-  html: false, // 禁用 HTML 标签（安全）
-  breaks: true, // 换行转 <br>
-  linkify: true, // 自动识别链接
+  html: false, //  HTML 
+  breaks: true, //  <br>
+  linkify: true, // 
   highlight: (str: string, lang: string) => {
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(str, { language: lang }).value
       } catch {
-        // 忽略错误
+        // 
       }
     }
-    // 自动检测语言
+    // 
     try {
       return hljs.highlightAuto(str).value
     } catch {
-      return "" // 使用默认转义
+      return "" // 
     }
   },
 })
 
-// 使用任务列表插件（关闭 label 选项避免重复渲染）
+//  label 
 md.use(taskLists, { enabled: true, label: false })
-// 使用 emoji 插件
+//  emoji 
 md.use(emoji)
-// 使用高亮插件 ==text==
+//  ==text==
 md.use(mark)
-// 使用标题锚点插件
+// 
 md.use(anchor, { permalink: false })
-// 使用容器插件 :::info, :::warning, :::danger
+//  :::info, :::warning, :::danger
 md.use(container, "info", {
   render: (tokens: { nesting: number }[], idx: number) =>
     tokens[idx].nesting === 1 ? '<div class="gh-container gh-container-info">' : "</div>\n",
@@ -98,22 +98,22 @@ md.use(container, "danger", {
 })
 
 /**
- * 渲染 Markdown 内容
- * @param content 原始内容
- * @param highlightVariables 是否高亮变量占位符
- * @returns 渲染后的 HTML
+ *  Markdown 
+ * @param content 
+ * @param highlightVariables 
+ * @returns  HTML
  */
 export const renderMarkdown = (content: string, highlightVariables = true): string => {
   if (!content) return ""
 
   let html = md.render(content)
 
-  // 高亮变量占位符 {{varName}}
+  //  {{varName}}
   if (highlightVariables) {
     html = html.replace(/\{\{([^\s{}]+)\}\}/g, '<span class="gh-variable-highlight">{{$1}}</span>')
   }
 
-  // 在代码块中添加复制按钮（使用 data 属性标记，SVG 图标由组件初始化）
+  //  data SVG 
   html = html.replace(
     /<pre><code/g,
     '<pre><button class="gh-code-copy-btn" data-copy-code="true"></button><code',
@@ -123,11 +123,11 @@ export const renderMarkdown = (content: string, highlightVariables = true): stri
 }
 
 /**
- * 获取 highlight.js 主题样式
- * 返回 GitHub Dark 风格的样式
+ *  highlight.js 
+ *  GitHub Dark 
  */
 export const getHighlightStyles = (): string => `
-/* highlight.js GitHub Dark 主题 */
+/* highlight.js GitHub Dark  */
 .hljs {
   background: var(--gh-bg-tertiary, #1e1e1e);
   color: var(--gh-text, #e6edf3);
@@ -137,7 +137,7 @@ export const getHighlightStyles = (): string => `
   font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-size: 13px;
   line-height: 1.5;
-  /* 代码块自动换行 */
+  /*  */
   white-space: pre-wrap;
   word-wrap: break-word;
   word-break: break-all;
@@ -163,7 +163,7 @@ export const getHighlightStyles = (): string => `
 .hljs-addition { color: #aff5b4; background: rgba(46, 160, 67, 0.15); }
 .hljs-deletion { color: #ffdcd7; background: rgba(248, 81, 73, 0.15); }
 
-/* 变量占位符高亮 */
+/*  */
 .gh-variable-highlight {
   background: rgba(56, 139, 253, 0.2);
   color: #58a6ff;
@@ -172,7 +172,7 @@ export const getHighlightStyles = (): string => `
   font-weight: 500;
 }
 
-/* Markdown 渲染样式 */
+/* Markdown  */
 .gh-markdown-preview {
   line-height: 1.6;
   color: var(--gh-text, #e6edf3);
@@ -209,7 +209,7 @@ export const getHighlightStyles = (): string => `
   word-wrap: break-word;
   word-break: break-all;
 }
-/* 代码块复制按钮 */
+/*  */
 .gh-code-copy-btn {
   position: absolute;
   top: 8px;
@@ -250,7 +250,7 @@ export const getHighlightStyles = (): string => `
 }
 .gh-markdown-preview a:hover { text-decoration: underline; }
 
-/* 任务列表样式 */
+/*  */
 .gh-markdown-preview .task-list-item {
   list-style: none;
   margin-left: -20px;
@@ -260,7 +260,7 @@ export const getHighlightStyles = (): string => `
   pointer-events: none;
 }
 
-/* 高亮 ==text== */
+/*  ==text== */
 .gh-markdown-preview mark {
   background: rgba(255, 235, 59, 0.4);
   color: inherit;
@@ -268,7 +268,7 @@ export const getHighlightStyles = (): string => `
   border-radius: 3px;
 }
 
-/* 容器样式 :::info, :::warning, :::danger */
+/*  :::info, :::warning, :::danger */
 .gh-container {
   margin: 12px 0;
   padding: 12px 16px;
