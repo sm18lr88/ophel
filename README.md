@@ -47,6 +47,10 @@ Useful scripts:
 
 This fork has been hardened against supply-chain and network-layer threats. All dependencies are vendored locally. Outbound connections are restricted to an explicit allowlist of American LLM provider domains. See [SECURITY_AUDIT.md](./SECURITY_AUDIT.md) for the full findings and remediation log.
 
+## Credits
+
+Originally created by [urzeye](https://github.com/urzeye/ophel). This fork applies security hardening, dependency vendoring, and English-only simplification.
+
 ## License
 
 GPL-3.0-only. See [LICENSE](./LICENSE).

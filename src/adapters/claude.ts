@@ -818,7 +818,7 @@ export class ClaudeAdapter extends SiteAdapter {
   getScrollContainer(): HTMLElement | null {
     const mainContent = document.getElementById("main-content")
     if (mainContent) {
-      const scrollable = mainContent.querySelector(".overflow-y-scroll")
+      const scrollable = mainContent.querySelector(".overflow-y-auto, .overflow-y-scroll")
       if (scrollable) return scrollable as HTMLElement
     }
     return super.getScrollContainer()
