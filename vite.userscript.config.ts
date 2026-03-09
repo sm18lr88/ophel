@@ -66,6 +66,7 @@ export default defineConfig({
       },
       build: {
         autoGrant: true,
+        systemjs: "inline",
       },
     }),
   ],
