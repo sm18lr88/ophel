@@ -1,6 +1,6 @@
 /**
- * 
- *  SVG 
+ *
+ *  SVG
  */
 
 export { ManualAnchorIcon } from "./ManualAnchorIcon"
@@ -71,4 +71,5 @@ export * from "./ArrowUpIcon"
 export * from "./ArrowDownIcon"
 export * from "./TimeIcon"
 export * from "./SparklesIcon"
+export * from "./BrainIcon"
 export * from "./CheckIcon"

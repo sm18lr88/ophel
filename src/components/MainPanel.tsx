@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore }
 import type { SiteAdapter } from "~adapters/base"
 import {
   AnchorIcon,
+  BrainIcon,
   ConversationIcon,
   MinimizeIcon,
   NewTabIcon,
@@ -79,16 +80,16 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   const currentSettings = settings || DEFAULT_SETTINGS
   const tabOrder = currentSettings.features?.order || DEFAULT_SETTINGS.features.order
 
-  //  DOM  React 
+  //  DOM  React
   const { panelRef, headerRef } = useDraggable({
     edgeSnapHide: currentSettings.panel?.edgeSnap,
-    edgeSnapState, // 
+    edgeSnapState, //
     snapThreshold: currentSettings.panel?.edgeSnapThreshold ?? 30,
     onEdgeSnap,
     onUnsnap,
   })
 
-  // 
+  //
   const defaultPosition = currentSettings.panel?.defaultPosition ?? "right"
   const defaultEdgeDistance = currentSettings.panel?.defaultEdgeDistance ?? 40
 
@@ -101,7 +102,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     return TAB_IDS.PROMPTS
   }
 
-  //  activeTab settings 
+  //  activeTab settings
   const [activeTab, setActiveTab] = useState<string>(TAB_IDS.PROMPTS)
   const [isInitialized, setIsInitialized] = useState(false)
 
@@ -122,7 +123,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [tabOrder, isInitialized, activeTab])
 
-  //  tab 
+  //  tab
   useEffect(() => {
     const handleSwitchToOutline = () => {
       setActiveTab(TAB_IDS.OUTLINE)
@@ -151,8 +152,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [tabOrder])
 
-  //  Grok  Claude  keydown 
-  //  Grok  Claude 
+  //  Grok  Claude  keydown
+  //  Grok  Claude
   useEffect(() => {
     const siteId = adapter?.getSiteId()
 
@@ -173,13 +174,13 @@ export const MainPanel: React.FC<MainPanelProps> = ({
 
         if (!isInputElement) return
 
-        //  Grok 
+        //  Grok
         e.stopPropagation()
         e.stopImmediatePropagation()
       }
 
       //  document
-      //  Shadow DOM 
+      //  Shadow DOM
       panel.addEventListener("keydown", handleKeyDown, true)
       panel.addEventListener("keypress", handleKeyDown, true)
 
@@ -199,13 +200,13 @@ export const MainPanel: React.FC<MainPanelProps> = ({
   const [loadingText, setLoadingText] = useState("")
   const abortLoadingRef = useRef(false)
 
-  //  HistoryLoader 
+  //  HistoryLoader
   const scrollToTop = useCallback(async () => {
-    // 
+    //
     const OVERLAY_DELAY_MS = 1600
     abortLoadingRef.current = false
 
-    //  AbortController 
+    //  AbortController
     const abortController = new AbortController()
     const checkAbort = () => {
       if (abortLoadingRef.current) {
@@ -214,7 +215,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
     const abortCheckInterval = setInterval(checkAbort, 100)
 
-    // 
+    //
     let overlayTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
       if (!abortLoadingRef.current) {
         setIsLoadingHistory(true)
@@ -227,14 +228,14 @@ export const MainPanel: React.FC<MainPanelProps> = ({
         adapter: adapter || null,
         loadAll: true,
         signal: abortController.signal,
-        allowShortCircuit: true, // 
+        allowShortCircuit: true, //
         onProgress: (msg) => {
           setLoadingText(`${t("loadingHistory")} ${msg}`)
         },
       })
       anchorStore.set(result.previousScrollTop)
 
-      // 
+      //
       if (overlayTimer) {
         clearTimeout(overlayTimer)
         overlayTimer = null
@@ -242,7 +243,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
       setIsLoadingHistory(false)
       setLoadingText("")
 
-      // 
+      //
       if (result.success && !result.silent) {
         showToast(t("historyLoaded"), 2000)
       }
@@ -254,34 +255,34 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     }
   }, [adapter])
 
-  // 
+  //
   const stopLoading = useCallback(() => {
     abortLoadingRef.current = true
   }, [])
 
-  // 
+  //
   const scrollToBottom = useCallback(async () => {
     const { previousScrollTop } = await smartScrollToBottom(adapter || null)
     anchorStore.set(previousScrollTop)
   }, [adapter])
 
-  // 
+  //
   const goToAnchor = useCallback(async () => {
     const savedAnchor = anchorStore.get()
     if (savedAnchor === null) return
 
-    // 
+    //
     const scrollInfo = await getScrollInfo(adapter || null)
     const currentPos = scrollInfo.scrollTop
 
-    // 
+    //
     await smartScrollTo(adapter || null, savedAnchor)
 
-    // 
+    //
     anchorStore.set(currentPos)
   }, [adapter])
 
-  // 
+  //
   const saveAnchor = useCallback(async () => {
     const scrollInfo = await getScrollInfo(adapter || null)
     anchorStore.set(scrollInfo.scrollTop)
@@ -289,10 +290,10 @@ export const MainPanel: React.FC<MainPanelProps> = ({
 
   if (!isOpen) return null
 
-  //  Tab header  tab 
+  //  Tab header  tab
   const visibleTabs = tabOrder.filter((tabId) => {
-    if (tabId === TAB_IDS.SETTINGS) return false //  header 
-    //  Tab  enabled 
+    if (tabId === TAB_IDS.SETTINGS) return false //  header
+    //  Tab  enabled
     if (tabId === TAB_IDS.PROMPTS && currentSettings.features?.prompts?.enabled === false)
       return false
     if (
@@ -305,13 +306,13 @@ export const MainPanel: React.FC<MainPanelProps> = ({
     return true
   })
 
-  // 
+  //
   const getThemeIcon = () => {
     if (themeMode === "dark") {
-      // 
+      //
       return <ThemeLightIcon size={14} />
     }
-    // 
+    //
     return <ThemeDarkIcon size={14} />
   }
 
@@ -334,7 +335,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           transform: "translateY(-50%)",
           width: `${currentSettings.panel?.width ?? 320}px`,
           height: `${currentSettings.panel?.height ?? 85}vh`,
-          // @ts-expect-error -  CSS 
+          // @ts-expect-error -  CSS
           "--panel-width": `${currentSettings.panel?.width ?? 320}px`,
           minHeight: "500px",
           backgroundColor: "var(--gh-bg, #ffffff)",
@@ -361,7 +362,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           const styleId =
             resolvedMode === "light" ? siteTheme?.lightStyleId : siteTheme?.darkStyleId
 
-          //  customStyles 
+          //  customStyles
           const customStyles = settings.theme?.customStyles
           if (Array.isArray(customStyles)) {
             const customStyle = customStyles.find((s) => s.id === styleId)
@@ -393,7 +394,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 //  TabManager
                 window.postMessage({ type: "GH_PRIVACY_TOGGLE" }, window.location.origin)
               }}>
-              <span style={{ fontSize: "16px" }}>✨</span>
+              <BrainIcon size={16} />
               <span style={{ fontSize: "15px", fontWeight: 600 }}>{t("panelTitle")}</span>
             </div>
           </Tooltip>
@@ -485,18 +486,18 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               }>
               <button
                 onClick={() => {
-                  //  Tab 
+                  //  Tab
                   if (activeTab === TAB_IDS.OUTLINE) {
                     outlineManager?.refresh()
                   } else if (activeTab === TAB_IDS.PROMPTS) {
-                    //  Zustand store 
-                    //  UI 
+                    //  Zustand store
+                    //  UI
                     promptManager?.init()
                   } else if (activeTab === TAB_IDS.CONVERSATIONS) {
                     //  UI
                     conversationManager?.notifyDataChange()
                   }
-                  // settings 
+                  // settings
                 }}
                 style={{
                   background: "var(--gh-glass-bg, rgba(255,255,255,0.2))",
@@ -666,9 +667,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
           </Tooltip>
 
           {/*  */}
-          <Tooltip
-            content={hasAnchor ? t("jumpToAnchor") : ""}
-            triggerStyle={{ flex: "0 0 32px" }}>
+          <Tooltip content={hasAnchor ? t("jumpToAnchor") : ""} triggerStyle={{ flex: "0 0 32px" }}>
             <button
               className="gh-interactive scroll-nav-btn anchor-btn"
               onClick={goToAnchor}
@@ -694,7 +693,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
                 if (hasAnchor) {
                   e.currentTarget.style.transform = "scale(1.1)"
                   e.currentTarget.style.boxShadow = "var(--gh-btn-shadow-hover)"
-                  // 
+                  //
                   const div = e.currentTarget.querySelector("div")
                   if (div) div.style.transform = "rotate(360deg)"
                 }
@@ -702,7 +701,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "scale(1)"
                 e.currentTarget.style.boxShadow = hasAnchor ? "var(--gh-btn-shadow)" : "none"
-                // 
+                //
                 const div = e.currentTarget.querySelector("div")
                 if (div) div.style.transform = "rotate(0deg)"
               }}>

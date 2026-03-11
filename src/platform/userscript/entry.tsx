@@ -161,67 +161,27 @@ if (userscriptWindow.ophelUserscriptInitialized) {
 }
 userscriptWindow.ophelUserscriptInitialized = true
 
-async function init() {
-  const adapter = getAdapter()
+type HydratableStore = {
+  getState: () => { _hasHydrated: boolean }
+  subscribe: (fn: (state: { _hasHydrated: boolean }) => void) => () => void
+}
 
-  if (!adapter) {
-    console.warn("[Ophel Userscript] No adapter found for:", window.location.hostname)
-    return
-  }
-
-  adapter.afterPropertiesSet({})
-
-  const { useSettingsStore, getSettingsState } = await import("~stores/settings-store")
-  const { useConversationsStore } = await import("~stores/conversations-store")
-  const { useFoldersStore } = await import("~stores/folders-store")
-  const { useTagsStore } = await import("~stores/tags-store")
-  const { usePromptsStore } = await import("~stores/prompts-store")
-  const { useClaudeSessionKeysStore } = await import("~stores/claude-sessionkeys-store")
-
-  const waitForHydration = (store: {
-    getState: () => { _hasHydrated: boolean }
-    subscribe: (fn: (state: { _hasHydrated: boolean }) => void) => () => void
-  }) => {
-    return new Promise<void>((resolve) => {
-      if (store.getState()._hasHydrated) {
+function waitForHydration(store: HydratableStore): Promise<void> {
+  return new Promise<void>((resolve) => {
+    if (store.getState()._hasHydrated) {
+      resolve()
+      return
+    }
+    const unsub = store.subscribe((state) => {
+      if (state._hasHydrated) {
+        unsub()
         resolve()
-        return
       }
-      const unsub = store.subscribe((state) => {
-        if (state._hasHydrated) {
-          unsub()
-          resolve()
-        }
-      })
     })
-  }
+  })
+}
 
-  await Promise.all([
-    waitForHydration(useSettingsStore),
-    waitForHydration(useConversationsStore),
-    waitForHydration(useFoldersStore),
-    waitForHydration(useTagsStore),
-    waitForHydration(usePromptsStore),
-    waitForHydration(useClaudeSessionKeysStore),
-  ])
-
-  const settings = getSettingsState()
-  const siteId = adapter.getSiteId()
-
-  const { initCoreModules, subscribeModuleUpdates, initUrlChangeObserver } = await import(
-    "~core/modules-init"
-  )
-
-  const ctx = { adapter, settings, siteId }
-
-  await initCoreModules(ctx)
-
-  initNetworkMonitor()
-
-  subscribeModuleUpdates(ctx)
-
-  initUrlChangeObserver(ctx)
-
+function mountShadowDom() {
   const shadowHost = document.createElement("div")
   shadowHost.id = "ophel-userscript-root"
   shadowHost.style.cssText = "all: initial; position: fixed; z-index: 2147483647;"
@@ -263,8 +223,72 @@ async function init() {
   container.id = "ophel-app-container"
   shadowRoot.appendChild(container)
 
+  return container
+}
+
+async function init() {
+  const adapter = getAdapter()
+
+  if (!adapter) {
+    console.warn("[Ophel Userscript] No adapter found for:", window.location.hostname)
+    return
+  }
+
+  adapter.afterPropertiesSet({})
+
+  const { useSettingsStore, getSettingsState } = await import("~stores/settings-store")
+
+  // Only block on settings store — the one store needed for sidebar shell rendering.
+  // Other stores hydrate in background via their static imports from component modules.
+  await waitForHydration(useSettingsStore)
+
+  const settings = getSettingsState()
+  const siteId = adapter.getSiteId()
+
+  const { initThemeManager } = await import("~core/modules-init")
+  initThemeManager({ adapter, settings, siteId })
+
+  const container = mountShadowDom()
   const root = ReactDOM.createRoot(container)
   root.render(React.createElement(App))
+
+  // Remaining core modules (layout, copy, watermark, etc.) run after first paint
+  requestAnimationFrame(() => {
+    void deferredInit(adapter, siteId)
+  })
+}
+
+async function deferredInit(adapter: NonNullable<ReturnType<typeof getAdapter>>, siteId: string) {
+  const { useConversationsStore } = await import("~stores/conversations-store")
+  const { useFoldersStore } = await import("~stores/folders-store")
+  const { useTagsStore } = await import("~stores/tags-store")
+  const { usePromptsStore } = await import("~stores/prompts-store")
+  const { useClaudeSessionKeysStore } = await import("~stores/claude-sessionkeys-store")
+
+  await Promise.all([
+    waitForHydration(useConversationsStore),
+    waitForHydration(useFoldersStore),
+    waitForHydration(useTagsStore),
+    waitForHydration(usePromptsStore),
+    waitForHydration(useClaudeSessionKeysStore),
+  ])
+
+  const { getSettingsState } = await import("~stores/settings-store")
+  const settings = getSettingsState()
+
+  const { initCoreModules, subscribeModuleUpdates, initUrlChangeObserver } = await import(
+    "~core/modules-init"
+  )
+
+  const ctx = { adapter, settings, siteId }
+
+  await initCoreModules(ctx)
+
+  initNetworkMonitor()
+
+  subscribeModuleUpdates(ctx)
+
+  initUrlChangeObserver(ctx)
 }
 
 init().catch((error) => {

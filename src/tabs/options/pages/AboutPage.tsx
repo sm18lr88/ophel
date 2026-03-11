@@ -6,6 +6,7 @@ import React from "react"
 
 import {
   AboutIcon,
+  BrainIcon,
   ChromeIcon,
   FirefoxIcon,
   GithubIcon,
@@ -32,11 +33,11 @@ const AboutPage: React.FC = () => {
           gap: 8,
           marginBottom: 24,
         }}>
-        <span style={{ fontSize: 18 }}>✨</span>
+        <BrainIcon size={18} />
         <div className="about-slogan">
           {t("aboutPageDesc") || "Make AI workflows easier to use"}
         </div>
-        <span style={{ fontSize: 18 }}>✨</span>
+        <BrainIcon size={18} />
       </div>
 
       {/* Hero Card */}

@@ -1,20 +1,20 @@
 /**
- * Ophel - 
+ * Ophel -
  *
- *  local 
+ *  local
  */
 
 import { Storage } from "@plasmohq/storage"
 
 import { DEFAULT_SHORTCUTS_SETTINGS, type ShortcutsSettings } from "~constants/shortcuts"
 
-// 
+//
 declare const __PLATFORM__: "extension" | "userscript" | undefined
 
-// 
+//
 const isUserscript = typeof __PLATFORM__ !== "undefined" && __PLATFORM__ === "userscript"
 
-//  -  Zustand 
+//  -  Zustand
 export const localStorage = new Storage({ area: "local" })
 
 // ====================  ====================
@@ -36,98 +36,98 @@ export const CLEAR_ALL_FLAG_TTL_MS = 5 * 1000
 
 // ====================  ====================
 
-//  ID 
+//  ID
 export type SiteId = "gemini" | "gemini-enterprise" | "aistudio" | "_default"
 
-// 
+//
 export type ThemeMode = "light" | "dark" | "system"
 
-// 
+//
 export interface SiteThemeConfig {
   mode: ThemeMode
   lightStyleId: string //  ID
   darkStyleId: string //  ID
 }
 
-// 
+//
 export interface CustomStyle {
-  id: string //  IDcrypto.randomUUID 
-  name: string // 
-  css: string // CSS 
-  mode: "light" | "dark" // 
+  id: string //  IDcrypto.randomUUID
+  name: string //
+  css: string // CSS
+  mode: "light" | "dark" //
 }
 
-// 
+//
 export interface PageWidthConfig {
   enabled: boolean
   value: string
   unit: string
 }
 
-// 
+//
 export interface ModelLockConfig {
   enabled: boolean
   keyword: string
 }
 
-// 
+//
 export interface ZenModeConfig {
   enabled: boolean
 }
 
-// 
+//
 export interface ExportSettings {
-  customUserName?: string // 
-  customModelName?: string //  AI 
-  exportFilenameTimestamp?: boolean // 
-  includeThoughts?: boolean // 
+  customUserName?: string //
+  customModelName?: string //  AI
+  exportFilenameTimestamp?: boolean //
+  includeThoughts?: boolean //
 }
 
-// AI Studio 
+// AI Studio
 export interface AIStudioSettings {
-  // 
-  collapseNavbar?: boolean // 
-  collapseRunSettings?: boolean // 
-  collapseTools?: boolean // 
-  collapseAdvanced?: boolean // 
+  //
+  collapseNavbar?: boolean //
+  collapseRunSettings?: boolean //
+  collapseTools?: boolean //
+  collapseAdvanced?: boolean //
 
-  // 
-  enableSearch?: boolean //  Google 
-  markdownFix?: boolean // 
+  //
+  enableSearch?: boolean //  Google
+  markdownFix?: boolean //
 
-  // 
+  //
   defaultModel?: string //  ID "models/gemini-3-flash-preview"
 
-  //  DOM 
+  //  DOM
   cachedModels?: Array<{ id: string; name: string }>
 
-  // 
+  //
   removeWatermark?: boolean
 }
 
-// ChatGPT 
+// ChatGPT
 export interface ChatGPTSettings {
-  markdownFix?: boolean // 
+  markdownFix?: boolean //
 }
 
 export interface Settings {
   language: string
-  hasAgreedToTerms: boolean // 
+  hasAgreedToTerms: boolean //
 
-  // 
+  //
   panel: {
     defaultOpen: boolean
     autoHide: boolean
     edgeSnap: boolean
     preventAutoScroll: boolean
-    defaultPosition: "left" | "right" // 
+    defaultPosition: "left" | "right" //
     defaultEdgeDistance: number //  (0-400,  25)
     edgeSnapThreshold: number //  (10-100,  18)
     height: number //  (50-100,  85,  vh)
     width: number //  (200-600,  320,  px)
   }
 
-  // Gemini Enterprise 
+  // Gemini Enterprise
   geminiEnterprise?: {
     policyRetry: {
       enabled: boolean
@@ -135,7 +135,7 @@ export interface Settings {
     }
   }
 
-  // 
+  //
   content: {
     markdownFix: boolean
     watermarkRemoval: boolean
@@ -143,36 +143,36 @@ export interface Settings {
     formulaDelimiter: boolean
     tableCopy: boolean
     exportImagesToBase64: boolean
-    userQueryMarkdown: boolean //  Markdown 
+    userQueryMarkdown: boolean //  Markdown
   }
 
-  // 
+  //
   export?: ExportSettings
 
-  //  + 
+  //  +
   theme: {
     sites: Partial<Record<SiteId, SiteThemeConfig>>
-    customStyles: CustomStyle[] // 
+    customStyles: CustomStyle[] //
   }
 
-  // 
+  //
   layout: {
     pageWidth: Record<SiteId, PageWidthConfig>
     userQueryWidth: Record<SiteId, PageWidthConfig>
     zenMode?: Record<SiteId, ZenModeConfig>
   }
 
-  // 
+  //
   modelLock: Record<string, ModelLockConfig>
 
-  // 
+  //
   globalSearch: {
     promptEnterBehavior: "smart" | "locate"
     enableFuzzySearch: boolean
     doubleShift: boolean
   }
 
-  // 
+  //
   features: {
     order: string[]
     prompts: {
@@ -195,13 +195,13 @@ export interface Settings {
       showUserQueries: boolean
       followMode: "current" | "latest" | "manual"
       expandLevel: number
-      inlineBookmarkMode: "always" | "hover" | "hidden" // 
-      panelBookmarkMode: "always" | "hover" | "hidden" // 
+      inlineBookmarkMode: "always" | "hover" | "hidden" //
+      panelBookmarkMode: "always" | "hover" | "hidden" //
       showWordCount: boolean
     }
   }
 
-  // 
+  //
   tab: {
     openInNewTab: boolean
     autoRename: boolean
@@ -218,14 +218,14 @@ export interface Settings {
     customIcon: string
   }
 
-  // 
+  //
   readingHistory: {
     persistence: boolean
     autoRestore: boolean
     cleanupDays: number
   }
 
-  // 
+  //
   collapsedButtons: Array<{ id: string; enabled: boolean }>
   quickButtonsOpacity: number
 
@@ -236,12 +236,12 @@ export interface Settings {
     open: boolean
   }
 
-  // Claude 
+  // Claude
   claude?: {
     currentKeyId: string // SessionKey ID,cookie
   }
 
-  //  WebDAV 
+  //  WebDAV
   webdav?: {
     enabled: boolean
     url: string
@@ -250,43 +250,43 @@ export interface Settings {
     syncMode: "manual" | "auto"
     syncInterval: number
     remoteDir: string
-    dataSources?: Array<"settings" | "conversations" | "prompts" | "claudeSessionKeys"> // 
-    lastSyncTime?: number // 
+    dataSources?: Array<"settings" | "conversations" | "prompts" | "claudeSessionKeys"> //
+    lastSyncTime?: number //
     lastSyncStatus?: "success" | "failed" | "syncing"
   }
 
-  // 
+  //
   shortcuts: ShortcutsSettings
 
-  // AI Studio 
+  // AI Studio
   aistudio?: AIStudioSettings
 
-  // ChatGPT 
+  // ChatGPT
   chatgpt?: ChatGPTSettings
 }
 
-// 
+//
 const DEFAULT_SITE_THEME: SiteThemeConfig = {
   mode: "light",
   lightStyleId: "google-gradient",
   darkStyleId: "classic-dark",
 }
 
-// 
+//
 const DEFAULT_PAGE_WIDTH: PageWidthConfig = {
   enabled: false,
   value: "1280",
   unit: "px",
 }
 
-//  px 
+//  px
 const DEFAULT_USER_QUERY_WIDTH: PageWidthConfig = {
   enabled: false,
   value: "600",
   unit: "px",
 }
 
-// 
+//
 const DEFAULT_ZEN_MODE: ZenModeConfig = {
   enabled: false,
 }
@@ -296,7 +296,7 @@ export const DEFAULT_SETTINGS: Settings = {
   hasAgreedToTerms: false,
 
   panel: {
-    defaultOpen: true,
+    defaultOpen: false,
     autoHide: false,
     edgeSnap: true,
     preventAutoScroll: false,
@@ -316,13 +316,13 @@ export const DEFAULT_SETTINGS: Settings = {
 
   content: {
     markdownFix: true,
-    // GM_xmlhttpRequest  @grant 
+    // GM_xmlhttpRequest  @grant
     watermarkRemoval: isUserscript,
     formulaCopy: true,
     formulaDelimiter: true,
     tableCopy: true,
     exportImagesToBase64: false,
-    userQueryMarkdown: false, // 
+    userQueryMarkdown: false, //
   },
 
   export: {
@@ -338,7 +338,7 @@ export const DEFAULT_SETTINGS: Settings = {
       "gemini-enterprise": { ...DEFAULT_SITE_THEME },
       _default: { ...DEFAULT_SITE_THEME },
     },
-    customStyles: [], // 
+    customStyles: [], //
   },
 
   layout: {
@@ -407,7 +407,7 @@ export const DEFAULT_SETTINGS: Settings = {
     renameInterval: 3,
     showStatus: true,
     titleFormat: "{status}{title}->{model}",
-    // GM_notification  @grant 
+    // GM_notification  @grant
     showNotification: isUserscript,
     notificationSound: true,
     notificationVolume: 0.6,
@@ -451,7 +451,7 @@ export const DEFAULT_SETTINGS: Settings = {
     syncMode: "manual",
     syncInterval: 30,
     remoteDir: "ophel",
-    dataSources: ["settings", "conversations", "prompts", "claudeSessionKeys"], // 
+    dataSources: ["settings", "conversations", "prompts", "claudeSessionKeys"], //
   },
 
   shortcuts: DEFAULT_SHORTCUTS_SETTINGS,
@@ -461,14 +461,14 @@ export const DEFAULT_SETTINGS: Settings = {
     collapseTools: false,
     collapseAdvanced: false,
     enableSearch: true,
-    defaultModel: "", // 
-    // 
+    defaultModel: "", //
+    //
     markdownFix: isUserscript,
     removeWatermark: isUserscript,
   },
 
   chatgpt: {
-    // 
+    //
     markdownFix: true,
   },
 }
@@ -491,18 +491,18 @@ export interface Prompt {
   title: string
   content: string
   category: string
-  pinned?: boolean // 
-  lastUsedAt?: number // 
+  pinned?: boolean //
+  lastUsedAt?: number //
 }
 
-// Claude SessionKey 
+// Claude SessionKey
 export interface ClaudeSessionKey {
   id: string // crypto.randomUUID
-  name: string // 
+  name: string //
   key: string // sk-ant-sid01-...
   accountType?: "Free" | "Pro(5x)" | "Pro(20x)" | "API" | "Unknown"
-  isValid?: boolean // 
-  testedAt?: number // 
+  isValid?: boolean //
+  testedAt?: number //
   createdAt: number
 }
 
@@ -514,7 +514,7 @@ export interface ClaudeSessionKeysState {
 // ====================  ====================
 
 /**
- * 
+ *
  */
 export function getSiteTheme(settings: Settings, siteId: string): SiteThemeConfig {
   const sites = settings.theme?.sites
@@ -557,7 +557,7 @@ let clearAllFlagPromise: Promise<boolean> | null = null
 /**
  * “” true
  * - /
- * - 
+ * -
  */
 export function consumeClearAllFlag(): Promise<boolean> {
   if (clearAllFlagPromise) {
@@ -597,7 +597,7 @@ export function consumeClearAllFlag(): Promise<boolean> {
   return clearAllFlagPromise
 }
 
-// 
+//
 export const RESTORE_FLAG_KEY = "ophel:restoreFlag"
 export const RESTORE_FLAG_TTL_MS = 10 * 1000
 
@@ -606,7 +606,7 @@ let restoreFlagPromise: Promise<boolean> | null = null
 /**
  * ""TTL  true
  * -  autoFullSync
- * - 
+ * -
  */
 export function consumeRestoreFlag(): Promise<boolean> {
   if (restoreFlagPromise) {
@@ -635,12 +635,12 @@ export function consumeRestoreFlag(): Promise<boolean> {
 
       const age = Date.now() - ts
       if (age <= RESTORE_FLAG_TTL_MS) {
-        //  TTL 
+        //  TTL
         resolve(true)
         return
       }
 
-      // 
+      //
       chrome.storage.local.remove(RESTORE_FLAG_KEY, () => resolve(false))
     })
   })

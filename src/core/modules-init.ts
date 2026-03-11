@@ -70,6 +70,9 @@ let readingHistoryAutoStartTimer: NodeJS.Timeout | null = null
 /**
  */
 export function initThemeManager(ctx: ModulesContext): ThemeManager {
+  // Idempotent — allow early call from entry before initCoreModules
+  if (modules.themeManager) return modules.themeManager
+
   const { adapter, settings, siteId } = ctx
   const siteTheme = getSiteTheme(settings, siteId)
 

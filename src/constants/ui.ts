@@ -1,10 +1,11 @@
 /**
- * UI 
+ * UI
  */
 import type React from "react"
 
 import {
   AnchorIcon,
+  BrainIcon,
   ConversationIcon,
   ManualAnchorIcon,
   OutlineIcon,
@@ -12,12 +13,12 @@ import {
   ScrollBottomIcon,
   ScrollTopIcon,
   SearchIcon,
-  ToolsIcon,
+  SettingsIcon,
 } from "~components/icons"
 import { SHORTCUT_META } from "~constants/shortcuts"
 
 // ==================== Tab ID  ====================
-//  Tab 
+//  Tab
 export const TAB_IDS = {
   PROMPTS: "prompts",
   OUTLINE: "outline",
@@ -800,7 +801,7 @@ export const searchSettingsItems = (query: string, limit?: number): SettingsSear
 }
 
 // ==================== Tab  ====================
-// Tab 
+// Tab
 export const TAB_DEFINITIONS: Record<
   string,
   {
@@ -820,7 +821,7 @@ export const TAB_DEFINITIONS: Record<
 }
 
 // ====================  ====================
-// isPanelOnly: true false 
+// isPanelOnly: true false
 // IconComponent: React  icon
 export const COLLAPSED_BUTTON_DEFS: Record<
   string,
@@ -845,13 +846,14 @@ export const COLLAPSED_BUTTON_DEFS: Record<
     labelKey: "panelTitle",
     canToggle: false,
     isPanelOnly: true,
+    IconComponent: BrainIcon,
   },
   floatingToolbar: {
-    icon: "🧰",
+    icon: "⚙️",
     labelKey: "tools", // Changed from floatingToolbarLabel
     canToggle: true, // This toggle will now open the menu
     isPanelOnly: false,
-    IconComponent: ToolsIcon,
+    IconComponent: SettingsIcon,
   },
   globalSearch: {
     icon: "🔎",
@@ -893,7 +895,7 @@ export const COLLAPSED_BUTTON_DEFS: Record<
 // ==================== Emoji  ====================
 //  Emoji  (64)
 export const PRESET_EMOJIS = [
-  // 📂 
+  // 📂
   "📁",
   "📂",
   "📥",
@@ -956,7 +958,7 @@ export const PRESET_EMOJIS = [
   "🟣",
   "⚫",
   "⚪",
-  // 
+  //
   "⭐",
   "🌟",
   "🎉",
@@ -968,37 +970,37 @@ export const PRESET_EMOJIS = [
 ]
 
 // ====================  ====================
-// 30 
+// 30
 export const TAG_COLORS = [
-  // 
+  //
   "#FF461F",
   "#FF6B6B",
   "#FA8072",
   "#DC143C",
   "#CD5C5C",
   "#FF4500",
-  // 
+  //
   "#FFA500",
   "#FFB347",
   "#F0E68C",
   "#DAA520",
   "#FFD700",
   "#9ACD32",
-  // 
+  //
   "#32CD32",
   "#3CB371",
   "#20B2AA",
   "#00CED1",
   "#5F9EA0",
   "#4682B4",
-  // 
+  //
   "#6495ED",
   "#4169E1",
   "#0000CD",
   "#8A2BE2",
   "#9370DB",
   "#BA55D3",
-  // 
+  //
   "#DB7093",
   "#C71585",
   "#8B4513",
